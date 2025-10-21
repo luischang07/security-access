@@ -9,23 +9,17 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-  /**
-   * Register any application services.
-   */
   public function register(): void
   {
-    //
+    // No application services to register at this time.
   }
 
-  /**
-   * Bootstrap any application services.
-   */
   public function boot(): void
   {
     RateLimiter::for('login', function (Request $request) {
       $key = $this->loginThrottleKey($request);
 
-      return Limit::perMinutes(30, 3)
+      return Limit::perMinutes(1, 4)
         ->by($key)
         ->response(function (Request $request) {
           return redirect()

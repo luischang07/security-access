@@ -29,16 +29,12 @@ class UserFactory extends Factory
     ];
   }
 
-  /**
-   * Create a deterministic demo user for local testing.
-   */
   public function demo(): static
   {
     return $this->state(fn(array $attributes) => [
       'name' => 'Demo User',
       'email' => 'demo@example.com',
       'email_verified_at' => now(),
-      // known NIP for testing: NipDemo123!
       'nip' => Hash::make('NipDemo123!'),
       'session_token' => null,
       'last_login_at' => null,

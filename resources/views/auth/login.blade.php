@@ -1,111 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar sesión</title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
+@section('title', 'Iniciar sesión')
 
-        .container {
-            background-color: #fff;
-            padding: 2.75rem;
-            border-radius: 1.25rem;
-            box-shadow: 0 25px 45px rgba(15, 23, 42, 0.12);
-            width: min(420px, 90%);
-        }
+@push('styles')
+    @vite('resources/css/login.css')
+@endpush
 
-        h1 {
-            margin-top: 0;
-            font-size: 2rem;
-            color: #0f172a;
-        }
-
-        form {
-            display: grid;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        label {
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid #cbd5f5;
-            font-size: 1rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #1d4ed8;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-
-        button {
-            width: 100%;
-            padding: 0.9rem;
-            border-radius: 999px;
-            border: none;
-            background-color: #1d4ed8;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(29, 78, 216, 0.3);
-        }
-
-        .alert {
-            padding: 1rem 1.25rem;
-            border-radius: 0.75rem;
-            background-color: rgba(248, 113, 113, 0.15);
-            color: #b91c1c;
-            font-weight: 500;
-        }
-
-        .status {
-            padding: 1rem 1.25rem;
-            border-radius: 0.75rem;
-            background-color: rgba(16, 185, 129, 0.15);
-            color: #047857;
-            font-weight: 500;
-        }
-
-        .back-link {
-            text-decoration: none;
-            color: #1d4ed8;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-        }
-    </style>
-</head>
-
-<body>
+@section('content')
     <div class="container">
         <h1>Bienvenido de nuevo</h1>
         <p>Inicia sesión para acceder al panel seguro.</p>
@@ -124,8 +25,8 @@
             @csrf
             <div>
                 <label for="correo">Correo electrónico</label>
-                <input id="correo" type="email" name="correo" value="{{ old('correo') }}" required
-                    autocomplete="email" autofocus>
+                <input id="correo" type="email" name="correo" value="{{ old('correo') }}" required autocomplete="email"
+                    autofocus>
             </div>
             <div>
                 <label for="nip">NIP</label>
@@ -136,6 +37,4 @@
 
         <a class="back-link" href="{{ route('landing') }}">&#8592; Volver al inicio</a>
     </div>
-</body>
-
-</html>
+@endsection

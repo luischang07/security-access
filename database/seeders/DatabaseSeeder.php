@@ -16,12 +16,10 @@ class DatabaseSeeder extends Seeder
    */
   public function run(): void
   {
-    // Create a deterministic demo user (useful for local testing)
     if (!User::where('email', 'demo@example.com')->exists()) {
       User::factory()->demo()->create();
     }
 
-    // Preserve an additional test user used previously
     if (!User::where('email', 'test@example.com')->exists()) {
       User::factory()->create([
         'name' => 'Test User',
