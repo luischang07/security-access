@@ -2,22 +2,26 @@
 
 namespace App\Services;
 
-use App\Models\User;
+use App\Domain\User\UserEntity;
+use App\Repositories\UserRepository;
 
 class SingleSessionManager
 {
-  public function registerSession(User $user, string $token): void
+  public function __construct(
+    private readonly UserRepository $userRepository
+  ) {}
+
+  public function registerSession(UserEntity $user, string $token): void
   {
-    $user->forceFill([
-      'session_token' => $token,
-      'last_login_at' => now(),
-    ])->save();
+    $this->userRepository->updateSessionData(
+      $user->getId(),
+      $token,
+      now()
+    );
   }
 
-  public function clearSession(User $user): void
+  public function clearSession(UserEntity $user): void
   {
-    $user->forceFill([
-      'session_token' => null,
-    ])->save();
+    $this->userRepository->clearSession($user->getId());
   }
 }

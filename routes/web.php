@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'landing')->name('landing');
 
 Route::middleware('guest')->group(function (): void {
-  Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login.form');
+  Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
   Route::post('/login', [LoginController::class, 'login'])
     ->middleware('throttle:login')
     ->name('login.attempt');

@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         ->by($key)
         ->response(function (Request $request) {
           return redirect()
-            ->route('login.form')
+            ->route('login')
             ->withErrors([
               'nip' => __('Has excedido el número de intentos permitidos. Intenta nuevamente más tarde.'),
             ])

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Repositories\UserRepository;
 use App\Services\SingleSessionManager;
 use Closure;
 use Illuminate\Http\Request;
@@ -9,26 +10,33 @@ use Illuminate\Support\Facades\Auth;
 
 class EnsureSingleSession
 {
-  public function __construct(private readonly SingleSessionManager $singleSessionManager) {}
+  public function __construct(
+    private readonly SingleSessionManager $singleSessionManager,
+    private readonly UserRepository $userRepository
+  ) {}
 
   public function handle(Request $request, Closure $next)
   {
-    $user = Auth::user();
+    $authUser = Auth::user();
 
-    if ($user) {
-      $currentToken = $user->session_token;
-      $sessionToken = $request->session()->get('session_token');
+    if ($authUser) {
+      $user = $this->userRepository->findById($authUser->id);
 
-      if (!$currentToken || !$sessionToken || $currentToken !== $sessionToken) {
-        $this->singleSessionManager->clearSession($user);
-        Auth::logout();
+      if ($user) {
+        $currentToken = $user->getSessionToken();
+        $sessionToken = $request->session()->get('session_token');
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if (!$currentToken || !$sessionToken || $currentToken !== $sessionToken) {
+          $this->singleSessionManager->clearSession($user);
+          Auth::logout();
 
-        return redirect()->route('login.form')->withErrors([
-          'session' => __('Tu sesión ha sido cerrada porque se detectó un inicio de sesión en otro dispositivo.'),
-        ]);
+          $request->session()->invalidate();
+          $request->session()->regenerateToken();
+
+          return redirect()->route('login')->withErrors([
+            'session' => __('Tu sesión ha sido cerrada porque se detectó un inicio de sesión en otro dispositivo.'),
+          ]);
+        }
       }
     }
 
