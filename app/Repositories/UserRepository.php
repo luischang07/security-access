@@ -42,6 +42,15 @@ class UserRepository
 
   public function updateSessionData(int $userId, ?string $sessionToken, ?\DateTime $lastLoginAt): bool
   {
+    return User::where('id', $userId)
+      ->update([
+        'session_token' => $sessionToken,
+        'last_login_at' => $lastLoginAt,
+      ]) > 0;
+  }
+
+  public function updateSessionDataWithLock(int $userId, ?string $sessionToken, ?\DateTime $lastLoginAt): bool
+  {
     return DB::transaction(function () use ($userId, $sessionToken, $lastLoginAt) {
       return User::where('id', $userId)
         ->lockForUpdate()

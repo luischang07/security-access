@@ -41,10 +41,11 @@ class AuthenticationService
 
     $sessionToken = Str::uuid()->toString();
 
-    $userModel->update([
-      'session_token' => $sessionToken,
-      'last_login_at' => now(),
-    ]);
+    $this->userRepository->updateSessionData(
+      $user->getId(),
+      $sessionToken,
+      now()
+    );
 
     Auth::loginUsingId($user->getId());
 
