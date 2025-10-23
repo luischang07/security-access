@@ -32,6 +32,10 @@
                 <label for="nip">NIP</label>
                 <input id="nip" type="password" name="nip" required autocomplete="current-password">
             </div>
+            <div class="remember-me">
+                <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                <label for="remember">Recordarme</label>
+            </div>
             <button type="submit">Ingresar</button>
         </form>
 

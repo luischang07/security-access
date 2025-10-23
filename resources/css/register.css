@@ -13,7 +13,7 @@ body {
     padding: 2.75rem;
     border-radius: 1.25rem;
     box-shadow: 0 25px 45px rgba(15, 23, 42, 0.12);
-    width: min(420px, 90%);
+    width: min(480px, 90%);
 }
 
 h1 {
@@ -35,17 +35,14 @@ label {
     display: block;
 }
 
-.remember-me {
-    display: flex;
-    align-items: center;
-    margin-top: -0.5rem;
+.form-group {
+    margin-bottom: 1rem;
 }
 
-.remember-me label {
-    display: inline;
-    margin-bottom: 0;
-    font-weight: 500;
-    cursor: pointer;
+.form-group p {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #64748b;
 }
 
 input {
@@ -57,16 +54,20 @@ input {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input[type="checkbox"] {
-    width: auto;
-    margin-right: 0.5rem;
-    cursor: pointer;
-}
-
 input:focus {
     outline: none;
     border-color: #1d4ed8;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+input.error {
+    border-color: #dc2626;
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
 }
 
 button {
@@ -93,6 +94,7 @@ button:hover {
     background-color: rgba(248, 113, 113, 0.15);
     color: #b91c1c;
     font-weight: 500;
+    margin-bottom: 1rem;
 }
 
 .status {
@@ -101,6 +103,14 @@ button:hover {
     background-color: rgba(16, 185, 129, 0.15);
     color: #047857;
     font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.links {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .back-link {
@@ -110,5 +120,10 @@ button:hover {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1.5rem;
+}
+
+.login-link {
+    text-decoration: none;
+    color: #1d4ed8;
+    font-weight: 600;
 }

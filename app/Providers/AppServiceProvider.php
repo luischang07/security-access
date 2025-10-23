@@ -30,6 +30,21 @@ class AppServiceProvider extends ServiceProvider
             ->withInput($request->only('correo'));
         });
     });
+
+    RateLimiter::for('registration', function (Request $request) {
+      $key = $request->ip();
+
+      return Limit::perMinutes(1, 3)
+        ->by($key)
+        ->response(function (Request $request) {
+          return redirect()
+            ->route('register')
+            ->withErrors([
+              'general' => __('Has excedido el número de intentos de registro permitidos. Intenta nuevamente más tarde.'),
+            ])
+            ->withInput($request->only(['name', 'email']));
+        });
+    });
   }
 
   private function loginThrottleKey(Request $request): string

@@ -41,15 +41,29 @@ class AuthenticationService
 
     $sessionToken = Str::uuid()->toString();
 
+    $remember = $request->has('remember');
+
+    $request->session()->put('remember_me', $remember);
+
+    if ($remember) {
+      $rememberToken = Str::random(60);
+      $userModel->remember_token = $rememberToken;
+      $userModel->save();
+    } else {
+      $userModel->remember_token = null;
+      $userModel->save();
+    }
+
     $this->userRepository->updateSessionData(
       $user->getId(),
       $sessionToken,
       now()
     );
 
-    Auth::loginUsingId($user->getId());
-
     $request->session()->put('session_token', $sessionToken);
+
+    Auth::loginUsingId($user->getId(), $remember);
+
     $request->session()->regenerate();
 
     return redirect()->route('landing')->with('status', __('Bienvenido de nuevo.'));

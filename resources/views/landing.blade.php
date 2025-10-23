@@ -27,6 +27,7 @@
                     <a href="{{ route('dashboard') }}" class="btn btn-primary">Ir al panel</a>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-primary">Iniciar sesión</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary">Registrarse</a>
                     <a href="#features" class="btn btn-secondary">Conoce las políticas</a>
                 @endauth
             </div>
