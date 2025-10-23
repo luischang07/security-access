@@ -35,21 +35,17 @@ class RegistrationService
 
       $user = $this->userRepository->create($userData);
 
-      // Generate session token for auto login after registration
       $sessionToken = Str::random(60);
 
-      // Update user with session token
       $this->userRepository->updateSessionDataWithLock(
         $user->getId(),
         $sessionToken,
         now()
       );
 
-      // Set the updated session token in the user entity
       $user->setSessionToken($sessionToken);
       $user->setLastLoginAt(now());
 
-      // Add user to session
       $request->session()->put('user_id', $user->getId());
       $request->session()->put('session_token', $sessionToken);
 

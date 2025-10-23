@@ -24,7 +24,7 @@ class RegisterController extends Controller
 
   public function register(RegisterRequest $request): RedirectResponse
   {
-    $user = $this->registrationService->register($request);
+    $this->registrationService->register($request);
 
     return redirect()->route('dashboard')->with('success', '¡Bienvenido! Tu cuenta ha sido creada exitosamente.');
   }

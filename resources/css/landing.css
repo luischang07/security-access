@@ -3,21 +3,111 @@ body {
     margin: 0;
     color: #0f172a;
     background: linear-gradient(135deg, #1d4ed8, #9333ea);
+    scroll-behavior: smooth;
 }
 
-.hero {
-    min-height: 100vh;
+/* Navbar Styles */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #1d4ed8;
+    text-decoration: none;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 3rem 1.5rem;
 }
+
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+.navbar-menu {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.nav-link {
+    color: #0f172a;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    position: relative;
+}
+
+.nav-link:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: #1d4ed8;
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #1d4ed8;
+}
+
+.nav-link:hover:after {
+    width: 100%;
+}
+
+/* Mobile menu button */
+.navbar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #1d4ed8;
+}
+
+@media (max-width: 768px) {
+    .navbar-toggle {
+        display: block;
+    }
+
+    .navbar-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        padding: 1rem;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        clip-path: circle(0% at 100% 0%);
+        transition: clip-path 0.5s ease-in-out;
+    }
+
+    .navbar-menu.active {
+        clip-path: circle(150% at 100% 0%);
+    }
+}
+
+/* Hero section styles moved to the bottom of the file to avoid duplication */
 
 .card {
     background-color: rgba(255, 255, 255, 0.92);
     border-radius: 1.5rem;
     padding: 3rem;
-    max-width: 960px;
+    max-width: 1200px;
     width: 100%;
     box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
     backdrop-filter: blur(10px);
@@ -96,4 +186,229 @@ p {
     background-color: rgba(16, 185, 129, 0.12);
     color: #047857;
     font-weight: 500;
+}
+
+/* New Sections Styles */
+section {
+    padding: 5rem 1.5rem;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 3rem;
+    font-size: 2.5rem;
+    color: #fff;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.about-section {
+    background-color: #0f172a;
+    color: #fff;
+}
+
+.about-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.about-text {
+    flex: 1;
+    min-width: 300px;
+}
+
+.about-image {
+    flex: 1;
+    min-width: 300px;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.about-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.about-logo {
+    max-width: 80%;
+    margin: 0 auto;
+    display: block;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.services-section {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #fff;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.service-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.service-card h3 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.contact-section {
+    background-color: #fff;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.contact-info {
+    padding: 2rem;
+    background-color: #f1f5f9;
+    border-radius: 1rem;
+}
+
+.contact-form {
+    padding: 2rem;
+    background-color: #f8fafc;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+}
+
+/* Footer Styles */
+footer {
+    background-color: #0f172a;
+    color: #fff;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.footer-link {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #fff;
+}
+
+/* Scroll Animation Styles */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Add some spacing for hero section due to fixed navbar */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 1.5rem 3rem 1.5rem;
+}
+
+/* Estilos para el nuevo diseño de la sección de inicio */
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    max-width: 600px;
+}
+
+.hero-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+}
+
+.hero-logo {
+    margin-bottom: 0;
+}
+
+.hero-heading h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #1d4ed8;
+}
+
+.hero-text {
+    margin-bottom: 1rem;
+}
+
+.hero-text p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #475569;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .hero-content {
+        align-items: center;
+        text-align: center;
+    }
+
+    .hero-header {
+        align-items: center;
+        width: 100%;
+    }
+
+    .hero-logo {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
 }
