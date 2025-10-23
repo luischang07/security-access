@@ -54,11 +54,7 @@ class AuthenticationService
       $userModel->save();
     }
 
-    $this->userRepository->updateSessionData(
-      $user->getId(),
-      $sessionToken,
-      now()
-    );
+    $this->singleSessionManager->registerSession($user, $sessionToken);
 
     $request->session()->put('session_token', $sessionToken);
 

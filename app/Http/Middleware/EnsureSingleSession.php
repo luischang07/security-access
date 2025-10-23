@@ -26,7 +26,7 @@ class EnsureSingleSession
         $currentToken = $user->getSessionToken();
         $sessionToken = $request->session()->get('session_token');
 
-        if (!$currentToken || !$sessionToken || $currentToken !== $sessionToken) {
+        if (!$currentToken || !$sessionToken) {
           $this->singleSessionManager->clearSession($user);
           Auth::logout();
 
@@ -34,9 +34,21 @@ class EnsureSingleSession
           $request->session()->regenerateToken();
 
           return redirect()->route('login')->withErrors([
+            'session' => __('Tu sesión ha sido cerrada porque los datos de sesión son inválidos.'),
+          ]);
+        }
+
+        if ($currentToken !== $sessionToken) {
+          Auth::logout();
+          $request->session()->invalidate();
+          $request->session()->regenerateToken();
+
+          return redirect()->route('login')->withErrors([
             'session' => __('Tu sesión ha sido cerrada porque se detectó un inicio de sesión en otro dispositivo.'),
           ]);
         }
+
+        // Si estamos aquí, el token de sesión actual coincide con el de la BD
       }
     }
 
