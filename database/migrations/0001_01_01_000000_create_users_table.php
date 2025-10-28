@@ -19,6 +19,9 @@ return new class extends Migration
       $table->string('nip'); // NIP hashed
       $table->string('session_token', 255)->nullable();
       $table->timestamp('last_login_at')->nullable();
+      $table->integer('login_attempts')->default(0);
+      $table->timestamp('login_attempts_reset_at')->nullable();
+      $table->timestamp('locked_until')->nullable();
       $table->rememberToken();
       $table->timestamps();
     });

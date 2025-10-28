@@ -23,6 +23,9 @@ class User extends Authenticatable
     'nip',
     'session_token',
     'last_login_at',
+    'login_attempts',
+    'login_attempts_reset_at',
+    'locked_until',
   ];
 
   /**
@@ -47,6 +50,8 @@ class User extends Authenticatable
       'email_verified_at' => 'datetime',
       'nip' => 'hashed',
       'last_login_at' => 'datetime',
+      'login_attempts_reset_at' => 'datetime',
+      'locked_until' => 'datetime',
     ];
   }
 }

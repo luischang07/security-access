@@ -14,6 +14,9 @@ class UserEntity
   private ?string $sessionToken;
   private ?Carbon $lastLoginAt;
   private ?Carbon $emailVerifiedAt;
+  private int $loginAttempts;
+  private ?Carbon $loginAttemptsResetAt;
+  private ?Carbon $lockedUntil;
   private Carbon $createdAt;
   private Carbon $updatedAt;
 
@@ -26,6 +29,9 @@ class UserEntity
     $this->sessionToken = $user->session_token;
     $this->lastLoginAt = $user->last_login_at;
     $this->emailVerifiedAt = $user->email_verified_at;
+    $this->loginAttempts = $user->login_attempts ?? 0;
+    $this->loginAttemptsResetAt = $user->login_attempts_reset_at;
+    $this->lockedUntil = $user->locked_until;
     $this->createdAt = $user->created_at;
     $this->updatedAt = $user->updated_at;
   }
@@ -75,6 +81,21 @@ class UserEntity
     return $this->updatedAt;
   }
 
+  public function getLoginAttempts(): int
+  {
+    return $this->loginAttempts;
+  }
+
+  public function getLoginAttemptsResetAt(): ?Carbon
+  {
+    return $this->loginAttemptsResetAt;
+  }
+
+  public function getLockedUntil(): ?Carbon
+  {
+    return $this->lockedUntil;
+  }
+
   public function setSessionToken(?string $token): void
   {
     $this->sessionToken = $token;
@@ -83,6 +104,21 @@ class UserEntity
   public function setLastLoginAt(?Carbon $lastLoginAt): void
   {
     $this->lastLoginAt = $lastLoginAt;
+  }
+
+  public function setLoginAttempts(int $attempts): void
+  {
+    $this->loginAttempts = $attempts;
+  }
+
+  public function setLoginAttemptsResetAt(?Carbon $resetAt): void
+  {
+    $this->loginAttemptsResetAt = $resetAt;
+  }
+
+  public function setLockedUntil(?Carbon $lockedUntil): void
+  {
+    $this->lockedUntil = $lockedUntil;
   }
 
   public function hasActiveSession(): bool
@@ -95,6 +131,21 @@ class UserEntity
     return !is_null($this->emailVerifiedAt);
   }
 
+  public function isLocked(): bool
+  {
+    return $this->lockedUntil && $this->lockedUntil->isFuture();
+  }
+
+  public function shouldResetLoginAttempts(): bool
+  {
+    return $this->loginAttemptsResetAt && $this->loginAttemptsResetAt->isPast();
+  }
+
+  public function canAttemptLogin(): bool
+  {
+    return !$this->isLocked() && ($this->shouldResetLoginAttempts() || $this->loginAttempts < 4);
+  }
+
   public function toArray(): array
   {
     return [
@@ -105,6 +156,9 @@ class UserEntity
       'session_token' => $this->sessionToken,
       'last_login_at' => $this->lastLoginAt,
       'email_verified_at' => $this->emailVerifiedAt,
+      'login_attempts' => $this->loginAttempts,
+      'login_attempts_reset_at' => $this->loginAttemptsResetAt,
+      'locked_until' => $this->lockedUntil,
       'created_at' => $this->createdAt,
       'updated_at' => $this->updatedAt,
     ];

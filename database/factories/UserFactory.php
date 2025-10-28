@@ -25,6 +25,9 @@ class UserFactory extends Factory
       'nip' => Hash::make('NipSeguro123!'),
       'session_token' => null,
       'last_login_at' => null,
+      'login_attempts' => 0,
+      'login_attempts_reset_at' => null,
+      'locked_until' => null,
       'remember_token' => Str::random(10),
     ];
   }
@@ -38,6 +41,9 @@ class UserFactory extends Factory
       'nip' => Hash::make('NipDemo123!'),
       'session_token' => null,
       'last_login_at' => null,
+      'login_attempts' => 0,
+      'login_attempts_reset_at' => null,
+      'locked_until' => null,
     ]);
   }
 

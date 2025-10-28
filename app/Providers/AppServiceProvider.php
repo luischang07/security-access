@@ -16,21 +16,8 @@ class AppServiceProvider extends ServiceProvider
 
   public function boot(): void
   {
-    RateLimiter::for('login', function (Request $request) {
-      $key = $this->loginThrottleKey($request);
-
-      return Limit::perMinutes(1, 4)
-        ->by($key)
-        ->response(function (Request $request) {
-          return redirect()
-            ->route('login')
-            ->withErrors([
-              'nip' => __('Has excedido el número de intentos permitidos. Intenta nuevamente más tarde.'),
-            ])
-            ->withInput($request->only('correo'));
-        });
-    });
-
+    // El throttling de login ahora se maneja en la base de datos
+    // Solo mantenemos el throttling de registro
     RateLimiter::for('registration', function (Request $request) {
       $key = $request->ip();
 
@@ -45,12 +32,5 @@ class AppServiceProvider extends ServiceProvider
             ->withInput($request->only(['name', 'email']));
         });
     });
-  }
-
-  private function loginThrottleKey(Request $request): string
-  {
-    $email = (string) $request->input('correo');
-
-    return strtolower($email) . '|' . $request->ip();
   }
 }

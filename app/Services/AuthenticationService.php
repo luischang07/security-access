@@ -10,14 +10,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AuthenticationService
 {
   public function __construct(
     private readonly UserRepository $userRepository,
-    private readonly SingleSessionManager $singleSessionManager
+    private readonly SingleSessionManager $singleSessionManager,
+    private readonly LoginThrottleService $loginThrottleService
   ) {}
 
   public function attemptLogin(LoginRequest $request): RedirectResponse
@@ -25,19 +25,36 @@ class AuthenticationService
     return DB::transaction(function () use ($request) {
       $userModel = $this->userRepository->findByEmailWithLock($request->correo);
 
-      if ($userModel && Hash::check($request->nip, $userModel->nip)) {
-        return $this->handleSuccessfulLogin($request, $userModel);
+      if (!$userModel) {
+        return $this->handleFailedLogin($request);
       }
 
-      return $this->handleFailedLogin($request);
+      $user = new UserEntity($userModel);
+
+      // Verificar si la cuenta está bloqueada o si puede intentar login
+      if (!$this->loginThrottleService->canAttemptLogin($user)) {
+        $remainingTime = $this->loginThrottleService->getTimeUntilUnlock($user);
+        $minutes = ceil($remainingTime / 60);
+
+        return redirect()->back()->withErrors([
+          'nip' => __('Cuenta bloqueada temporalmente. Intenta nuevamente en :minutes minuto(s).', [
+            'minutes' => $minutes
+          ]),
+        ])->onlyInput($request->only('correo'));
+      }
+
+      if (Hash::check($request->nip, $userModel->nip)) {
+        return $this->handleSuccessfulLogin($request, $userModel, $user);
+      }
+
+      return $this->handleFailedLogin($request, $user);
     });
   }
 
-  private function handleSuccessfulLogin(LoginRequest $request, $userModel): RedirectResponse
+  private function handleSuccessfulLogin(LoginRequest $request, $userModel, UserEntity $user): RedirectResponse
   {
-    $user = new UserEntity($userModel);
-
-    RateLimiter::clear($this->generateThrottleKey($request));
+    // Resetear intentos de login en caso de éxito
+    $this->loginThrottleService->recordSuccessfulLogin($user);
 
     $sessionToken = Str::uuid()->toString();
 
@@ -65,8 +82,22 @@ class AuthenticationService
     return redirect()->route('landing')->with('status', __('Bienvenido de nuevo.'));
   }
 
-  private function handleFailedLogin(LoginRequest $request): RedirectResponse
+  private function handleFailedLogin(LoginRequest $request, ?UserEntity $user = null): RedirectResponse
   {
+    // Si tenemos el usuario, registrar el intento fallido
+    if ($user) {
+      $this->loginThrottleService->recordFailedAttempt($user);
+      $remainingAttempts = $this->loginThrottleService->getRemainingAttempts($user);
+
+      if ($remainingAttempts > 0) {
+        return redirect()->back()->withErrors([
+          'nip' => __('Las credenciales proporcionadas no coinciden con nuestros registros. Te quedan :attempts intento(s).', [
+            'attempts' => $remainingAttempts
+          ]),
+        ])->onlyInput($request->only('correo'));
+      }
+    }
+
     return redirect()->back()->withErrors([
       'nip' => __('Las credenciales proporcionadas no coinciden con nuestros registros.'),
     ])->onlyInput($request->only('correo'));
@@ -89,10 +120,5 @@ class AuthenticationService
     request()->session()->regenerateToken();
 
     return redirect()->route('login')->with('status', __('Has cerrado sesión correctamente.'));
-  }
-
-  private function generateThrottleKey(LoginRequest $request): string
-  {
-    return strtolower((string) $request->correo) . '|' . $request->ip();
   }
 }
