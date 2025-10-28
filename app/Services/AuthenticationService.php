@@ -37,7 +37,7 @@ class AuthenticationService
   {
     $user = new UserEntity($userModel);
 
-    RateLimiter::clear($this->generateThrottleKey($request));
+    RateLimiter::clear($this->getThrottleKey($request));
 
     $sessionToken = Str::uuid()->toString();
 
@@ -91,7 +91,7 @@ class AuthenticationService
     return redirect()->route('login')->with('status', __('Has cerrado sesión correctamente.'));
   }
 
-  private function generateThrottleKey(LoginRequest $request): string
+  private function getThrottleKey(LoginRequest $request): string
   {
     return strtolower((string) $request->correo) . '|' . $request->ip();
   }

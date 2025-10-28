@@ -1,7 +1,7 @@
 <!-- Navbar Component -->
 <nav class="navbar {{ isset($dashboard) ? 'navbar-dashboard' : '' }}">
     <a href="{{ route('landing') }}" class="navbar-brand">
-        <i class="fas fa-shield-alt"></i> SecuAccess
+        <i class="fas fa-shield-alt"></i> Te Acerco Salud
     </a>
     <button class="navbar-toggle" id="navbar-toggle">
         <i class="fas fa-bars"></i>
