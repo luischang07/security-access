@@ -31,16 +31,8 @@ class AuthenticationService
 
       $user = new UserEntity($userModel);
 
-      // Verificar si la cuenta está bloqueada o si puede intentar login
-      if (!$this->loginThrottleService->canAttemptLogin($user)) {
-        $remainingTime = $this->loginThrottleService->getTimeUntilUnlock($user);
-        $minutes = ceil($remainingTime / 60);
-
-        return redirect()->back()->withErrors([
-          'nip' => __('Cuenta bloqueada temporalmente. Intenta nuevamente en :minutes minuto(s).', [
-            'minutes' => $minutes
-          ]),
-        ])->onlyInput($request->only('correo'));
+      if (!$this->loginThrottleService->canAttemptLoginInTransaction($user)) {
+        return $this->handleAccountLockout($request, $user);
       }
 
       if (Hash::check($request->nip, $userModel->nip)) {
@@ -53,7 +45,6 @@ class AuthenticationService
 
   private function handleSuccessfulLogin(LoginRequest $request, $userModel, UserEntity $user): RedirectResponse
   {
-    // Resetear intentos de login en caso de éxito
     $this->loginThrottleService->recordSuccessfulLogin($user);
 
     $sessionToken = Str::uuid()->toString();
@@ -84,17 +75,25 @@ class AuthenticationService
 
   private function handleFailedLogin(LoginRequest $request, ?UserEntity $user = null): RedirectResponse
   {
-    // Si tenemos el usuario, registrar el intento fallido
     if ($user) {
-      $this->loginThrottleService->recordFailedAttempt($user);
-      $remainingAttempts = $this->loginThrottleService->getRemainingAttempts($user);
+      $result = $this->loginThrottleService->recordFailedAttemptInTransaction($user);
 
-      if ($remainingAttempts > 0) {
-        return redirect()->back()->withErrors([
-          'nip' => __('Las credenciales proporcionadas no coinciden con nuestros registros. Te quedan :attempts intento(s).', [
-            'attempts' => $remainingAttempts
-          ]),
-        ])->onlyInput($request->only('correo'));
+      if ($result['success']) {
+        $updatedUser = $result['user'];
+
+        if ($updatedUser->getLoginAttempts() >= 4) {
+          return $this->handleAccountLockout($request, $updatedUser);
+        }
+
+        $remainingAttempts = $this->loginThrottleService->getRemainingAttempts($updatedUser);
+
+        if ($remainingAttempts > 0) {
+          return redirect()->back()->withErrors([
+            'nip' => __('Las credenciales proporcionadas no coinciden con nuestros registros. Te quedan :attempts intento(s).', [
+              'attempts' => $remainingAttempts
+            ]),
+          ])->onlyInput($request->only('correo'));
+        }
       }
     }
 
@@ -120,5 +119,19 @@ class AuthenticationService
     request()->session()->regenerateToken();
 
     return redirect()->route('login')->with('status', __('Has cerrado sesión correctamente.'));
+  }
+
+  private function handleAccountLockout(LoginRequest $request, UserEntity $user): RedirectResponse
+  {
+
+    $formattedTime = $this->loginThrottleService->getFormattedTimeUntilUnlock($user);
+    $remainingSeconds = $this->loginThrottleService->getRemainingSecondsForJs($user);
+
+    return redirect()->back()->withErrors([
+      'nip' => __('Cuenta bloqueada temporalmente. Intenta nuevamente en :time.', [
+        'time' => $formattedTime
+      ]),
+    ])->withInput($request->only('correo'))
+      ->with('lockout_seconds', $remainingSeconds);
   }
 }

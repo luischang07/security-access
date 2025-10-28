@@ -81,10 +81,9 @@ class UserRepository
       $attempts = $user->login_attempts + 1;
       $updateData = ['login_attempts' => $attempts];
 
-      // Si alcanza 4 intentos, bloquear por 1 minuto
       if ($attempts >= 4) {
-        $updateData['locked_until'] = now()->addMinute();
-        $updateData['login_attempts_reset_at'] = now()->addMinute();
+        $updateData['locked_until'] = now()->addMinutes(1);
+        $updateData['login_attempts_reset_at'] = now()->addMinutes(1);
       }
 
       return $user->update($updateData);

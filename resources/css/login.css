@@ -79,12 +79,20 @@ button {
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease,
+        background-color 0.2s ease, opacity 0.2s ease;
 }
 
-button:hover {
+button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(29, 78, 216, 0.3);
+}
+
+button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .alert {
@@ -111,4 +119,9 @@ button:hover {
     align-items: center;
     gap: 0.5rem;
     margin-top: 1.5rem;
+}
+
+#countdown-timer {
+    font-weight: 700;
+    color: #dc2626;
 }
