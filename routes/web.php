@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\SessionResetController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'landing')->name('landing');
@@ -14,6 +15,10 @@ Route::middleware('guest')->group(function (): void {
   Route::post('/register', [RegisterController::class, 'register'])
     ->middleware('throttle:registration')
     ->name('register.attempt');
+
+  // Rutas para reset de sesión
+  Route::post('/session/reset/send', [SessionResetController::class, 'sendResetEmail'])->name('session.reset.send');
+  Route::get('/session/reset/{token}', [SessionResetController::class, 'resetSession'])->name('session.reset');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

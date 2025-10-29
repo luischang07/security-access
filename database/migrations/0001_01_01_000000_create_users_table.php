@@ -18,6 +18,7 @@ return new class extends Migration
       $table->timestamp('email_verified_at')->nullable();
       $table->string('nip'); // NIP hashed
       $table->string('session_token', 255)->nullable();
+      $table->timestamp('session_expires_at')->nullable();
       $table->timestamp('last_login_at')->nullable();
       $table->integer('login_attempts')->default(0);
       $table->timestamp('login_attempts_reset_at')->nullable();
@@ -40,6 +41,12 @@ return new class extends Migration
       $table->longText('payload');
       $table->integer('last_activity')->index();
     });
+
+    Schema::create('session_reset_tokens', function (Blueprint $table) {
+      $table->string('email')->primary();
+      $table->string('token');
+      $table->timestamp('created_at')->nullable();
+    });
   }
 
   /**
@@ -50,5 +57,6 @@ return new class extends Migration
     Schema::dropIfExists('users');
     Schema::dropIfExists('password_reset_tokens');
     Schema::dropIfExists('sessions');
+    Schema::dropIfExists('session_reset_tokens');
   }
 };

@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
       User::factory()->demo()->create();
     }
 
-    if (!User::where('email', 'test@example.com')->exists()) {
+    if (!User::where('email', 'twice@jypetwiceinfo.com')->exists()) {
       User::factory()->create([
-        'name' => 'Test User',
-        'email' => 'test@example.com',
+        'name' => 'Twice',
+        'email' => 'twice@jypetwiceinfo.com',
         'nip' => Hash::make('NipSeguro123!'),
         'session_token' => null,
         'last_login_at' => null,

@@ -35,6 +35,10 @@ class AuthenticationService
         return $this->handleAccountLockout($request, $user);
       }
 
+      if ($this->singleSessionManager->hasActiveSession($user)) {
+        return $this->handleActiveSessionError($request);
+      }
+
       if (Hash::check($request->nip, $userModel->nip)) {
         return $this->handleSuccessfulLogin($request, $userModel, $user);
       }
@@ -62,7 +66,7 @@ class AuthenticationService
       $userModel->save();
     }
 
-    $this->singleSessionManager->registerSession($user, $sessionToken);
+    $this->singleSessionManager->registerSession($user, $sessionToken, $remember);
 
     $request->session()->put('session_token', $sessionToken);
 
@@ -133,5 +137,13 @@ class AuthenticationService
       ]),
     ])->withInput($request->only('correo'))
       ->with('lockout_seconds', $remainingSeconds);
+  }
+
+  private function handleActiveSessionError(LoginRequest $request): RedirectResponse
+  {
+    return redirect()->back()->withErrors([
+      'correo' => __('Ya existe una sesión activa para esta cuenta. Puedes solicitar que se elimine enviando un correo a tu dirección de email.'),
+    ])->onlyInput($request->only('correo'))
+      ->with('show_session_reset', true);
   }
 }

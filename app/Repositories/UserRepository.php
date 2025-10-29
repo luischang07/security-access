@@ -40,22 +40,24 @@ class UserRepository
     return new UserEntity($userModel);
   }
 
-  public function updateSessionData(int $userId, ?string $sessionToken, ?\DateTime $lastLoginAt): bool
+  public function updateSessionData(int $userId, ?string $sessionToken, ?\DateTime $lastLoginAt, ?\DateTime $sessionExpiresAt = null): bool
   {
     return User::where('id', $userId)
       ->update([
         'session_token' => $sessionToken,
+        'session_expires_at' => $sessionExpiresAt,
         'last_login_at' => $lastLoginAt,
       ]) > 0;
   }
 
-  public function updateSessionDataWithLock(int $userId, ?string $sessionToken, ?\DateTime $lastLoginAt): bool
+  public function updateSessionDataWithLock(int $userId, ?string $sessionToken, ?\DateTime $lastLoginAt, ?\DateTime $sessionExpiresAt = null): bool
   {
-    return DB::transaction(function () use ($userId, $sessionToken, $lastLoginAt) {
+    return DB::transaction(function () use ($userId, $sessionToken, $lastLoginAt, $sessionExpiresAt) {
       return User::where('id', $userId)
         ->lockForUpdate()
         ->update([
           'session_token' => $sessionToken,
+          'session_expires_at' => $sessionExpiresAt,
           'last_login_at' => $lastLoginAt,
         ]) > 0;
     });
@@ -66,7 +68,10 @@ class UserRepository
     return DB::transaction(function () use ($userId) {
       return User::where('id', $userId)
         ->lockForUpdate()
-        ->update(['session_token' => null]) > 0;
+        ->update([
+          'session_token' => null,
+          'session_expires_at' => null
+        ]) > 0;
     });
   }
 

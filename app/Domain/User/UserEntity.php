@@ -12,6 +12,7 @@ class UserEntity
   private string $email;
   private string $nip;
   private ?string $sessionToken;
+  private ?Carbon $sessionExpiresAt;
   private ?Carbon $lastLoginAt;
   private ?Carbon $emailVerifiedAt;
   private int $loginAttempts;
@@ -27,6 +28,7 @@ class UserEntity
     $this->email = $user->email;
     $this->nip = $user->nip;
     $this->sessionToken = $user->session_token;
+    $this->sessionExpiresAt = $user->session_expires_at;
     $this->lastLoginAt = $user->last_login_at;
     $this->emailVerifiedAt = $user->email_verified_at;
     $this->loginAttempts = $user->login_attempts ?? 0;
@@ -59,6 +61,11 @@ class UserEntity
   public function getSessionToken(): ?string
   {
     return $this->sessionToken;
+  }
+
+  public function getSessionExpiresAt(): ?Carbon
+  {
+    return $this->sessionExpiresAt;
   }
 
   public function getLastLoginAt(): ?Carbon
@@ -101,6 +108,11 @@ class UserEntity
     $this->sessionToken = $token;
   }
 
+  public function setSessionExpiresAt(?Carbon $expiresAt): void
+  {
+    $this->sessionExpiresAt = $expiresAt;
+  }
+
   public function setLastLoginAt(?Carbon $lastLoginAt): void
   {
     $this->lastLoginAt = $lastLoginAt;
@@ -123,7 +135,14 @@ class UserEntity
 
   public function hasActiveSession(): bool
   {
-    return !is_null($this->sessionToken);
+    return !is_null($this->sessionToken) &&
+      !is_null($this->sessionExpiresAt) &&
+      $this->sessionExpiresAt->isFuture();
+  }
+
+  public function isSessionExpired(): bool
+  {
+    return !is_null($this->sessionExpiresAt) && $this->sessionExpiresAt->isPast();
   }
 
   public function isEmailVerified(): bool
@@ -154,6 +173,7 @@ class UserEntity
       'email' => $this->email,
       'nip' => $this->nip,
       'session_token' => $this->sessionToken,
+      'session_expires_at' => $this->sessionExpiresAt,
       'last_login_at' => $this->lastLoginAt,
       'email_verified_at' => $this->emailVerifiedAt,
       'login_attempts' => $this->loginAttempts,

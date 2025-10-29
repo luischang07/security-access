@@ -6,6 +6,11 @@
     @vite('resources/css/login.css')
 @endpush
 
+@push('scripts')
+    @vite('resources/js/lockout-countdown.js')
+    @vite('resources/js/email-sync.js')
+@endpush
+
 @section('content')
     <div class="container">
         <h1>Bienvenido de nuevo</h1>
@@ -19,6 +24,8 @@
             <div class="alert" id="error-message">
                 @if ($errors->has('session'))
                     {{ $errors->first('session') }}
+                @elseif($errors->has('session_reset'))
+                    {{ $errors->first('session_reset') }}
                 @elseif($errors->has('nip') && session('lockout_seconds'))
                     <span id="lockout-message">
                         Cuenta bloqueada temporalmente. Intenta nuevamente en <span id="countdown-timer"></span>.
@@ -29,12 +36,33 @@
             </div>
         @endif
 
+        @if (session('show_session_reset'))
+            <div class="session-reset-section">
+                <h3>🔐 Sesión Activa Detectada</h3>
+                <p>Si quieres eliminar tu sesión activa para poder iniciar sesión desde este dispositivo, haz clic en el
+                    botón de abajo:</p>
+
+                <form method="POST" action="{{ route('session.reset.send') }}" style="margin: 15px 0;"
+                    id="session-reset-form">
+                    @csrf
+                    <input type="hidden" name="email" id="hidden-email" value="{{ old('correo') }}">
+                    <button type="submit" class="reset-session-btn">
+                        📧 Enviar email para eliminar sesión
+                    </button>
+                </form>
+
+                <p><small>Se enviará un correo a <strong><span id="email-display">{{ old('correo') }}</span></strong> con un
+                        enlace para eliminar tu sesión
+                        activa.</small></p>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login.attempt') }}">
             @csrf
             <div>
                 <label for="correo">Correo electrónico</label>
-                <input id="correo" type="email" name="correo" value="{{ old('correo') }}" required autocomplete="email"
-                    autofocus>
+                <input id="correo" type="email" name="correo" value="{{ old('correo') }}" required
+                    autocomplete="email" autofocus>
             </div>
             <div>
                 <label for="nip">NIP</label>
@@ -53,66 +81,11 @@
     @if (session('lockout_seconds'))
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                let remainingSeconds = {{ session('lockout_seconds') }};
-                const countdownElement = document.getElementById('countdown-timer');
-                const lockoutMessage = document.getElementById('lockout-message');
-                const submitButton = document.querySelector('button[type="submit"]');
-                const emailInput = document.getElementById('correo');
-                const lockedEmail = '{{ old('correo') }}'; // El email que está bloqueado
-
-                if (remainingSeconds > 0 && countdownElement) {
-                    function checkIfShouldDisable() {
-                        const currentEmail = emailInput ? emailInput.value : '';
-                        const shouldDisable = currentEmail === lockedEmail && remainingSeconds > 0;
-
-                        if (submitButton) {
-                            submitButton.disabled = shouldDisable;
-                            submitButton.textContent = shouldDisable ? 'Cuenta bloqueada' : 'Ingresar';
-                        }
-                    }
-
-                    function updateCountdown() {
-                        if (remainingSeconds <= 0) {
-                            if (submitButton) {
-                                submitButton.disabled = false;
-                                submitButton.textContent = 'Ingresar';
-                            }
-                            if (lockoutMessage) {
-                                lockoutMessage.innerHTML =
-                                    'Ya puedes intentar iniciar sesión nuevamente con este correo.';
-                                lockoutMessage.style.color = '#28a745';
-                            }
-                            return;
-                        }
-
-                        const minutes = Math.floor(remainingSeconds / 60);
-                        const seconds = remainingSeconds % 60;
-
-                        let timeText;
-                        if (minutes > 0) {
-                            timeText = minutes + ' minuto(s)' + (seconds > 0 ? ' y ' + seconds + ' segundo(s)' : '');
-                        } else {
-                            timeText = seconds + ' segundo(s)';
-                        }
-
-                        countdownElement.textContent = timeText;
-                        remainingSeconds--;
-
-                        checkIfShouldDisable();
-
-                        setTimeout(updateCountdown, 1000);
-                    }
-
-                    if (emailInput) {
-                        emailInput.addEventListener('input', checkIfShouldDisable);
-                        emailInput.addEventListener('keyup', checkIfShouldDisable);
-                    }
-
-                    checkIfShouldDisable();
-
-                    updateCountdown();
-                }
+                const remainingSeconds = {{ session('lockout_seconds') }};
+                const lockedEmail = '{{ old('correo') }}';
+                initLockoutCountdown(remainingSeconds, lockedEmail);
             });
         </script>
     @endif
+
 @endsection

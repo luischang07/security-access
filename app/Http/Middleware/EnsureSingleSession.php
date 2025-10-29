@@ -23,6 +23,18 @@ class EnsureSingleSession
       $user = $this->userRepository->findById($authUser->id);
 
       if ($user) {
+        if ($user->isSessionExpired()) {
+          $this->singleSessionManager->clearSession($user);
+          Auth::logout();
+
+          $request->session()->invalidate();
+          $request->session()->regenerateToken();
+
+          return redirect()->route('login')->withErrors([
+            'session' => __('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'),
+          ]);
+        }
+
         $currentToken = $user->getSessionToken();
         $sessionToken = $request->session()->get('session_token');
 

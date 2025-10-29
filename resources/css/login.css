@@ -125,3 +125,42 @@ button:disabled {
     font-weight: 700;
     color: #dc2626;
 }
+
+.session-reset-section {
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.session-reset-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #92400e;
+    font-size: 1.25rem;
+}
+
+.session-reset-section p {
+    margin: 0.75rem 0;
+    color: #92400e;
+}
+
+.reset-session-btn {
+    background-color: #f59e0b;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: auto;
+    font-size: 0.95rem;
+}
+
+.reset-session-btn:hover {
+    background-color: #d97706;
+    transform: none;
+    box-shadow: none;
+}
