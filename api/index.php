@@ -21,6 +21,8 @@ foreach ($tmpDirs as $dir) {
 
 // Fix package discovery cache for production (remove dev packages)
 $packagesCache = __DIR__ . '/../bootstrap/cache/packages.php';
+$tmpPackagesCache = '/tmp/bootstrap/cache/packages.php';
+
 if (file_exists($packagesCache)) {
   $packages = include $packagesCache;
 
@@ -32,16 +34,20 @@ if (file_exists($packagesCache)) {
     }
   }
 
-  // Write cleaned packages back
-  file_put_contents($packagesCache, '<?php return ' . var_export($packages, true) . ';');
+  // Write cleaned packages to /tmp (writable location)
+  file_put_contents($tmpPackagesCache, '<?php return ' . var_export($packages, true) . ';');
+  
+  // Also copy services.php to /tmp
+  $servicesCache = __DIR__ . '/../bootstrap/cache/services.php';
+  $tmpServicesCache = '/tmp/bootstrap/cache/services.php';
+  if (file_exists($servicesCache)) {
+    copy($servicesCache, $tmpServicesCache);
+  }
 }
 
-// Create a writable bootstrap/cache if it doesn't exist or isn't writable
-$bootstrapCache = __DIR__ . '/../bootstrap/cache';
-if (!is_writable($bootstrapCache)) {
-  // Use /tmp for bootstrap cache
-  define('LARAVEL_STORAGE_PATH', '/tmp/storage');
-}
+// Override Laravel's bootstrap path to use /tmp
+$_ENV['APP_BOOTSTRAP_CACHE'] = '/tmp/bootstrap/cache';
+putenv('APP_BOOTSTRAP_CACHE=/tmp/bootstrap/cache');
 
 // Forward Vercel requests to public/index.php
 require_once __DIR__ . '/../public/index.php';
