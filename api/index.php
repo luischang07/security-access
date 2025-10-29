@@ -36,7 +36,7 @@ if (file_exists($packagesCache)) {
 
   // Write cleaned packages to /tmp (writable location)
   file_put_contents($tmpPackagesCache, '<?php return ' . var_export($packages, true) . ';');
-  
+
   // Also copy services.php to /tmp
   $servicesCache = __DIR__ . '/../bootstrap/cache/services.php';
   $tmpServicesCache = '/tmp/bootstrap/cache/services.php';
