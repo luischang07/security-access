@@ -31,7 +31,6 @@ class CheckMailtrapStatus extends Command
 
     try {
       $this->info("📡 Conectando a Mailtrap API...");
-      $mailtrap = new MailtrapClient(new Config($token));
 
       // Intentar obtener información de la cuenta
       $this->info("✅ Conexión exitosa con Mailtrap API");
