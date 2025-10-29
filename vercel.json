@@ -2,8 +2,9 @@
   "version": 2,
   "env": {
     "APP_ENV": "production",
-    "APP_DEBUG": "true",
+    "APP_DEBUG": "false",
     "APP_URL": "https://security-access.vercel.app",
+    "ASSET_URL": "https://security-access.vercel.app",
     "APP_CONFIG_CACHE": "/tmp/config.php",
     "APP_ROUTES_CACHE": "/tmp/routes.php",
     "APP_EVENTS_CACHE": "/tmp/events.php",
