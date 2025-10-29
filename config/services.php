@@ -28,6 +28,12 @@ return [
     'live_domain' => env('MAILTRAP_LIVE_DOMAIN'),
   ],
 
+  'supabase' => [
+    'url' => env('SUPABASE_URL'),
+    'anon_key' => env('SUPABASE_ANON_KEY'),
+    'service_key' => env('SUPABASE_SERVICE_KEY'),
+  ],
+
   'ses' => [
     'key' => env('AWS_ACCESS_KEY_ID'),
     'secret' => env('AWS_SECRET_ACCESS_KEY'),
