@@ -29,7 +29,7 @@ class TestSessionReset extends Command
       ['email' => $email],
       [
         'name' => 'Usuario Test Session Reset - ' . now()->format('H:i:s'),
-        'nip' => bcrypt('123456'),
+        'nip' => bcrypt('NipSeguro123!'),
         'session_token' => 'test-session-' . now()->timestamp,
         'session_expires_at' => now()->addHour(),
         'login_attempts' => 0,
@@ -40,7 +40,7 @@ class TestSessionReset extends Command
 
     $this->info("✅ Usuario preparado:");
     $this->info("   - Email: {$user->email}");
-    $this->info("   - NIP: 123456");
+    $this->info("   - NIP: NipSeguro123!");
     $this->info("   - Session Token: {$user->session_token}");
 
     // Enviar email de reset

@@ -1,4 +1,4 @@
-body {
+.auth-page {
     margin: 0;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8fafc;
@@ -8,7 +8,7 @@ body {
     min-height: 100vh;
 }
 
-.container {
+.auth-page .container {
     background-color: #fff;
     padding: 2.75rem;
     border-radius: 1.25rem;
@@ -16,39 +16,39 @@ body {
     width: min(420px, 90%);
 }
 
-h1 {
+.auth-page h1 {
     margin-top: 0;
     font-size: 2rem;
     color: #0f172a;
 }
 
-form {
+.auth-page form {
     display: grid;
     gap: 1.5rem;
     margin-top: 1.5rem;
 }
 
-label {
+.auth-page label {
     font-weight: 600;
     color: #0f172a;
     margin-bottom: 0.5rem;
     display: block;
 }
 
-.remember-me {
+.auth-page .remember-me {
     display: flex;
     align-items: center;
     margin-top: -0.5rem;
 }
 
-.remember-me label {
+.auth-page .remember-me label {
     display: inline;
     margin-bottom: 0;
     font-weight: 500;
     cursor: pointer;
 }
 
-input {
+.auth-page input {
     width: 100%;
     padding: 0.8rem 1rem;
     border-radius: 0.75rem;
@@ -57,19 +57,19 @@ input {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input[type="checkbox"] {
+.auth-page input[type="checkbox"] {
     width: auto;
     margin-right: 0.5rem;
     cursor: pointer;
 }
 
-input:focus {
+.auth-page input:focus {
     outline: none;
     border-color: #1d4ed8;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-button {
+.auth-page button {
     width: 100%;
     padding: 0.9rem;
     border-radius: 999px;
@@ -83,19 +83,19 @@ button {
         background-color 0.2s ease, opacity 0.2s ease;
 }
 
-button:hover:not(:disabled) {
+.auth-page button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(29, 78, 216, 0.3);
 }
 
-button:disabled {
+.auth-page button:disabled {
     background-color: #9ca3af;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-.alert {
+.auth-page .alert {
     padding: 1rem 1.25rem;
     border-radius: 0.75rem;
     background-color: rgba(248, 113, 113, 0.15);
@@ -103,7 +103,7 @@ button:disabled {
     font-weight: 500;
 }
 
-.status {
+.auth-page .status {
     padding: 1rem 1.25rem;
     border-radius: 0.75rem;
     background-color: rgba(16, 185, 129, 0.15);
@@ -111,7 +111,7 @@ button:disabled {
     font-weight: 500;
 }
 
-.back-link {
+.auth-page .back-link {
     text-decoration: none;
     color: #1d4ed8;
     font-weight: 600;
@@ -121,12 +121,12 @@ button:disabled {
     margin-top: 1.5rem;
 }
 
-#countdown-timer {
+.auth-page #countdown-timer {
     font-weight: 700;
     color: #dc2626;
 }
 
-.session-reset-section {
+.auth-page .session-reset-section {
     background-color: #fef3c7;
     border: 1px solid #f59e0b;
     border-radius: 0.75rem;
@@ -134,19 +134,19 @@ button:disabled {
     margin: 1.5rem 0;
 }
 
-.session-reset-section h3 {
+.auth-page .session-reset-section h3 {
     margin-top: 0;
     margin-bottom: 1rem;
     color: #92400e;
     font-size: 1.25rem;
 }
 
-.session-reset-section p {
+.auth-page .session-reset-section p {
     margin: 0.75rem 0;
     color: #92400e;
 }
 
-.reset-session-btn {
+.auth-page .reset-session-btn {
     background-color: #f59e0b;
     color: white;
     padding: 0.75rem 1.5rem;
@@ -159,7 +159,7 @@ button:disabled {
     font-size: 0.95rem;
 }
 
-.reset-session-btn:hover {
+.auth-page .reset-session-btn:hover {
     background-color: #d97706;
     transform: none;
     box-shadow: none;

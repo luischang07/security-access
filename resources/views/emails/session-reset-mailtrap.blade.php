@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ app()->getLocale() }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eliminación de Sesión Activa</title>
+    <title>{{ __('auth.email_session_reset.title') }}</title>
     <!--[if mso]>
     <noscript>
         <xml>
@@ -23,57 +23,55 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <h1>🔐 Eliminación de Sesión</h1>
+            <h1>{{ __('auth.email_session_reset.header_short') }}</h1>
         </div>
 
         <!-- Content -->
         <div class="content">
             <div class="greeting">
-                Hola {{ $user->getName() }},
+                {{ __('auth.email_session_reset.greeting_simple', ['name' => $user->getName()]) }}
             </div>
 
             <div class="message">
-                Hemos detectado que intentaste iniciar sesión desde un <strong>nuevo dispositivo</strong>,
-                pero ya tienes una sesión activa en otro dispositivo.
+                {!! __('auth.email_session_reset.detected_strong') !!}
             </div>
 
             <div class="message">
-                Si deseas cerrar tu sesión actual para poder iniciar sesión desde el nuevo dispositivo,
-                haz clic en el siguiente botón:
+                {{ __('auth.email_session_reset.instruction') }}
             </div>
 
             <!-- Call to Action -->
             <div class="cta-container">
                 <a href="{{ $url }}" class="cta-button">
-                    🗑️ Eliminar Sesión Activa
+                    {{ __('auth.email_session_reset.button_emoji') }}
                 </a>
             </div>
 
             <!-- Warning Box -->
             <div class="warning-box">
                 <div class="warning-title">
-                    ⚠️ Información Importante
+                    {{ __('auth.email_session_reset.warning_title_info') }}
                 </div>
                 <ul class="warning-list">
-                    <li>Al hacer clic, se cerrará tu sesión en <strong>todos los dispositivos</strong></li>
-                    <li>Tendrás que volver a iniciar sesión</li>
-                    <li>Este enlace es válido por <strong>{{ $expiresIn }} minutos</strong></li>
-                    <li>Si no solicitaste esto, puedes ignorar este correo</li>
+                    <li>{!! __('auth.email_session_reset.warning_items.all_devices') !!}</li>
+                    <li>{{ __('auth.email_session_reset.warning_items.relogin') }}</li>
+                    <li>{!! __('auth.email_session_reset.warning_items.validity', ['minutes' => $expiresIn]) !!}</li>
+                    <li>{{ __('auth.email_session_reset.warning_items.ignore') }}</li>
                 </ul>
             </div>
 
             <!-- Stats (only visible in development) -->
             @if (config('app.debug'))
                 <div class="stats">
-                    📊 <strong>Información de desarrollo:</strong><br>
-                    Usuario ID: {{ $user->getId() }}<br>
-                    Timestamp: {{ now()->format('Y-m-d H:i:s') }}<br>
-                    Entorno: {{ config('app.env') }}
+                    {!! __('auth.email_session_reset.dev_info') !!}<br>
+                    {{ __('auth.email_session_reset.dev_user_id', ['id' => $user->getId()]) }}<br>
+                    {{ __('auth.email_session_reset.dev_timestamp', ['timestamp' => now()->format('Y-m-d H:i:s')]) }}<br>
+                    {{ __('auth.email_session_reset.dev_environment', ['env' => config('app.env')]) }}
                 </div>
             @endif
 
             <div class="message">
-                Si tienes problemas con el botón, copia y pega esta URL en tu navegador:
+                {{ __('auth.email_session_reset.url_instruction') }}
             </div>
 
             <div class="url-fallback">
@@ -84,13 +82,13 @@
         <!-- Footer -->
         <div class="footer">
             <div class="footer-text">
-                <strong>Sistema de Seguridad</strong>
+                <strong>{{ __('auth.email_session_reset.footer_title') }}</strong>
             </div>
             <div class="footer-text">
-                Este correo fue enviado automáticamente. Si no solicitaste esta acción, tu cuenta permanece segura.
+                {{ __('auth.email_session_reset.footer_auto') }} {{ __('auth.email_session_reset.footer_secure') }}
             </div>
             <div class="footer-text">
-                © {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.
+                {{ __('auth.email_session_reset.copyright', ['year' => date('Y'), 'app_name' => config('app.name')]) }}
             </div>
         </div>
     </div>

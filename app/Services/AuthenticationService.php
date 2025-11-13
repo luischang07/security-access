@@ -68,11 +68,12 @@ class AuthenticationService
 
     $this->singleSessionManager->registerSession($user, $sessionToken, $remember);
 
-    $request->session()->put('session_token', $sessionToken);
-
     Auth::loginUsingId($user->getId(), $remember);
 
     $request->session()->regenerate();
+    
+    // Guardar el session_token DESPUÉS de regenerar la sesión
+    $request->session()->put('session_token', $sessionToken);
 
     return redirect()->route('landing')->with('status', __('Bienvenido de nuevo.'));
   }

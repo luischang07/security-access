@@ -1,4 +1,4 @@
-body {
+.auth-page {
     margin: 0;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8fafc;
@@ -8,7 +8,7 @@ body {
     min-height: 100vh;
 }
 
-.container {
+.auth-page .container {
     background-color: #fff;
     padding: 2.75rem;
     border-radius: 1.25rem;
@@ -16,36 +16,36 @@ body {
     width: min(480px, 90%);
 }
 
-h1 {
+.auth-page h1 {
     margin-top: 0;
     font-size: 2rem;
     color: #0f172a;
 }
 
-form {
+.auth-page form {
     display: grid;
     gap: 1.5rem;
     margin-top: 1.5rem;
 }
 
-label {
+.auth-page label {
     font-weight: 600;
     color: #0f172a;
     margin-bottom: 0.5rem;
     display: block;
 }
 
-.form-group {
+.auth-page .form-group {
     margin-bottom: 1rem;
 }
 
-.form-group p {
+.auth-page .form-group p {
     margin-top: 0.25rem;
     font-size: 0.875rem;
     color: #64748b;
 }
 
-input {
+.auth-page input {
     width: 100%;
     padding: 0.8rem 1rem;
     border-radius: 0.75rem;
@@ -54,23 +54,23 @@ input {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus {
+.auth-page input:focus {
     outline: none;
     border-color: #1d4ed8;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-input.error {
+.auth-page input.error {
     border-color: #dc2626;
 }
 
-.error-message {
+.auth-page .error-message {
     color: #dc2626;
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
 
-button {
+.auth-page button {
     width: 100%;
     padding: 0.9rem;
     border-radius: 999px;
@@ -83,12 +83,12 @@ button {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-button:hover {
+.auth-page button:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(29, 78, 216, 0.3);
 }
 
-.alert {
+.auth-page .alert {
     padding: 1rem 1.25rem;
     border-radius: 0.75rem;
     background-color: rgba(248, 113, 113, 0.15);
@@ -97,7 +97,7 @@ button:hover {
     margin-bottom: 1rem;
 }
 
-.status {
+.auth-page .status {
     padding: 1rem 1.25rem;
     border-radius: 0.75rem;
     background-color: rgba(16, 185, 129, 0.15);
@@ -106,14 +106,14 @@ button:hover {
     margin-bottom: 1rem;
 }
 
-.links {
+.auth-page .links {
     margin-top: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.back-link {
+.auth-page .back-link {
     text-decoration: none;
     color: #1d4ed8;
     font-weight: 600;
@@ -122,7 +122,7 @@ button:hover {
     gap: 0.5rem;
 }
 
-.login-link {
+.auth-page .login-link {
     text-decoration: none;
     color: #1d4ed8;
     font-weight: 600;
