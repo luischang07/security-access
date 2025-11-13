@@ -28,7 +28,7 @@ class RegisterRequest extends FormRequest
         'max:255',
         'unique:users',
       ],
-      'nip' => [
+      'password' => [
         'required',
         'string',
         'min:8',
@@ -48,10 +48,10 @@ class RegisterRequest extends FormRequest
       'email.regex' => 'El correo no cumple con el patrón requerido.',
       'email.max' => 'El correo electrónico no puede exceder los 255 caracteres.',
       'email.unique' => 'Este correo electrónico ya está registrado.',
-      'nip.required' => 'El NIP es obligatorio.',
-      'nip.min' => 'El NIP debe tener al menos 8 caracteres.',
-      'nip.regex' => 'El NIP debe tener al menos una minúscula, una mayúscula, un número y un símbolo.',
-      'nip.confirmed' => 'La confirmación del NIP no coincide.',
+      'password.required' => 'La contraseña es obligatoria.',
+      'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+      'password.regex' => 'La contraseña debe tener al menos una minúscula, una mayúscula, un número y un símbolo.',
+      'password.confirmed' => 'La confirmación de la contraseña no coincide.',
     ];
   }
 }

@@ -12,17 +12,16 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('users', function (Blueprint $table) {
-      $table->id();
-      $table->string('name');
-      $table->string('email')->unique();
+      $table->id('user_id'); // Cambiar a user_id como PK
+      $table->string('nombre', 100); // Nuevo
+      $table->string('correo', 100)->unique(); // Cambiar de email a correo
+      $table->string('direccion', 255); // Nuevo
+      $table->string('password', 255); // Mantener password
       $table->timestamp('email_verified_at')->nullable();
-      $table->string('nip'); // NIP hashed
       $table->string('session_token', 255)->nullable();
       $table->timestamp('session_expires_at')->nullable();
-      $table->timestamp('last_login_at')->nullable();
-      $table->integer('login_attempts')->default(0);
-      $table->timestamp('login_attempts_reset_at')->nullable();
-      $table->timestamp('locked_until')->nullable();
+      $table->timestamp('ultimo_login')->nullable();
+      $table->timestamp('ultimo_cierre_sesion')->nullable();
       $table->rememberToken();
       $table->timestamps();
     });

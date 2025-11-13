@@ -20,7 +20,7 @@ class LoginRequest extends FormRequest
         'regex:/^[\w\.-]+@[\w\.-]+\.[\w]{2,4}$/i',
         'max:255',
       ],
-      'nip' => [
+      'password' => [
         'required',
         'string',
         'min:8',
@@ -35,9 +35,9 @@ class LoginRequest extends FormRequest
       'correo.required' => 'El correo electrónico es obligatorio.',
       'correo.email' => 'El correo electrónico debe tener un formato válido.',
       'correo.regex' => 'El correo no cumple con el patrón requerido.',
-      'nip.required' => 'El NIP es obligatorio.',
-      'nip.min' => 'El NIP debe tener al menos 8 caracteres.',
-      'nip.regex' => 'El NIP debe tener al menos una mayúscula, un número y un símbolo.',
+      'password.required' => 'La contraseña es obligatoria.',
+      'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+      'password.regex' => 'La contraseña debe tener al menos una mayúscula, un número y un símbolo.',
     ];
   }
 }

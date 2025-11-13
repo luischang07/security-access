@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -19,41 +18,26 @@ class UserFactory extends Factory
   public function definition(): array
   {
     return [
-      'name' => fake()->name(),
-      'email' => fake()->unique()->safeEmail(),
-      'email_verified_at' => now(),
-      'nip' => Hash::make('NipSeguro123!'),
+      'nombre' => fake()->name(),
+      'correo' => fake()->unique()->safeEmail(),
+      'direccion' => fake()->address(),
+      'password' => Hash::make('password'),
       'session_token' => null,
-      'last_login_at' => null,
-      'login_attempts' => 0,
-      'login_attempts_reset_at' => null,
-      'locked_until' => null,
-      'remember_token' => Str::random(10),
+      'ultimo_login' => null,
+      'ultimo_cierre_sesion' => null,
     ];
   }
 
   public function demo(): static
   {
     return $this->state(fn(array $attributes) => [
-      'name' => 'Demo User',
-      'email' => 'demo@example.com',
-      'email_verified_at' => now(),
-      'nip' => Hash::make('NipDemo123!'),
+      'nombre' => 'Demo User',
+      'correo' => 'demo@example.com',
+      'direccion' => '123 Demo Street',
+      'password' => Hash::make('password'),
       'session_token' => null,
-      'last_login_at' => null,
-      'login_attempts' => 0,
-      'login_attempts_reset_at' => null,
-      'locked_until' => null,
-    ]);
-  }
-
-  /**
-   * Indicate that the model's email address should be unverified.
-   */
-  public function unverified(): static
-  {
-    return $this->state(fn(array $attributes) => [
-      'email_verified_at' => null,
+      'ultimo_login' => null,
+      'ultimo_cierre_sesion' => null,
     ]);
   }
 }

@@ -28,7 +28,7 @@ class RegistrationService
       $userData = [
         'name' => $request->name,
         'email' => $request->email,
-        'nip' => $request->nip, // Will be auto-hashed by the model
+        'password' => $request->password, // Will be auto-hashed by the model
         'session_token' => null,
         'email_verified_at' => null,
       ];

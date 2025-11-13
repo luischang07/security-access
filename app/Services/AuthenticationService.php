@@ -39,7 +39,7 @@ class AuthenticationService
         return $this->handleActiveSessionError($request);
       }
 
-      if (Hash::check($request->nip, $userModel->nip)) {
+      if (Hash::check($request->password, $userModel->password)) {
         return $this->handleSuccessfulLogin($request, $userModel, $user);
       }
 
@@ -71,7 +71,7 @@ class AuthenticationService
     Auth::loginUsingId($user->getId(), $remember);
 
     $request->session()->regenerate();
-    
+
     // Guardar el session_token DESPUÉS de regenerar la sesión
     $request->session()->put('session_token', $sessionToken);
 
@@ -94,7 +94,7 @@ class AuthenticationService
 
         if ($remainingAttempts > 0) {
           return redirect()->back()->withErrors([
-            'nip' => __('Las credenciales proporcionadas no coinciden con nuestros registros. Te quedan :attempts intento(s).', [
+            'password' => __('Las credenciales proporcionadas no coinciden con nuestros registros. Te quedan :attempts intento(s).', [
               'attempts' => $remainingAttempts
             ]),
           ])->onlyInput($request->only('correo'));
@@ -103,7 +103,7 @@ class AuthenticationService
     }
 
     return redirect()->back()->withErrors([
-      'nip' => __('Las credenciales proporcionadas no coinciden con nuestros registros.'),
+      'password' => __('Las credenciales proporcionadas no coinciden con nuestros registros.'),
     ])->onlyInput($request->only('correo'));
   }
 
@@ -133,7 +133,7 @@ class AuthenticationService
     $remainingSeconds = $this->loginThrottleService->getRemainingSecondsForJs($user);
 
     return redirect()->back()->withErrors([
-      'nip' => __('Cuenta bloqueada temporalmente. Intenta nuevamente en :time.', [
+      'password' => __('Cuenta bloqueada temporalmente. Intenta nuevamente en :time.', [
         'time' => $formattedTime
       ]),
     ])->withInput($request->only('correo'))

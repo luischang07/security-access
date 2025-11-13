@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -12,21 +13,22 @@ class User extends Authenticatable
   /** @use HasFactory<\Database\Factories\UserFactory> */
   use HasFactory, Notifiable;
 
+  protected $primaryKey = 'user_id';
+
   /**
    * The attributes that are mass assignable.
    *
    * @var list<string>
    */
   protected $fillable = [
-    'name',
-    'email',
-    'nip',
+    'nombre',
+    'correo',
+    'direccion',
+    'password',
     'session_token',
     'session_expires_at',
-    'last_login_at',
-    'login_attempts',
-    'login_attempts_reset_at',
-    'locked_until',
+    'ultimo_login',
+    'ultimo_cierre_sesion',
   ];
 
   /**
@@ -35,7 +37,7 @@ class User extends Authenticatable
    * @var list<string>
    */
   protected $hidden = [
-    'nip',
+    'password',
     'session_token',
     'remember_token',
   ];
@@ -49,11 +51,30 @@ class User extends Authenticatable
   {
     return [
       'email_verified_at' => 'datetime',
-      'nip' => 'hashed',
-      'last_login_at' => 'datetime',
+      'password' => 'hashed',
+      'ultimo_login' => 'datetime',
+      'ultimo_cierre_sesion' => 'datetime',
       'session_expires_at' => 'datetime',
-      'login_attempts_reset_at' => 'datetime',
-      'locked_until' => 'datetime',
     ];
+  }
+
+  public function administrador(): HasOne
+  {
+    return $this->hasOne(Administrador::class, 'user_id', 'user_id');
+  }
+
+  public function paciente(): HasOne
+  {
+    return $this->hasOne(Paciente::class, 'user_id', 'user_id');
+  }
+
+  public function empleado(): HasOne
+  {
+    return $this->hasOne(Empleado::class, 'user_id', 'user_id');
+  }
+
+  public function notificaciones()
+  {
+    return $this->hasMany(Notificacion::class, 'user_id', 'user_id');
   }
 }
