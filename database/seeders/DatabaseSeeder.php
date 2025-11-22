@@ -132,7 +132,7 @@ class DatabaseSeeder extends Seeder
           'cadena_id' => $sucursal->cadena_id,
           'sucursal_id' => $sucursal->sucursal_id,
           'medicamento_id' => $medId,
-          'cantidad' => rand(5, 20),
+          'stock_disponible' => rand(5, 20),
         ]);
       }
     }
@@ -160,9 +160,9 @@ class DatabaseSeeder extends Seeder
 
     // Create Lineas Pedidos
     DB::table('lineas_pedidos')->insert([
-      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 1, 'medicamento_id' => 1, 'cantidad_solicitada' => 2, 'precio_unitario' => 50.00],
-      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 2, 'medicamento_id' => 2, 'cantidad_solicitada' => 3, 'precio_unitario' => 75.00],
-      ['folio_pedido' => $pedido2, 'id_liena_pedido' => 1, 'medicamento_id' => 3, 'cantidad_solicitada' => 1, 'precio_unitario' => 180.00],
+      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 1, 'medicamento_id' => 1, 'precio_unitario' => 50.00],
+      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 2, 'medicamento_id' => 2, 'precio_unitario' => 75.00],
+      ['folio_pedido' => $pedido2, 'id_liena_pedido' => 1, 'medicamento_id' => 3, 'precio_unitario' => 180.00],
     ]);
 
     // Create Detalle Lineas Pedidos

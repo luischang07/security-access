@@ -9,7 +9,7 @@ class InventarioFactory extends Factory
   public function definition(): array
   {
     return [
-      'cantidad' => $this->faker->numberBetween(0, 500),
+      'stock_disponible' => $this->faker->numberBetween(0, 500),
     ];
   }
 }
