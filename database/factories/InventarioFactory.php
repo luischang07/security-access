@@ -10,6 +10,9 @@ class InventarioFactory extends Factory
   {
     return [
       'stock_disponible' => $this->faker->numberBetween(0, 500),
+      'minimo' => $this->faker->numberBetween(5, 20),
+      'maximo' => $this->faker->numberBetween(5, 20),
+      'precio_unitario' => $this->faker->numberBetween(10, 1000),
     ];
   }
 }

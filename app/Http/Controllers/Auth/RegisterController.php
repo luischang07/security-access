@@ -26,6 +26,6 @@ class RegisterController extends Controller
   {
     $this->registrationService->register($request);
 
-    return redirect()->route('dashboard')->with('success', '¡Bienvenido! Tu cuenta ha sido creada exitosamente.');
+    return redirect()->route('patient.dashboard')->with('success', '¡Bienvenido! Tu cuenta ha sido creada exitosamente.');
   }
 }

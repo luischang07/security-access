@@ -8,6 +8,20 @@ use Illuminate\Support\Facades\DB;
 class PacienteRepository
 {
   /**
+   * Create a new patient record
+   *
+   * @param int $userId
+   * @return Paciente
+   */
+  public function create(int $userId): Paciente
+  {
+    return Paciente::create([
+      'user_id' => $userId,
+      'monto_penalizacion' => 0.00,
+    ]);
+  }
+
+  /**
    * Get total count of registered patients
    *
    * @return int

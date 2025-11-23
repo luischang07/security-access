@@ -16,7 +16,7 @@ class PedidoFactory extends Factory
       'fecha_entrega' => $estado === 'completado'
         ? $this->faker->dateTimeBetween($fechaPedido, 'now')
         : null,
-      'estado' => $estado,
+      'estatus' => $estado,
       'costo_total' => $this->faker->randomFloat(2, 10, 500),
     ];
   }

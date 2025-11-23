@@ -9,8 +9,8 @@ class DetalleLineaPedidoFactory extends Factory
   public function definition(): array
   {
     return [
-      'cantidad_asignada' => $this->faker->numberBetween(1, 5),
-      'cantidad_recolectada' => $this->faker->numberBetween(0, 5),
+      'cantidad_surtida' => $this->faker->numberBetween(0, 5),
+      'precio_unitario' => $this->faker->randomFloat(2, 10, 100),
     ];
   }
 }
