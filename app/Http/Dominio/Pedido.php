@@ -17,6 +17,9 @@ class Pedido{
     }
     public function asociarSucursalAPedido($sucursal){
         $this->sucursal=$sucursal;
-        
+    }
+    public function agregarMedicamento($medId,$cantidad){
+        $linea_pedido=new LineaPedido($medId,$cantidad);
+        array_push($this->lineas_pedido,$linea_pedido);
     }
 }   

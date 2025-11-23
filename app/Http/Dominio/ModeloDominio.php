@@ -16,4 +16,7 @@ class ModeloDominio
     public function asociarSucursalAPedido($sucursal){
         $this->pedido->asignarSucursal($this->sucursal);
     }
+    public function agregarMedicamento($medId,$cantidad){
+        $this->pedido->agregarMedicamento($medId,$cantidad);
+    }
 }

@@ -15,4 +15,7 @@ class GestionPedidoController extends Controller
     public function seleccionarSucursal($sucursal){
         $this->modeloDominio->asociarSucursalAPedido($sucursal);
     }
+    public function agregarMedicamento($medId,$cantidad){
+        $this->modeloDominio->agregarMedicamento($medId,$cantidad);
+    }
 }
