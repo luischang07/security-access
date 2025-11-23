@@ -18,14 +18,10 @@ class GestionPedidoController extends Controller
     }
     public function seleccionarSucursal(Request $request){
 
-        $sucursalId = $request->input('sucursal_id');
-        $cadenaId = $request->input('cadena_id');
-
-
-        // info([$sucursalId, $cadenaId]);
-        //     $this->modeloDominio->asociarSucursalAPedido($sucursal);
-
-        return null;
+        $sucursal_id = $request->input('sucursal_id');
+        $cadena_id = $request->input('cadena_id');
+        $this->modeloDominio->asociarSucursalAPedido($cadena_id,$sucursal_id);
+        
     }
     
     public function agregarMedicamento($medId,$cantidad){

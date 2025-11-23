@@ -1,7 +1,7 @@
 <?php 
 
 namespace App\Http\Dominio;
-use App\Http\ServiciosTecnicos\DataBase;
+use App\Http\ServiciosTecnicos\BaseDatos;
 
 class Sucursal{
     
@@ -20,6 +20,9 @@ class Sucursal{
         $this->colonia = $colonia;
         $this->latitud = $latitud;
         $this->longitud = $longitud;
+    }
+    public function crear($data){
+        return new self($data->cadena_id,$data->sucursal_id,$data->nombre,$data->calle,$data->numero_exterior,$data->numero_interior,$data->ciudad,$data->colonia,$data->latitud,$data->longitud);
     }
 
     //Getters y Setters
