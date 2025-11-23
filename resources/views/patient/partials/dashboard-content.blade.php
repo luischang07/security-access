@@ -48,7 +48,7 @@
         </div>
         <a href="{{ route('prescription.upload.step1') }}"
             class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90">
-            <span class="material-symbols-outlined">upload_file</span>
+            <span class="material-symbols-outlined">Nuevo pedido</span>
             <span class="truncate">{{ __('patient.dashboard.upload_prescription') }}</span>
         </a>
     </div>
