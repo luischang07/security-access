@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html class="light" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html class="light" lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 
 <head>
     <meta charset="utf-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('prescription.upload_step1.title') }} - Te Acerco Salud</title>
+    <title><?php echo e(__('prescription.upload_step1.title')); ?> - Te Acerco Salud</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
@@ -72,8 +72,9 @@
                         <div class="flex flex-1 justify-end gap-4 sm:gap-8">
                             <div class="hidden sm:flex items-center gap-9">
                                 <a class="text-sm font-medium leading-normal text-body-text dark:text-body-text-dark hover:text-primary transition"
-                                    href="{{ route('patient.dashboard') }}">
-                                    {{ __('prescription.upload_step1.dashboard') }}
+                                    href="<?php echo e(route('patient.dashboard')); ?>">
+                                    <?php echo e(__('prescription.upload_step1.dashboard')); ?>
+
                                 </a>
                             </div>
                             <button
@@ -81,7 +82,7 @@
                                 <span class="material-symbols-outlined text-xl">help</span>
                             </button>
                             <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-                                style='background-image: url("https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=137fec&color=fff");'>
+                                style='background-image: url("https://ui-avatars.com/api/?name=<?php echo e(urlencode(auth()->user()->name ?? 'User')); ?>&background=137fec&color=fff");'>
                             </div>
                         </div>
                     </header>
@@ -112,20 +113,21 @@
 
                                     <option value="" selected disabled>Selecciona una opción</option>
 
-                                    @foreach ($sucursales as $sucursal)
-                                        @php
+                                    <?php $__currentLoopData = $sucursales; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sucursal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <?php
                                             $datosSucursal = [
                                                 'sucursal_id' => $sucursal->sucursal_id,
                                                 'cadena_id' => $sucursal->cadena_id,
                                                 'nombre' => $sucursal->nombre,
                                             ];
-                                        @endphp
+                                        ?>
 
-                                        <option value="{{ $sucursal->sucursal_id }}"
-                                            data-sucursal='@json($datosSucursal)'>
-                                            {{ $sucursal->nombre }}
+                                        <option value="<?php echo e($sucursal->sucursal_id); ?>"
+                                            data-sucursal='<?php echo json_encode($datosSucursal, 15, 512) ?>'>
+                                            <?php echo e($sucursal->nombre); ?>
+
                                         </option>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                                 </select>
                             </div>
@@ -134,7 +136,8 @@
                                 <!-- Section Header -->
                                 <h2
                                     class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-0 pb-0 pt-0 text-body-text dark:text-body-text-dark">
-                                    {{ __('prescription.upload_step1.prescription_details') }}
+                                    <?php echo e(__('prescription.upload_step1.prescription_details')); ?>
+
                                 </h2>
 
                                 <!-- Patient and Doctor Info -->
@@ -143,24 +146,26 @@
                                         <label
                                             class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
                                             for="patient-name">
-                                            {{ __('prescription.upload_step1.patient_name') }}
+                                            <?php echo e(__('prescription.upload_step1.patient_name')); ?>
+
                                         </label>
                                         <input
                                             class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
                                             id="patient-name"
-                                            placeholder="{{ __('prescription.upload_step1.patient_name_placeholder') }}"
+                                            placeholder="<?php echo e(__('prescription.upload_step1.patient_name_placeholder')); ?>"
                                             type="text" />
                                     </div>
                                     <div>
                                         <label
                                             class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
                                             for="doctor-name">
-                                            {{ __('prescription.upload_step1.doctor_name') }}
+                                            <?php echo e(__('prescription.upload_step1.doctor_name')); ?>
+
                                         </label>
                                         <input
                                             class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
                                             id="doctor-name"
-                                            placeholder="{{ __('prescription.upload_step1.doctor_name_placeholder') }}"
+                                            placeholder="<?php echo e(__('prescription.upload_step1.doctor_name_placeholder')); ?>"
                                             type="text" />
                                     </div>
                                 </div>
@@ -168,7 +173,8 @@
                                 <!-- Medications Section -->
                                 <div class="flex flex-col gap-4">
                                     <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark">
-                                        {{ __('prescription.upload_step1.medications') }}
+                                        <?php echo e(__('prescription.upload_step1.medications')); ?>
+
                                     </h3>
 
                                     <!-- Medication Row 1 -->
@@ -178,36 +184,39 @@
                                             <label
                                                 class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
                                                 for="medication-1">
-                                                {{ __('prescription.upload_step1.medication_name') }}
+                                                <?php echo e(__('prescription.upload_step1.medication_name')); ?>
+
                                             </label>
                                             <input
                                                 class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
                                                 id="medication-1"
-                                                placeholder="{{ __('prescription.upload_step1.medication_name_placeholder') }}"
+                                                placeholder="<?php echo e(__('prescription.upload_step1.medication_name_placeholder')); ?>"
                                                 type="text" />
                                         </div>
                                         <div class="lg:col-span-3">
                                             <label
                                                 class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
                                                 for="dosage-1">
-                                                {{ __('prescription.upload_step1.dosage') }}
+                                                <?php echo e(__('prescription.upload_step1.dosage')); ?>
+
                                             </label>
                                             <input
                                                 class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
                                                 id="dosage-1"
-                                                placeholder="{{ __('prescription.upload_step1.dosage_placeholder') }}"
+                                                placeholder="<?php echo e(__('prescription.upload_step1.dosage_placeholder')); ?>"
                                                 type="text" />
                                         </div>
                                         <div class="lg:col-span-3">
                                             <label
                                                 class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
                                                 for="quantity-1">
-                                                {{ __('prescription.upload_step1.quantity') }}
+                                                <?php echo e(__('prescription.upload_step1.quantity')); ?>
+
                                             </label>
                                             <input
                                                 class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
                                                 id="quantity-1"
-                                                placeholder="{{ __('prescription.upload_step1.quantity_placeholder') }}"
+                                                placeholder="<?php echo e(__('prescription.upload_step1.quantity_placeholder')); ?>"
                                                 type="number" />
                                         </div>
                                         <div class="lg:col-span-1">
@@ -222,7 +231,7 @@
                                     <button
                                         class="flex items-center gap-2 self-start rounded-lg h-10 px-4 bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold hover:bg-primary/20 dark:hover:bg-primary/30 transition">
                                         <span class="material-symbols-outlined text-xl">add</span>
-                                        <span>{{ __('prescription.upload_step1.add_medication') }}</span>
+                                        <span><?php echo e(__('prescription.upload_step1.add_medication')); ?></span>
                                     </button>
                                 </div>
 
@@ -231,11 +240,12 @@
                                     <label
                                         class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
                                         for="notes">
-                                        {{ __('prescription.upload_step1.special_instructions') }}
+                                        <?php echo e(__('prescription.upload_step1.special_instructions')); ?>
+
                                     </label>
                                     <textarea
                                         class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                        id="notes" placeholder="{{ __('prescription.upload_step1.special_instructions_placeholder') }}" rows="4"></textarea>
+                                        id="notes" placeholder="<?php echo e(__('prescription.upload_step1.special_instructions_placeholder')); ?>" rows="4"></textarea>
                                 </div>
                             </div>
 
@@ -244,7 +254,7 @@
                                 <button
                                     class="flex w-full md:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide disabled:bg-neutral-text disabled:cursor-not-allowed hover:bg-primary/90 transition"
                                     disabled>
-                                    <span>{{ __('prescription.upload_step1.submit') }}</span>
+                                    <span><?php echo e(__('prescription.upload_step1.submit')); ?></span>
                                     <span class="material-symbols-outlined">arrow_forward</span>
                                 </button>
                             </div>
@@ -270,7 +280,7 @@
                     try {
                         const sucursalObjeto = JSON.parse(sucursalJson);
 
-                        fetch("{{ route('prescription.sucursal.procesar') }}", {
+                        fetch("<?php echo e(route('prescription.sucursal.procesar')); ?>", {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -295,3 +305,4 @@
         }
     });
 </script>
+<?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/prescription/upload-step1.blade.php ENDPATH**/ ?>
