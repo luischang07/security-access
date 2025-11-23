@@ -4,16 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
   public function up(): void
   {
     Schema::create('detalle_lineas_pedidos', function (Blueprint $table) {
-      $table->integer('folio_pedido');
+      $table->String('folio_pedido');
       $table->unsignedBigInteger('id_linea_pedido');
       $table->string('cadena_id', 50);
       $table->string('sucursal_id', 50);
-      $table->decimal('precio_unitario', 10,2);
+      $table->decimal('precio_unitario', 10, 2);
       $table->integer('cantidad_surtida');
       $table->integer('estatus')->default(0);
 

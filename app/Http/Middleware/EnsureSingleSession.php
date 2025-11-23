@@ -13,7 +13,8 @@ class EnsureSingleSession
   public function __construct(
     private readonly SingleSessionManager $singleSessionManager,
     private readonly UserRepository $userRepository
-  ) {}
+  ) {
+  }
 
   public function handle(Request $request, Closure $next)
   {

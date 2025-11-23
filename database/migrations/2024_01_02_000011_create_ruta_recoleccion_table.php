@@ -4,15 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
   public function up(): void
   {
     Schema::create('ruta_recoleccion', function (Blueprint $table) {
-      
+
       $table->string('cadena_id', 50);
       $table->string('sucursal_id', 50);
-      $table->integer('folio_pedido');
+      $table->string('folio_pedido');
       $table->integer('orden_recoleccion');
 
       $table->primary(['folio_pedido', 'cadena_id', 'sucursal_id'], 'ruta_recoleccion_primary');

@@ -53,8 +53,8 @@ class AdminDashboardService
 
     // Calculate growth
     $halfPoint = count($registrations) / 2;
-    $firstHalf = array_slice($registrations, 0, (int)$halfPoint);
-    $secondHalf = array_slice($registrations, (int)$halfPoint);
+    $firstHalf = array_slice($registrations, 0, (int) $halfPoint);
+    $secondHalf = array_slice($registrations, (int) $halfPoint);
 
     $firstHalfTotal = array_sum(array_column($firstHalf, 'count'));
     $secondHalfTotal = array_sum(array_column($secondHalf, 'count'));
@@ -121,7 +121,7 @@ class AdminDashboardService
   protected function getAverageFulfillmentTime(): float
   {
     $pedidos = \App\Models\Pedido::whereNotNull('fecha_entrega')
-      ->where('estado', 'entregado')
+      ->where('estatus', 'entregado')
       ->whereDate('fecha_entrega', '>=', now()->subDays(30))
       ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_entrega)) as avg_hours')
       ->first();
@@ -137,13 +137,13 @@ class AdminDashboardService
   protected function getFulfillmentTrend(): float
   {
     $currentWeek = \App\Models\Pedido::whereNotNull('fecha_entrega')
-      ->where('estado', 'entregado')
+      ->where('estatus', 'entregado')
       ->whereDate('fecha_entrega', '>=', now()->subWeek())
       ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_entrega)) as avg_hours')
       ->first();
 
     $lastWeek = \App\Models\Pedido::whereNotNull('fecha_entrega')
-      ->where('estado', 'entregado')
+      ->where('estatus', 'entregado')
       ->whereDate('fecha_entrega', '>=', now()->subWeeks(2))
       ->whereDate('fecha_entrega', '<', now()->subWeek())
       ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_entrega)) as avg_hours')

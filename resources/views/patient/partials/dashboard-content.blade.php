@@ -2,14 +2,14 @@
     $user = Auth::user();
 
     // Calcular estadísticas
-    $pedidosCompletados = \App\Models\Pedido::forPatient($user->user_id)->where('estado', 'entregado')->count();
+    $pedidosCompletados = \App\Models\Pedido::forPatient($user->user_id)->where('estatus', 'entregado')->count();
 
-    $pedidosCancelados = \App\Models\Pedido::forPatient($user->user_id)->where('estado', 'cancelado')->count();
+    $pedidosCancelados = \App\Models\Pedido::forPatient($user->user_id)->where('estatus', 'cancelado')->count();
 
     // Función helper para el progreso del pedido
-    function getOrderProgress($estado)
+    function getOrderProgress($estatus)
     {
-        return match ($estado) {
+        return match ($estatus) {
             'pendiente' => [
                 'width' => '25%',
                 'color' => 'bg-yellow-400',
@@ -30,7 +30,7 @@
                 'color' => 'bg-green-600',
                 'label' => __('patient.dashboard.active_orders.delivered'),
             ],
-            default => ['width' => '0%', 'color' => 'bg-gray-400', 'label' => ucfirst($estado)],
+            default => ['width' => '0%', 'color' => 'bg-gray-400', 'label' => ucfirst($estatus)],
         };
     }
 @endphp
@@ -63,7 +63,7 @@
                 class="bg-white dark:bg-gray-900/50 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
                 @forelse($pedidosActivos as $pedido)
                     @php
-                        $progress = getOrderProgress($pedido->estado);
+                        $progress = getOrderProgress($pedido->estatus);
                     @endphp
                     <div
                         class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4 {{ !$loop->last ? 'border-b border-gray-200 dark:border-gray-800' : '' }}">
@@ -111,7 +111,7 @@
                     <!-- History Items -->
                     @php
                         $historialReciente = \App\Models\Pedido::forPatient($user->user_id)
-                            ->whereIn('estado', ['entregado', 'cancelado'])
+                            ->whereIn('estatus', ['entregado', 'cancelado'])
                             ->latest('fecha_pedido')
                             ->take(3)
                             ->get();
@@ -123,7 +123,7 @@
                             <div
                                 class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                                 <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">
-                                    {{ $pedido->estado === 'entregado' ? 'check_circle' : 'cancel' }}
+                                    {{ $pedido->estatus === 'entregado' ? 'check_circle' : 'cancel' }}
                                 </span>
                             </div>
                             <div class="flex-1 min-w-0">
@@ -131,7 +131,7 @@
                                     Order #{{ str_pad($pedido->pedido_id, 5, '0', STR_PAD_LEFT) }}
                                 </p>
                                 <p class="text-gray-500 dark:text-gray-400 text-xs">
-                                    {{ $pedido->estado === 'entregado' ? __('patient.dashboard.recent_history.completed') : __('patient.dashboard.recent_history.cancelled') }}
+                                    {{ $pedido->estatus === 'entregado' ? __('patient.dashboard.recent_history.completed') : __('patient.dashboard.recent_history.cancelled') }}
                                     - {{ $pedido->fecha_pedido->format('d/m/Y') }}
                                 </p>
                             </div>

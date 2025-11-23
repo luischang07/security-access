@@ -13,7 +13,8 @@ class SessionResetService
   public function __construct(
     private readonly UserRepository $userRepository,
     private readonly SingleSessionManager $singleSessionManager
-  ) {}
+  ) {
+  }
 
   public function sendSessionResetEmail(string $email): bool
   {
@@ -27,7 +28,7 @@ class SessionResetService
 
     // Guardar el token en la base de datos
     DB::table('session_reset_tokens')->updateOrInsert(
-      ['email' => $email],
+      ['correo' => $email],
       [
         'token' => hash('sha256', $token),
         'created_at' => now(),
@@ -63,7 +64,7 @@ class SessionResetService
       ];
     }
 
-    $user = $this->userRepository->findByEmail($resetToken->email);
+    $user = $this->userRepository->findByEmail($resetToken->correo);
 
     if (!$user) {
       return [
@@ -77,7 +78,7 @@ class SessionResetService
 
     // Eliminar el token usado
     DB::table('session_reset_tokens')
-      ->where('email', $resetToken->email)
+      ->where('correo', $resetToken->correo)
       ->delete();
 
     return [

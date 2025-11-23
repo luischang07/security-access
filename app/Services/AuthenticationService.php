@@ -19,7 +19,8 @@ class AuthenticationService
     private readonly UserRepository $userRepository,
     private readonly SingleSessionManager $singleSessionManager,
     private readonly LoginThrottleService $loginThrottleService
-  ) {}
+  ) {
+  }
 
   public function attemptLogin(LoginRequest $request): RedirectResponse
   {
@@ -188,7 +189,7 @@ class AuthenticationService
   private function handleActiveSessionError(LoginRequest $request): RedirectResponse
   {
     return redirect()->back()->withErrors([
-      'correo' => __('Ya existe una sesión activa para esta cuenta. Puedes solicitar que se elimine enviando un correo a tu dirección de email.'),
+      'correo' => __('Ya existe una sesión activa para esta cuenta. Puedes solicitar que se elimine enviando un correo a tu dirección de correo.'),
     ])->onlyInput($request->only('correo'))
       ->with('show_session_reset', true);
   }

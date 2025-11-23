@@ -16,11 +16,11 @@ class Inventario extends Model
     'cadena_id',
     'sucursal_id',
     'medicamento_id',
-    'cantidad',
+    'stock_disponible',
   ];
 
   protected $casts = [
-    'cantidad' => 'integer',
+    'stock_disponible' => 'integer',
   ];
 
   public function sucursal(): BelongsTo

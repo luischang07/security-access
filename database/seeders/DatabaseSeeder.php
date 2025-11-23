@@ -27,28 +27,27 @@ class DatabaseSeeder extends Seeder
       'nombre' => 'Admin',
       'apellido' => 'User',
       'correo' => 'admin@example.com',
-      'direccion' => '123 Admin St',
       'password' => Hash::make('Admin123!'),
     ]);
 
     $pacienteUser1 = User::factory()->create([
       'nombre' => 'Juan',
+      'apellido' => 'Perez',
       'correo' => 'juan@example.com',
-      'direccion' => '456 Patient Ave',
       'password' => Hash::make('Patient123!'),
     ]);
 
     $pacienteUser2 = User::factory()->create([
       'nombre' => 'María',
+      'apellido' => 'Perez',
       'correo' => 'maria@example.com',
-      'direccion' => '789 Health Blvd',
       'password' => Hash::make('Maria123!'),
     ]);
 
     $empleadoUser1 = User::factory()->create([
       'nombre' => 'Pedro',
+      'apellido' => 'Perez',
       'correo' => 'pedro@example.com',
-      'direccion' => '321 Employee Rd',
       'password' => Hash::make('Pharmacy123!'),
     ]);
 
@@ -86,11 +85,11 @@ class DatabaseSeeder extends Seeder
       'razon_social' => 'Farmacias Similares SA',
       'nombre' => 'Similares',
     ]);
-    
+
 
     // Create Sucursales
     DB::table('sucursales')->insert([
-      ['cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'nombre' => 'Del Ahorro Hermanas', 'calle' => 'Boulevard Ciudades Hermanas', 'numero_ext' => '75', 'numero_int' => null, 'colonia' => 'Guadalupe', 'latitud' => 24.79139552895991, 'longitud' =>  -107.39312697344862],
+      ['cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'nombre' => 'Del Ahorro Hermanas', 'calle' => 'Boulevard Ciudades Hermanas', 'numero_ext' => '75', 'numero_int' => null, 'colonia' => 'Guadalupe', 'latitud' => 24.79139552895991, 'longitud' => -107.39312697344862],
       ['cadena_id' => $cadena1, 'sucursal_id' => 'SUC002', 'nombre' => 'Del Ahorro Colinas', 'calle' => 'Prolongacion Alvaro Obregon', 'numero_ext' => '2891', 'numero_int' => null, 'colonia' => 'Montebello', 'latitud' => 24.78041311629486, 'longitud' => -107.39407371994207],
       ['cadena_id' => $cadena2, 'sucursal_id' => 'SUC001', 'nombre' => 'Guadalajara Hermanas', 'calle' => 'Boulevard Ciudades Hermanas', 'numero_ext' => '75', 'numero_int' => null, 'colonia' => 'Guadalupe', 'latitud' => 24.791902011632253, 'longitud' => -107.3926441758417],
       ['cadena_id' => $cadena2, 'sucursal_id' => 'SUC002', 'nombre' => 'Guadalajara Bravo', 'calle' => 'Gral. Ignacio Ramirez', 'numero_ext' => '768', 'numero_int' => null, 'colonia' => '', 'latitud' => 24.797952074443508, 'longitud' => -107.40166906569905],
@@ -132,58 +131,68 @@ class DatabaseSeeder extends Seeder
           'cadena_id' => $sucursal->cadena_id,
           'sucursal_id' => $sucursal->sucursal_id,
           'medicamento_id' => $medId,
-          'cantidad' => rand(5, 20),
+          'minimo' => rand(5, 20),
+          'maximo' => rand(5, 20),
+          'precio_unitario' => rand(10, 1000),
+          'stock_disponible' => rand(5, 20),
         ]);
       }
     }
 
     // Create Pedidos
-    $pedido1 = DB::table('pedidos')->insertGetId([
-      'paciente_id' => $pacienteUser1->user_id,
+    // Create Pedidos
+    $pedido1 = 'PED001';
+    DB::table('pedidos')->insert([
+      'folio_pedido' => $pedido1,
       'cadena_id' => $cadena1,
       'sucursal_id' => 'SUC001',
+      'paciente_id' => $pacienteUser1->user_id,
+      'cedula_profesional' => '12345678',
       'fecha_pedido' => now()->subDays(5),
       'fecha_entrega' => now()->subDays(2),
-      'estado' => 'completado',
+      'estatus' => 'completado',
       'costo_total' => 250.50,
-    ], 'folio_pedido');
+    ]);
 
-    $pedido2 = DB::table('pedidos')->insertGetId([
-      'paciente_id' => $pacienteUser2->user_id,
+    $pedido2 = 'PED002';
+    DB::table('pedidos')->insert([
+      'folio_pedido' => $pedido2,
       'cadena_id' => $cadena2,
       'sucursal_id' => 'SUC001',
+      'paciente_id' => $pacienteUser2->user_id,
+      'cedula_profesional' => '12345678',
       'fecha_pedido' => now()->subDay(),
       'fecha_entrega' => null,
-      'estado' => 'en_proceso',
+      'estatus' => 'en_proceso',
       'costo_total' => 180.00,
-    ], 'folio_pedido');
+    ]);
 
     // Create Lineas Pedidos
     DB::table('lineas_pedidos')->insert([
-      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 1, 'medicamento_id' => 1, 'cantidad_solicitada' => 2, 'precio_unitario' => 50.00],
-      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 2, 'medicamento_id' => 2, 'cantidad_solicitada' => 3, 'precio_unitario' => 75.00],
-      ['folio_pedido' => $pedido2, 'id_liena_pedido' => 1, 'medicamento_id' => 3, 'cantidad_solicitada' => 1, 'precio_unitario' => 180.00],
+      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 1, 'medicamento_id' => 1, 'cantidad' => 50],
+      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 2, 'medicamento_id' => 2, 'cantidad' => 75],
+      ['folio_pedido' => $pedido2, 'id_linea_pedido' => 1, 'medicamento_id' => 3, 'cantidad' => 180],
     ]);
 
     // Create Detalle Lineas Pedidos
     DB::table('detalle_lineas_pedidos')->insert([
-      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 1, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_asignada' => 2, 'cantidad_recolectada' => 2],
-      ['folio_pedido' => $pedido1, 'id_liena_pedido' => 2, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_asignada' => 3, 'cantidad_recolectada' => 3],
-      ['folio_pedido' => $pedido2, 'id_liena_pedido' => 1, 'cadena_id' => $cadena2, 'sucursal_id' => 'SUC001', 'cantidad_asignada' => 1, 'cantidad_recolectada' => 0],
+      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 1, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 2, 'precio_unitario' => 50.00],
+      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 2, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 3, 'precio_unitario' => 75.00],
+      ['folio_pedido' => $pedido2, 'id_linea_pedido' => 1, 'cadena_id' => $cadena2, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 0, 'precio_unitario' => 180.00],
     ]);
 
     // Create Ruta Recoleccion
     DB::table('ruta_recoleccion')->insert([
-      ['folio_pedido' => $pedido1, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'orden_visita' => 1, 'estado_recoleccion' => 'completado', 'fecha_hora_visita' => now()->subDays(2)],
-      ['folio_pedido' => $pedido2, 'cadena_id' => $cadena2, 'sucursal_id' => 'SUC001', 'orden_visita' => 1, 'estado_recoleccion' => 'pendiente', 'fecha_hora_visita' => null],
+      ['folio_pedido' => $pedido1, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'orden_recoleccion' => 1],
+      ['folio_pedido' => $pedido2, 'cadena_id' => $cadena2, 'sucursal_id' => 'SUC001', 'orden_recoleccion' => 1],
     ]);
 
     // Create Notificaciones
     DB::table('notificaciones')->insert([
-      ['user_id' => $pacienteUser1->user_id, 'tipo' => 'pedido', 'mensaje' => 'Su pedido ha sido completado', 'fecha_hora' => now()->subDays(2), 'leida' => true],
-      ['user_id' => $pacienteUser2->user_id, 'tipo' => 'penalizacion', 'mensaje' => 'Tiene una penalización pendiente de $50.00', 'fecha_hora' => now()->subDay(), 'leida' => false],
-      ['user_id' => $pacienteUser2->user_id, 'tipo' => 'pedido', 'mensaje' => 'Su pedido está en proceso', 'fecha_hora' => now()->subDay(), 'leida' => false],
-      ['user_id' => $adminUser->user_id, 'tipo' => 'sistema', 'mensaje' => 'Nuevo pedido registrado en el sistema', 'fecha_hora' => now()->subDay(), 'leida' => true],
+      ['user_id' => $pacienteUser1->user_id, 'mensaje' => 'Su pedido ha sido completado', 'fecha_hora' => now()->subDays(2), 'leida' => true],
+      ['user_id' => $pacienteUser2->user_id, 'mensaje' => 'Tiene una penalización pendiente de $50.00', 'fecha_hora' => now()->subDay(), 'leida' => false],
+      ['user_id' => $pacienteUser2->user_id, 'mensaje' => 'Su pedido está en proceso', 'fecha_hora' => now()->subDay(), 'leida' => false],
+      ['user_id' => $adminUser->user_id, 'mensaje' => 'Nuevo pedido registrado en el sistema', 'fecha_hora' => now()->subDay(), 'leida' => true],
     ]);
 
     // Run Penalty Seeder after patients are created
