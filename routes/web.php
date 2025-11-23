@@ -43,6 +43,9 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
     Route::get('/upload/step1', [PrescriptionController::class, 'uploadStep1'])->name('upload.step1');
     Route::get('/upload/step2', [PrescriptionController::class, 'uploadStep2'])->name('upload.step2');
     Route::get('/pharmacy-map', [PrescriptionController::class, 'pharmacyMap'])->name('pharmacy-map');
+
+    //ruta para procesar la sucursal
+    Route::post('/sucursal/procesar', [PrescriptionController::class, 'procesarSucursal'])->name('sucursal.procesar');
   });
 
   // Pharmacy Routes
