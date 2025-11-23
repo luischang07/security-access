@@ -35,12 +35,4 @@ class PrescriptionController extends Controller
   {
     return view('prescription.pharmacy-map');
   }
-
-  public function procesarSucursal(Request $request)
-  {
-    $sucursalId = $request->input('sucursal_id');
-    $cadenaId = $request->input('cadena_id');
-    info([$sucursalId, $cadenaId]);
-    return response()->json($sucursalId);
-  }
 }
