@@ -10,10 +10,16 @@ class Pedido{
     private $estatus;
     private $lineas_pedido;
     private $paciente,$sucursal;
-
+    
     public function __construct($paciente){
         $this->paciente=$paciente;
         $this->lineas_pedido=array();
     }
-    
+    public function asociarSucursalAPedido($sucursal){
+        $this->sucursal=$sucursal;
+    }
+    public function agregarMedicamento($medId,$cantidad){
+        $linea_pedido=new LineaPedido($medId,$cantidad);
+        array_push($this->lineas_pedido,$linea_pedido);
+    }
 }   

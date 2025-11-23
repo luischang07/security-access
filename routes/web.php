@@ -8,6 +8,7 @@ use App\Http\Controllers\PharmacyController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PrescriptionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GestionPedidoController;
 
 Route::view('/', 'landing')->name('landing');
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
@@ -45,7 +46,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
     Route::get('/pharmacy-map', [PrescriptionController::class, 'pharmacyMap'])->name('pharmacy-map');
 
     //ruta para procesar la sucursal
-    Route::post('/sucursal/procesar', [PrescriptionController::class, 'procesarSucursal'])->name('sucursal.procesar');
+    Route::post('/sucursal/procesar', [GestionPedidoController::class, 'seleccionarSucursal'])->name('sucursal.procesar');
   });
 
   // Pharmacy Routes
