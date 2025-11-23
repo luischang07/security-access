@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\ServiciosTecnicos\DataBase;
+use App\Http\ServiciosTecnicos\BaseDatos;
 
 class PrescriptionController extends Controller
 {
 
-  public function __construct(DataBase $dataBase){
+  public function __construct(BaseDatos $dataBase){
     $this->dataBase = $dataBase;
   }
   /**
