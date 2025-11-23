@@ -10,10 +10,13 @@ class Pedido{
     private $estatus;
     private $lineas_pedido;
     private $paciente,$sucursal;
-
+    
     public function __construct($paciente){
         $this->paciente=$paciente;
         $this->lineas_pedido=array();
     }
-    
+    public function asociarSucursalAPedido($sucursal){
+        $this->sucursal=$sucursal;
+        
+    }
 }   

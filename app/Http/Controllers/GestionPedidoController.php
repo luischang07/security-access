@@ -12,4 +12,7 @@ class GestionPedidoController extends Controller
         $this->modeloDominio->nuevoPedido($paciente);
         return $this->modeloDominio;
     }
+    public function seleccionarSucursal($sucursal){
+        $this->modeloDominio->asociarSucursalAPedido($sucursal);
+    }
 }
