@@ -18,7 +18,7 @@ class PedidoRepository
   public function getActiveOrdersForPatient(int $patientId, int $limit = 5): Collection
   {
     return Pedido::forPatient($patientId)
-      ->whereIn('estado', ['pendiente', 'en_proceso'])
+      ->whereIn('estatus', ['pendiente', 'en_proceso'])
       ->with(['lineasPedidos'])
       ->latest('fecha_pedido')
       ->take($limit)
@@ -50,7 +50,7 @@ class PedidoRepository
   public function getOrderHistoryForPatient(int $patientId, int $perPage = 15): LengthAwarePaginator
   {
     return Pedido::forPatient($patientId)
-      ->whereIn('estado', ['entregado', 'cancelado'])
+      ->whereIn('estatus', ['entregado', 'cancelado'])
       ->with(['lineasPedidos'])
       ->latest('fecha_pedido')
       ->paginate($perPage);
@@ -68,7 +68,7 @@ class PedidoRepository
   {
     return Pedido::where('cadena_id', $cadenaId)
       ->where('sucursal_id', $sucursalId)
-      ->whereIn('estado', ['pendiente', 'en_proceso'])
+      ->whereIn('estatus', ['pendiente', 'en_proceso'])
       ->with(['paciente.user', 'lineasPedidos'])
       ->latest('fecha_pedido')
       ->take($limit)

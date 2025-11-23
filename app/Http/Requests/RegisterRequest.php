@@ -15,7 +15,12 @@ class RegisterRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'name' => [
+      'nombre' => [
+        'required',
+        'string',
+        'max:255',
+      ],
+      'apellido' => [
         'required',
         'string',
         'max:255',
@@ -26,7 +31,7 @@ class RegisterRequest extends FormRequest
         'email',
         'regex:/^[\w\.-]+@[\w\.-]+\.[\w]{2,4}$/i',
         'max:255',
-        'unique:users',
+        'unique:users,correo',
       ],
       'password' => [
         'required',
@@ -41,8 +46,10 @@ class RegisterRequest extends FormRequest
   public function messages(): array
   {
     return [
-      'name.required' => 'El nombre es obligatorio.',
-      'name.max' => 'El nombre no puede exceder los 255 caracteres.',
+      'nombre.required' => 'El nombre es obligatorio.',
+      'nombre.max' => 'El nombre no puede exceder los 255 caracteres.',
+      'apellido.required' => 'El apellido es obligatorio.',
+      'apellido.max' => 'El apellido no puede exceder los 255 caracteres.',
       'email.required' => 'El correo electrónico es obligatorio.',
       'email.email' => 'El correo electrónico debe tener un formato válido.',
       'email.regex' => 'El correo no cumple con el patrón requerido.',
