@@ -8,8 +8,8 @@ use Dominio\ModeloDominio;
 class GestionPedidoController extends Controller
 {
     private ModeloDominio $modeloDominio;
-    public function nuevoPedido(){
-        $this->modeloDominio->nuevoPedido();
+    public function nuevoPedido($paciente){
+        $this->modeloDominio->nuevoPedido($paciente);
         return $this->modeloDominio;
     }
 }
