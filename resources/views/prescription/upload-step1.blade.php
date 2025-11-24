@@ -67,7 +67,9 @@
                                     </path>
                                 </svg>
                             </div>
-                            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Te Acerco Salud</h2>
+                            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">
+                                {{ __('prescription.upload_step1.brand_name') }}
+                            </h2>
                         </div>
                         <div class="flex flex-1 justify-end gap-4 sm:gap-8">
                             <div class="hidden sm:flex items-center gap-9">
@@ -92,42 +94,53 @@
                             <div class="flex flex-col gap-2">
                                 <h1
                                     class="text-3xl lg:text-4xl font-black tracking-[-0.033em] text-body-text dark:text-body-text-dark">
-                                    Registro de receta
+                                    {{ __('prescription.upload_step1.page_heading') }}
                                 </h1>
                                 <p
                                     class="text-base font-normal leading-normal text-neutral-text dark:text-neutral-text-dark">
-                                    Agrega los medicamentos de tu receta
+                                    {{ __('prescription.upload_step1.page_subtitle') }}
                                 </p>
                             </div>
                         </div>
-                        <div>
-                            <div>
-                                <label class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                    for="sucursal_id">
-                                    Selecciona tu sucursal
-                                </label>
-                                <select
-                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                    id="sucursal_id" name="sucursal_id">
+                        <!-- Prescription Form -->
+                        <form id="prescription-form" method="POST"
+                            action="{{ route('prescription.upload.step1.store') }}">
+                            @csrf
 
-                                    <option value="" selected disabled>Selecciona una opción</option>
+                            <div class="mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                            for="cadena_id">
+                                            {{ __('prescription.upload_step1.select_chain') }}
+                                        </label>
+                                        <select
+                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                            id="cadena_id" name="cadena_id" required>
+                                            <option value="" selected disabled>
+                                                {{ __('prescription.upload_step1.select_option') }}</option>
+                                            @foreach ($cadenas as $cadena)
+                                                <option value="{{ $cadena->cadena_id }}">{{ $cadena->nombre }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
 
-                                    @foreach ($sucursales as $sucursal)
-                                        @php
-                                            $datosSucursal = [
-                                                'sucursal_id' => $sucursal->sucursal_id,
-                                                'cadena_id' => $sucursal->cadena_id,
-                                                'nombre' => $sucursal->nombre,
-                                            ];
-                                        @endphp
-
-                                        <option value="{{ $sucursal->sucursal_id }}"
-                                            data-sucursal='@json($datosSucursal)'>
-                                            {{ $sucursal->nombre }}
-                                        </option>
-                                    @endforeach
-
-                                </select>
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                            for="sucursal_id">
+                                            {{ __('prescription.upload_step1.select_branch') }}
+                                        </label>
+                                        <select
+                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                            id="sucursal_id" name="sucursal_id" required disabled>
+                                            <option value="" selected disabled>
+                                                {{ __('prescription.upload_step1.select_option') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <!-- Manual Entry Form -->
                             <div class="flex flex-col gap-6 p-4">
@@ -147,9 +160,9 @@
                                         </label>
                                         <input
                                             class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                            id="patient-name"
+                                            id="patient-name" name="patient_name"
                                             placeholder="{{ __('prescription.upload_step1.patient_name_placeholder') }}"
-                                            type="text" />
+                                            type="text" required />
                                     </div>
                                     <div>
                                         <label
@@ -159,10 +172,24 @@
                                         </label>
                                         <input
                                             class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                            id="doctor-name"
+                                            id="doctor-name" name="doctor_name"
                                             placeholder="{{ __('prescription.upload_step1.doctor_name_placeholder') }}"
-                                            type="text" />
+                                            type="text" required />
                                     </div>
+                                </div>
+
+                                <!-- Professional License -->
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                        for="cedula_profesional">
+                                        {{ __('prescription.upload_step1.professional_license') }}
+                                    </label>
+                                    <input
+                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                        id="cedula_profesional" name="cedula_profesional"
+                                        placeholder="{{ __('prescription.upload_step1.professional_license_placeholder') }}"
+                                        type="text" required />
                                 </div>
 
                                 <!-- Medications Section -->
@@ -171,55 +198,57 @@
                                         {{ __('prescription.upload_step1.medications') }}
                                     </h3>
 
-                                    <!-- Medication Row 1 -->
-                                    <div
-                                        class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark">
-                                        <div class="lg:col-span-5">
-                                            <label
-                                                class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                                for="medication-1">
-                                                {{ __('prescription.upload_step1.medication_name') }}
-                                            </label>
-                                            <input
-                                                class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                                id="medication-1"
-                                                placeholder="{{ __('prescription.upload_step1.medication_name_placeholder') }}"
-                                                type="text" />
-                                        </div>
-                                        <div class="lg:col-span-3">
-                                            <label
-                                                class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                                for="dosage-1">
-                                                {{ __('prescription.upload_step1.dosage') }}
-                                            </label>
-                                            <input
-                                                class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                                id="dosage-1"
-                                                placeholder="{{ __('prescription.upload_step1.dosage_placeholder') }}"
-                                                type="text" />
-                                        </div>
-                                        <div class="lg:col-span-3">
-                                            <label
-                                                class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                                for="quantity-1">
-                                                {{ __('prescription.upload_step1.quantity') }}
-                                            </label>
-                                            <input
-                                                class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                                id="quantity-1"
-                                                placeholder="{{ __('prescription.upload_step1.quantity_placeholder') }}"
-                                                type="number" />
-                                        </div>
-                                        <div class="lg:col-span-1">
-                                            <button
-                                                class="w-full flex items-center justify-center h-10 rounded-lg bg-transparent text-neutral-text dark:text-neutral-text-dark hover:bg-red-500/10 hover:text-red-500 transition">
-                                                <span class="material-symbols-outlined text-xl">delete</span>
-                                            </button>
+                                    <div id="medications-container">
+                                        <!-- Medication Row 1 -->
+                                        <div
+                                            class="medication-row grid grid-cols-1 lg:grid-cols-12 gap-4 items-end p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark mb-4">
+                                            <div class="lg:col-span-5">
+                                                <label
+                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                                    for="medication-0">
+                                                    {{ __('prescription.upload_step1.medication_name') }}
+                                                </label>
+                                                <input
+                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                                    id="medication-0" name="medications[0][name]"
+                                                    placeholder="{{ __('prescription.upload_step1.medication_name_placeholder') }}"
+                                                    type="text" required />
+                                            </div>
+                                            <div class="lg:col-span-3">
+                                                <label
+                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                                    for="dosage-0">
+                                                    {{ __('prescription.upload_step1.dosage') }}
+                                                </label>
+                                                <input
+                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                                    id="dosage-0" name="medications[0][dosage]"
+                                                    placeholder="{{ __('prescription.upload_step1.dosage_placeholder') }}"
+                                                    type="text" required />
+                                            </div>
+                                            <div class="lg:col-span-3">
+                                                <label
+                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                                    for="quantity-0">
+                                                    {{ __('prescription.upload_step1.quantity') }}
+                                                </label>
+                                                <input
+                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                                    id="quantity-0" name="medications[0][quantity]"
+                                                    placeholder="{{ __('prescription.upload_step1.quantity_placeholder') }}"
+                                                    type="number" min="1" required />
+                                            </div>
+                                            <div class="lg:col-span-1">
+                                                <button type="button"
+                                                    class="delete-medication w-full flex items-center justify-center h-10 rounded-lg bg-transparent text-neutral-text dark:text-neutral-text-dark hover:bg-red-500/10 hover:text-red-500 transition">
+                                                    <span class="material-symbols-outlined text-xl">delete</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- Add Medication Button -->
-                                    <button
+                                    <button type="button" id="add-medication"
                                         class="flex items-center gap-2 self-start rounded-lg h-10 px-4 bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold hover:bg-primary/20 dark:hover:bg-primary/30 transition">
                                         <span class="material-symbols-outlined text-xl">add</span>
                                         <span>{{ __('prescription.upload_step1.add_medication') }}</span>
@@ -235,19 +264,22 @@
                                     </label>
                                     <textarea
                                         class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                        id="notes" placeholder="{{ __('prescription.upload_step1.special_instructions_placeholder') }}" rows="4"></textarea>
+                                        id="notes" name="special_instructions"
+                                        placeholder="{{ __('prescription.upload_step1.special_instructions_placeholder') }}" rows="4"></textarea>
                                 </div>
                             </div>
 
                             <!-- Submit Button -->
-                            <div class="flex justify-end p-4 mt-4 border-t border-border-light dark:border-border-dark">
-                                <button
+                            <div
+                                class="flex justify-end p-4 mt-4 border-t border-border-light dark:border-border-dark">
+                                <button type="submit" id="submit-button"
                                     class="flex w-full md:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide disabled:bg-neutral-text disabled:cursor-not-allowed hover:bg-primary/90 transition"
                                     disabled>
                                     <span>{{ __('prescription.upload_step1.submit') }}</span>
                                     <span class="material-symbols-outlined">arrow_forward</span>
                                 </button>
                             </div>
+                        </form>
                     </main>
                 </div>
             </div>
@@ -255,43 +287,12 @@
     </div>
 </body>
 
-</html>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectElement = document.getElementById('sucursal_id');
-
-        if (selectElement) {
-            selectElement.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const sucursalJson = selectedOption.getAttribute('data-sucursal');
-
-                if (sucursalJson) {
-                    try {
-                        const sucursalObjeto = JSON.parse(sucursalJson);
-
-                        fetch("{{ route('prescription.sucursal.procesar') }}", {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]').content
-                                },
-                                body: JSON.stringify({
-                                    // Enviamos los IDs específicos
-                                    sucursal_id: sucursalObjeto.sucursal_id,
-                                    cadena_id: sucursalObjeto.cadena_id
-                                })
-                            })
-                            .then(res => res.json())
-                            .then(data => console.log('Enviado correctamente:', data))
-                            .catch(err => console.error('Error en fetch:', err));
-
-                    } catch (e) {
-                        console.error("Error al leer el JSON de la sucursal", e);
-                    }
-                }
-            });
-        }
-    });
+    window.sucursalesData = @json($sucursales);
+    window.prescriptionTranslations = @json([
+        'select_option' => __('prescription.upload_step1.select_option'),
+    ]);
 </script>
+@vite(['resources/js/patient/prescription-upload.js'])
+
+</html>

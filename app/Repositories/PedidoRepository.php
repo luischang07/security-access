@@ -91,4 +91,89 @@ class PedidoRepository
       ->latest('fecha_pedido')
       ->paginate($perPage);
   }
+
+  /**
+   * Obtener cantidad de pedidos completados de un paciente
+   *
+   * @param int $patientId
+   * @return int
+   */
+  public function getCompletedOrdersCount(int $patientId): int
+  {
+    return Pedido::forPatient($patientId)
+      ->where('estatus', 'entregado')
+      ->count();
+  }
+
+  /**
+   * Obtener cantidad de pedidos cancelados de un paciente
+   *
+   * @param int $patientId
+   * @return int
+   */
+  public function getCancelledOrdersCount(int $patientId): int
+  {
+    return Pedido::forPatient($patientId)
+      ->where('estatus', 'cancelado')
+      ->count();
+  }
+
+  /**
+   * Obtener historial reciente de pedidos (entregados o cancelados)
+   *
+   * @param int $patientId
+   * @param int $limit
+   * @return Collection
+   */
+  public function getRecentHistory(int $patientId, int $limit = 3): Collection
+  {
+    return Pedido::forPatient($patientId)
+      ->whereIn('estatus', ['entregado', 'cancelado'])
+      ->latest('fecha_pedido')
+      ->take($limit)
+      ->get();
+  }
+  /**
+   * Crear un nuevo pedido con sus líneas
+   *
+   * @param array $data
+   * @param array $medications
+   * @return Pedido
+   */
+  public function createOrder(array $data, array $medications): Pedido
+  {
+    return \DB::transaction(function () use ($data, $medications) {
+      // Generar folio único
+      $folio = \Illuminate\Support\Str::uuid()->toString();
+
+      // Crear el pedido
+      $pedido = Pedido::create([
+        'folio_pedido' => $folio,
+        'paciente_id' => $data['paciente_id'],
+        'cadena_id' => $data['cadena_id'],
+        'sucursal_id' => $data['sucursal_id'],
+        'cedula_profesional' => $data['cedula_profesional'],
+        'fecha_pedido' => now(),
+        'estatus' => 'pendiente',
+        'costo_total' => 0,
+      ]);
+
+      // Crear líneas de pedido
+      foreach ($medications as $index => $medication) {
+        // Buscar medicamento por nombre (simple match por ahora)
+        $medModel = \App\Models\Medicamento::where('nombre', 'LIKE', '%' . $medication['name'] . '%')->first();
+
+        if ($medModel) {
+          \App\Models\LineaPedido::create([
+            'folio_pedido' => $folio,
+            'id_linea_pedido' => $index + 1,
+            'medicamento_id' => $medModel->id,
+            'cantidad' => $medication['quantity'],
+          ]);
+        }
+      }
+
+      return $pedido;
+    });
+  }
 }
