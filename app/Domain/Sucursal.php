@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Http\Dominio;
+namespace App\Domain;
 use App\Http\ServiciosTecnicos\BaseDatos;
 
 class Sucursal{

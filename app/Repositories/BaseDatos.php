@@ -1,17 +1,11 @@
 <?php 
 
-namespace App\Http\ServiciosTecnicos;
-use App\Http\ServiciosTecnicos\DataBase;
+namespace App\Repositories;
 use App\Models\Sucursal;
 
 class BaseDatos{
-    
-    private $cadena_id,$sucursal_id,$nombre;
-    private $calle,$numero_exterior,$numero_interiror,$ciudad,$colonia;
-    private $latitud,$longitud;
 
-    //obtener sucursales
-    public function obtenerSucursales(){
+    public function obtenerTodasSucursales(){
         $sucursales = Sucursal::all();
         return $sucursales;
     }
