@@ -288,10 +288,12 @@
 </body>
 
 <script>
-    window.sucursalesData = @json($sucursales);
     window.prescriptionTranslations = @json([
         'select_option' => __('prescription.upload_step1.select_option'),
     ]);
+    window.routes = {
+        sucursalesByCadena: "{{ route('prescription.sucursales.by_cadena', ['cadena_id' => '%%CADENA%%']) }}"
+    };
 </script>
 @vite(['resources/js/patient/prescription-upload.js'])
 

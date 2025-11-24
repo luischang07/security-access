@@ -113,9 +113,6 @@ function initializeBranchSelection() {
   const cadenaSelect = document.getElementById('cadena_id');
   const sucursalSelect = document.getElementById('sucursal_id');
 
-  // All sucursales data passed from Blade via a global variable
-  const allSucursales = window.sucursalesData || [];
-
   // Populate sucursal options based on selected cadena
   function populateSucursales(cadenaId) {
     // Clear existing options
@@ -128,15 +125,31 @@ function initializeBranchSelection() {
     placeholder.textContent = defaultSelectOption;
     sucursalSelect.appendChild(placeholder);
 
-    const filtered = allSucursales.filter(s => s.cadena_id == cadenaId);
-    filtered.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.sucursal_id;
-      opt.textContent = s.nombre;
-      opt.dataset.sucursal = JSON.stringify(s);
-      sucursalSelect.appendChild(opt);
-    });
-    sucursalSelect.disabled = false;
+    // Build URL from route template exposed by Blade
+    const template = window.routes && window.routes.sucursalesByCadena;
+    const url = template ? template.replace('%%CADENA%%', encodeURIComponent(cadenaId)) : ('/prescription/sucursales/' + encodeURIComponent(cadenaId));
+
+    fetch(url, { headers: { 'Accept': 'application/json' } })
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        data.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.sucursal_id;
+          opt.textContent = s.nombre || s.sucursal_id;
+          opt.dataset.sucursal = JSON.stringify(s);
+          sucursalSelect.appendChild(opt);
+        });
+        sucursalSelect.disabled = false;
+        validateForm();
+      })
+      .catch(err => {
+        console.error('Error loading sucursales for cadena', err);
+        sucursalSelect.disabled = true;
+      });
   }
 
   // When cadena changes, repopulate sucursales

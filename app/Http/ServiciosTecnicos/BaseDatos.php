@@ -29,4 +29,10 @@ class BaseDatos
   {
     return Sucursal::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->first();
   }
+
+  // obtener sucursales por cadena
+  public function obtenerSucursalesPorCadena($cadena_id)
+  {
+    return Sucursal::where('cadena_id', $cadena_id)->get();
+  }
 }

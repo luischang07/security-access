@@ -304,9 +304,11 @@
 </body>
 
 <script>
-    window.sucursalesData = <?php echo json_encode($sucursales, 15, 512) ?>;
     window.prescriptionTranslations = <?php echo json_encode([
         'select_option' => __('prescription.upload_step1.select_option'), ], 512) ?>;
+    window.routes = {
+        sucursalesByCadena: "<?php echo e(route('prescription.sucursales.by_cadena', ['cadena_id' => '%%CADENA%%'])); ?>"
+    };
 </script>
 <?php echo app('Illuminate\Foundation\Vite')(['resources/js/patient/prescription-upload.js']); ?>
 

@@ -22,10 +22,18 @@ class PrescriptionController extends Controller
    */
   public function uploadStep1()
   {
-    $sucursales = $this->dataBase->obtenerSucursales();
-
+    // Only load cadenas for the initial page; branches will be requested on demand
     $cadenas = $this->dataBase->obtenerCadenas();
-    return view('prescription.upload-step1', compact('sucursales', 'cadenas'));
+    return view('prescription.upload-step1', compact('cadenas'));
+  }
+
+  /**
+   * Return sucursales for a given cadena (AJAX)
+   */
+  public function sucursalesPorCadena($cadena_id)
+  {
+    $sucursales = $this->dataBase->obtenerSucursalesPorCadena($cadena_id);
+    return response()->json($sucursales);
   }
 
   /**
