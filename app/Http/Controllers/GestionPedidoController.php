@@ -6,18 +6,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\Modelos\PedidoService;
 use App\Services\Modelos\SucursalService;
-use App\Services\Modelos\MedicamentoService;
 
 class GestionPedidoController extends Controller
 {
     private PedidoService $pedidoService;
     private SucursalService $sucursalService;
-    private MedicamentoService $medicamentoService;
 
-    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService,MedicamentoService $medicamentoService){
+    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService){
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
-        $this->medicamentoService = $medicamentoService;
     }
     
     public function nuevoPedido(){
@@ -26,9 +23,8 @@ class GestionPedidoController extends Controller
 
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
         $sucursales = $this->sucursalService->obtenerTodasSucursales();
-        $medicamentos = $this->medicamentoService->obtenerTodasMedicamentos();
 
-        return view('prescription.upload-step1', compact('sucursales','medicamentos'));
+        return view('prescription.upload-step1', compact('sucursales'));
     }
     public function seleccionarSucursal(Request $request){
 
