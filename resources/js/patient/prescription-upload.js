@@ -38,8 +38,6 @@ function initializePrescriptionForm() {
 /** Validate form fields */
 function validateForm() {
   const sucursalId = document.getElementById('sucursal_id').value;
-  const patientName = document.getElementById('patient-name').value.trim();
-  const doctorName = document.getElementById('doctor-name').value.trim();
   const submitButton = document.getElementById('submit-button');
 
   // Check at least one medication is filled
@@ -54,7 +52,7 @@ function validateForm() {
     }
   });
 
-  const isValid = sucursalId && patientName && doctorName && hasValidMedication;
+  const isValid = sucursalId && hasValidMedication;
   if (submitButton) submitButton.disabled = !isValid;
   return isValid;
 }

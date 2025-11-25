@@ -150,34 +150,6 @@
                                     {{ __('prescription.upload_step1.prescription_details') }}
                                 </h2>
 
-                                <!-- Patient and Doctor Info -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                            for="patient-name">
-                                            {{ __('prescription.upload_step1.patient_name') }}
-                                        </label>
-                                        <input
-                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                            id="patient-name" name="patient_name"
-                                            placeholder="{{ __('prescription.upload_step1.patient_name_placeholder') }}"
-                                            type="text" required />
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                            for="doctor-name">
-                                            {{ __('prescription.upload_step1.doctor_name') }}
-                                        </label>
-                                        <input
-                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                            id="doctor-name" name="doctor_name"
-                                            placeholder="{{ __('prescription.upload_step1.doctor_name_placeholder') }}"
-                                            type="text" required />
-                                    </div>
-                                </div>
-
                                 <!-- Professional License -->
                                 <div>
                                     <label

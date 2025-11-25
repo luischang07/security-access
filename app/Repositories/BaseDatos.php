@@ -3,6 +3,7 @@
 namespace App\Repositories;
 use App\Models\Sucursal;
 use App\Models\Inventario;
+use App\Models\CadenaFarmaceutica;
 use App\Domain\LineaInventario;
 class BaseDatos{
 

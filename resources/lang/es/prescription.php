@@ -21,7 +21,7 @@ return [
     'patient_name_placeholder' => 'ej., Jane Doe',
     'doctor_name' => 'Nombre del Médico',
     'doctor_name_placeholder' => 'ej., Dr. John Smith',
-    'professional_license' => 'Cédula Profesional',
+    'professional_license' => 'Cédula Profesional del Médico',
     'professional_license_placeholder' => 'ej., 12345678',
     'medications' => 'Medicamentos',
     'medication_name' => 'Nombre del Medicamento',

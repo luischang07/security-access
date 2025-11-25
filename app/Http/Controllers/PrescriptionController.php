@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\ServiciosTecnicos\BaseDatos;
+use App\Repositories\BaseDatos;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\PedidoRepository;
 
@@ -33,6 +33,7 @@ class PrescriptionController extends Controller
   public function sucursalesPorCadena($cadena_id)
   {
     $sucursales = $this->dataBase->obtenerSucursalesPorCadena($cadena_id);
+    info(['sucursales' => $sucursales]);
     return response()->json($sucursales);
   }
 
