@@ -2,7 +2,7 @@
 
 
 namespace App\Domain;
-
+use Illuminate\Support\Collection;
 class Pedido{
 
     private $cedulaProfesional;
@@ -43,7 +43,7 @@ class Pedido{
     }
 
     private function createColeccionLineas(){
-        $this->lineas_pedido=array();
+        $this->lineas_pedido=collect();
     }
     public function asociarSucursalAPedido($cadena_id,$sucursal_id){
         $this->sucursal_id=$sucursal_id;
@@ -51,7 +51,7 @@ class Pedido{
     }
     public function agregarMedicamento($medId,$cantidad){
         $linea_pedido=new LineaPedido($medId,$cantidad);
-        array_push($this->lineas_pedido,$linea_pedido);
+        $lineas_pedido->push($linea_pedido)
     }
 
     public function getLineasPedido(){

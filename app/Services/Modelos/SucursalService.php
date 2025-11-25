@@ -22,7 +22,11 @@ class SucursalService
         return $this->dataBase->obtenerSucursal($cadena_id,$sucursal_id);
     }
 
-    public function getLineaInventario($medId,$cadena_id,$sucursal_id){
-        return $this->dataBase->obtenerInventario($medId,$cadena_id,$sucursal_id);
+    public function getLineaInventario($cadena_id,$sucursal_id,$medicamento_id){
+        return $this->dataBase->obtenerInventario($cadena_id,$sucursal_id,$medicamento_id);
+    }
+
+    public function calculaSucCercanas($cadena_id, $sucursal_id){
+        return $this->dataBase->obtenerSucursalesOrdenadas($cadena_id,$sucursal_id);
     }
 }
