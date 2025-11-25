@@ -6,15 +6,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\Modelos\PedidoService;
 use App\Services\Modelos\SucursalService;
+use App\Services\Modelos\GestorDeSurtido;
+use App\Domain\Pedido;
+use Illuminate\Support\Facades\Session;
+
 
 class GestionPedidoController extends Controller
 {
     private PedidoService $pedidoService;
     private SucursalService $sucursalService;
+    private GestorDeSurtido $GestorDeSurtido;
 
-    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService){
+    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService,GestorDeSurtido $GestorDeSurtido){
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
+        $this->GestorDeSurtido = $GestorDeSurtido;
     }
     
     public function nuevoPedido(){
@@ -40,5 +46,14 @@ class GestionPedidoController extends Controller
         $medId = $request->input('medId');
         $cantidad = $request->input('cantidad');
         $this->pedidoService->agregarMedicamento($medId,$cantidad);
+    }
+
+    public function confirmarPedido(){
+
+        $datosPedido = Session::get('pedido_temporal', []);
+
+        $pedido = Pedido::createPedidoFromSession($datosPedido);
+
+        $this->GestorDeSurtido->surtir($pedido);
     }
 }

@@ -47,4 +47,10 @@ class PedidoService
 
         Session::put('pedido_temporal', $pedido->toArray());
     }
+
+    public function obtenerSucursal(Array $sucursal){
+
+        $this->sucursal=$this->dataBase->obtenerSucursal($sucursal[0],$sucursal[1]);
+        return $this->sucursal;
+    }
 }

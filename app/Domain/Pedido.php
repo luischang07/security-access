@@ -48,6 +48,18 @@ class Pedido{
         $linea_pedido=new LineaPedido($medId,$cantidad);
         array_push($this->lineas_pedido,$linea_pedido);
     }
+
+    public function getLineasPedido(){
+        return $this->lineas_pedido;
+    }
+
+    public function getSucursalSeleccionada(){
+        return $this->sucursal_id;
+    }
+
+    public function getCadenaSeleccionada(){
+        return $this->cadena_id;
+    }
     
     public function toArray(){
         return [

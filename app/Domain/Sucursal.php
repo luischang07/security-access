@@ -8,6 +8,7 @@ class Sucursal{
     private $cadena_id,$sucursal_id,$nombre;
     private $calle,$numero_exterior,$numero_interiror,$ciudad,$colonia;
     private $latitud,$longitud;
+    private $inventario;
 
     public function __construct($cadena_id,$sucursal_id,$nombre,$calle,$numero_exterior,$numero_interior,$ciudad,$colonia,$latitud,$longitud){
         $this->cadena_id = $cadena_id;
@@ -20,6 +21,7 @@ class Sucursal{
         $this->colonia = $colonia;
         $this->latitud = $latitud;
         $this->longitud = $longitud;
+        $this->inventario = array();
     }
     public function crear($data){
         return new self($data->cadena_id,$data->sucursal_id,$data->nombre,$data->calle,$data->numero_exterior,$data->numero_interior,$data->ciudad,$data->colonia,$data->latitud,$data->longitud);

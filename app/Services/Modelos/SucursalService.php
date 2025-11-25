@@ -21,4 +21,8 @@ class SucursalService
     public function obtenerSucursal($cadena_id,$sucursal_id){
         return $this->dataBase->obtenerSucursal($cadena_id,$sucursal_id);
     }
+
+    public function getLineaInventario($medId,$cadena_id,$sucursal_id){
+        return $this->dataBase->obtenerInventario($medId,$cadena_id,$sucursal_id);
+    }
 }
