@@ -9,13 +9,14 @@ use App\Domain\LineaInventario;
 use App\Services\Modelos\PedidoService;
 use App\Services\Modelos\SucursalService;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Collection;
 
 
 class GestorDeSurtido
 {
   private SucursalService $sucursalService;
-  private SucursalService $pedidoService;
-  private $SinStock=array();
+  private PedidoService $pedidoService;
+  private $SinStock=collect();
   public function __construct(SucursalService $sucursalService, PedidoService $pedidoService)
   {
     $this->sucursalService = $sucursalService;
@@ -37,7 +38,21 @@ class GestorDeSurtido
         $lineaPedido->crearDetalleLineaPedido($ldi->getPrecioUnitario(),$cantidadSurtida,$sucsel);
       }
       if($cantidadSurtida < $lineaPedido->getCantidad()){
-          array_push($this->SinStock, $lineaPedido);
+        $this->SinStock->push( $lineaPedido);
+      }
+    }
+    if($this->SinStock->count()>0){
+        $sucCercanas= $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
+        $this->CalculaFaltantes($this->SinStock,$sucCercanas);
+    }
+  }
+
+  public function CalculaFaltantes($SinStock,$sucCercanas){
+    
+    foreach ($sucCercanas as $suc) {
+      foreach($SinStock as $ldp){
+        $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
+        
       }
     }
   }

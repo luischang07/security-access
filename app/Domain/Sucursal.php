@@ -88,4 +88,20 @@ class Sucursal{
     public function setLongitud($longitud){
         $this->longitud = $longitud;
     }
+
+    public static function fromModel($modelo)
+    {
+        return new self(
+            $modelo->cadena_id,
+            $modelo->sucursal_id,
+            $modelo->nombre,
+            $modelo->calle,
+            $modelo->numero_exterior,
+            $modelo->numero_interior,
+            $modelo->ciudad,
+            $modelo->colonia,
+            $modelo->latitud,
+            $modelo->longitud
+        );
+    }
 }

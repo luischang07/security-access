@@ -3,7 +3,7 @@
 namespace App\Domain;
 
 use App\Models\DetalleLineaPedido;
-
+use Illuminate\Support\Collection;
 class LineaPedido {
     private $folio_pedido;
     private $cantidad;
@@ -15,7 +15,7 @@ class LineaPedido {
         $this->folio_pedido=$folio_pedido;
         $this->medicamento_id=$medicamentoId;
         $this->cantidad=$cantidad;
-        $this->detalleLineaPedido = array();
+        $this->detalleLineaPedido = collect();
     }
 
     public function getCantidad(){
@@ -39,7 +39,7 @@ class LineaPedido {
     public function crearDetalleLineaPedido($precio, $cantidadSurtida, $sucsel)
     {
         $dlp = new DetalleLineaPedido($precio, $cantidadSurtida, $sucsel);
-        array_push($this->detalleLineaPedido,  $dlp);
+        $this->detalleLineaPedido->push($dlp);
     }   
 
 }
