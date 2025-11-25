@@ -4,6 +4,12 @@ return [
   // Prescription Upload Step 1
   'upload_step1' => [
     'title' => 'Subir Receta - Paso 1',
+    'brand_name' => 'Te Acerco Salud',
+    'page_heading' => 'Registro de receta',
+    'page_subtitle' => 'Agrega los medicamentos de tu receta',
+    'select_branch' => 'Selecciona tu sucursal',
+    'select_chain' => 'Selecciona tu cadena',
+    'select_option' => 'Selecciona una opción',
     'heading' => 'Sube tu Receta Médica',
     'subtitle' => 'Sube una foto clara o PDF de tu receta para comenzar.',
     'drag_drop' => 'Arrastra y suelta tu archivo aquí o haz clic para subir',
@@ -15,6 +21,8 @@ return [
     'patient_name_placeholder' => 'ej., Jane Doe',
     'doctor_name' => 'Nombre del Médico',
     'doctor_name_placeholder' => 'ej., Dr. John Smith',
+    'professional_license' => 'Cédula Profesional',
+    'professional_license_placeholder' => 'ej., 12345678',
     'medications' => 'Medicamentos',
     'medication_name' => 'Nombre del Medicamento',
     'medication_name_placeholder' => 'ej., Amoxicilina',

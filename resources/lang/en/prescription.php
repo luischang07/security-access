@@ -4,6 +4,12 @@ return [
   // Prescription Upload Step 1
   'upload_step1' => [
     'title' => 'Upload Prescription - Step 1',
+    'brand_name' => 'Te Acerco Salud',
+    'page_heading' => 'Prescription Registration',
+    'page_subtitle' => 'Add medications from your prescription',
+    'select_branch' => 'Select your branch',
+    'select_chain' => 'Select your chain',
+    'select_option' => 'Select an option',
     'heading' => 'Upload Your Medical Prescription',
     'subtitle' => 'Upload a clear photo or PDF of your prescription to get started.',
     'drag_drop' => 'Drag & drop your file here or click to upload',
@@ -15,6 +21,8 @@ return [
     'patient_name_placeholder' => 'e.g., Jane Doe',
     'doctor_name' => 'Doctor\'s Name',
     'doctor_name_placeholder' => 'e.g., Dr. John Smith',
+    'professional_license' => 'Professional License',
+    'professional_license_placeholder' => 'e.g., 12345678',
     'medications' => 'Medications',
     'medication_name' => 'Medication Name',
     'medication_name_placeholder' => 'e.g., Amoxicillin',

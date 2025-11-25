@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo e(__('prescription.upload_step1.title')); ?> - Te Acerco Salud</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,7 +67,10 @@
                                     </path>
                                 </svg>
                             </div>
-                            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Te Acerco Salud</h2>
+                            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">
+                                <?php echo e(__('prescription.upload_step1.brand_name')); ?>
+
+                            </h2>
                         </div>
                         <div class="flex flex-1 justify-end gap-4 sm:gap-8">
                             <div class="hidden sm:flex items-center gap-9">
@@ -92,186 +96,221 @@
                             <div class="flex flex-col gap-2">
                                 <h1
                                     class="text-3xl lg:text-4xl font-black tracking-[-0.033em] text-body-text dark:text-body-text-dark">
-                                    <?php echo e(__('prescription.upload_step1.heading')); ?>
+                                    <?php echo e(__('prescription.upload_step1.page_heading')); ?>
 
                                 </h1>
                                 <p
                                     class="text-base font-normal leading-normal text-neutral-text dark:text-neutral-text-dark">
-                                    <?php echo e(__('prescription.upload_step1.subtitle')); ?>
+                                    <?php echo e(__('prescription.upload_step1.page_subtitle')); ?>
 
                                 </p>
                             </div>
                         </div>
+                        <!-- Prescription Form -->
+                        <form id="prescription-form" method="POST"
+                            action="<?php echo e(route('prescription.upload.step1.store')); ?>">
+                            <?php echo csrf_field(); ?>
 
-                        <!-- File Upload Area -->
-                        <div class="flex flex-col p-4">
+                            <div class="mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                            for="cadena_id">
+                                            <?php echo e(__('prescription.upload_step1.select_chain')); ?>
+
+                                        </label>
+                                        <select
+                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                            id="cadena_id" name="cadena_id" required>
+                                            <option value="" selected disabled>
+                                                <?php echo e(__('prescription.upload_step1.select_option')); ?></option>
+                                            <?php $__currentLoopData = $cadenas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cadena): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($cadena->cadena_id); ?>"><?php echo e($cadena->nombre); ?>
+
+                                                </option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                            for="sucursal_id">
+                                            <?php echo e(__('prescription.upload_step1.select_branch')); ?>
+
+                                        </label>
+                                        <select
+                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                            id="sucursal_id" name="sucursal_id" required disabled>
+                                            <option value="" selected disabled>
+                                                <?php echo e(__('prescription.upload_step1.select_option')); ?></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Manual Entry Form -->
+                            <div class="flex flex-col gap-6 p-4">
+                                <!-- Section Header -->
+                                <h2
+                                    class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-0 pb-0 pt-0 text-body-text dark:text-body-text-dark">
+                                    <?php echo e(__('prescription.upload_step1.prescription_details')); ?>
+
+                                </h2>
+
+                                <!-- Patient and Doctor Info -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                            for="patient-name">
+                                            <?php echo e(__('prescription.upload_step1.patient_name')); ?>
+
+                                        </label>
+                                        <input
+                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                            id="patient-name" name="patient_name"
+                                            placeholder="<?php echo e(__('prescription.upload_step1.patient_name_placeholder')); ?>"
+                                            type="text" required />
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                            for="doctor-name">
+                                            <?php echo e(__('prescription.upload_step1.doctor_name')); ?>
+
+                                        </label>
+                                        <input
+                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                            id="doctor-name" name="doctor_name"
+                                            placeholder="<?php echo e(__('prescription.upload_step1.doctor_name_placeholder')); ?>"
+                                            type="text" required />
+                                    </div>
+                                </div>
+
+                                <!-- Professional License -->
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                        for="cedula_profesional">
+                                        <?php echo e(__('prescription.upload_step1.professional_license')); ?>
+
+                                    </label>
+                                    <input
+                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                        id="cedula_profesional" name="cedula_profesional"
+                                        placeholder="<?php echo e(__('prescription.upload_step1.professional_license_placeholder')); ?>"
+                                        type="text" required />
+                                </div>
+
+                                <!-- Medications Section -->
+                                <div class="flex flex-col gap-4">
+                                    <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark">
+                                        <?php echo e(__('prescription.upload_step1.medications')); ?>
+
+                                    </h3>
+
+                                    <div id="medications-container">
+                                        <!-- Medication Row 1 -->
+                                        <div
+                                            class="medication-row grid grid-cols-1 lg:grid-cols-12 gap-4 items-end p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark mb-4">
+                                            <div class="lg:col-span-5">
+                                                <label
+                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                                    for="medication-0">
+                                                    <?php echo e(__('prescription.upload_step1.medication_name')); ?>
+
+                                                </label>
+                                                <input
+                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                                    id="medication-0" name="medications[0][name]"
+                                                    placeholder="<?php echo e(__('prescription.upload_step1.medication_name_placeholder')); ?>"
+                                                    type="text" required />
+                                            </div>
+                                            <div class="lg:col-span-3">
+                                                <label
+                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                                    for="dosage-0">
+                                                    <?php echo e(__('prescription.upload_step1.dosage')); ?>
+
+                                                </label>
+                                                <input
+                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                                    id="dosage-0" name="medications[0][dosage]"
+                                                    placeholder="<?php echo e(__('prescription.upload_step1.dosage_placeholder')); ?>"
+                                                    type="text" required />
+                                            </div>
+                                            <div class="lg:col-span-3">
+                                                <label
+                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                                    for="quantity-0">
+                                                    <?php echo e(__('prescription.upload_step1.quantity')); ?>
+
+                                                </label>
+                                                <input
+                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                                    id="quantity-0" name="medications[0][quantity]"
+                                                    placeholder="<?php echo e(__('prescription.upload_step1.quantity_placeholder')); ?>"
+                                                    type="number" min="1" required />
+                                            </div>
+                                            <div class="lg:col-span-1">
+                                                <button type="button"
+                                                    class="delete-medication w-full flex items-center justify-center h-10 rounded-lg bg-transparent text-neutral-text dark:text-neutral-text-dark hover:bg-red-500/10 hover:text-red-500 transition">
+                                                    <span class="material-symbols-outlined text-xl">delete</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Add Medication Button -->
+                                    <button type="button" id="add-medication"
+                                        class="flex items-center gap-2 self-start rounded-lg h-10 px-4 bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold hover:bg-primary/20 dark:hover:bg-primary/30 transition">
+                                        <span class="material-symbols-outlined text-xl">add</span>
+                                        <span><?php echo e(__('prescription.upload_step1.add_medication')); ?></span>
+                                    </button>
+                                </div>
+
+                                <!-- Special Instructions -->
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                        for="notes">
+                                        <?php echo e(__('prescription.upload_step1.special_instructions')); ?>
+
+                                    </label>
+                                    <textarea
+                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                                        id="notes" name="special_instructions"
+                                        placeholder="<?php echo e(__('prescription.upload_step1.special_instructions_placeholder')); ?>" rows="4"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
                             <div
-                                class="flex flex-col items-center gap-6 rounded-xl border-2 border-dashed border-border-light dark:border-border-dark px-6 py-14 bg-card-light dark:bg-card-dark">
-                                <div class="flex flex-col items-center gap-2 text-center">
-                                    <div
-                                        class="flex justify-center items-center size-16 bg-primary/10 rounded-full mb-2">
-                                        <span class="material-symbols-outlined text-3xl text-primary">upload_file</span>
-                                    </div>
-                                    <p
-                                        class="text-lg font-bold leading-tight tracking-[-0.015em] text-body-text dark:text-body-text-dark">
-                                        <?php echo e(__('prescription.upload_step1.drag_drop')); ?>
-
-                                    </p>
-                                    <p
-                                        class="text-sm font-normal leading-normal text-neutral-text dark:text-neutral-text-dark">
-                                        <?php echo e(__('prescription.upload_step1.accepted_formats')); ?>
-
-                                    </p>
-                                </div>
-                                <button
-                                    class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-body-text dark:bg-body-text-dark text-white dark:text-body-text text-sm font-bold leading-normal tracking-[0.015em] hover:bg-body-text/90 dark:hover:bg-body-text-dark/90 transition">
-                                    <span class="truncate"><?php echo e(__('prescription.upload_step1.browse_files')); ?></span>
+                                class="flex justify-end p-4 mt-4 border-t border-border-light dark:border-border-dark">
+                                <button type="submit" id="submit-button"
+                                    class="flex w-full md:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide disabled:bg-neutral-text disabled:cursor-not-allowed hover:bg-primary/90 transition"
+                                    disabled>
+                                    <span><?php echo e(__('prescription.upload_step1.submit')); ?></span>
+                                    <span class="material-symbols-outlined">arrow_forward</span>
                                 </button>
                             </div>
-                        </div>
-
-                        <!-- Manual Entry Link -->
-                        <p class="text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">
-                            <a class="underline text-neutral-text dark:text-neutral-text-dark hover:text-primary transition"
-                                href="#">
-                                <?php echo e(__('prescription.upload_step1.or_manual')); ?>
-
-                            </a>
-                        </p>
-
-                        <!-- Manual Entry Form -->
-                        <div class="flex flex-col gap-6 p-4">
-                            <!-- Section Header -->
-                            <h2
-                                class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-0 pb-0 pt-0 text-body-text dark:text-body-text-dark">
-                                <?php echo e(__('prescription.upload_step1.prescription_details')); ?>
-
-                            </h2>
-
-                            <!-- Patient and Doctor Info -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                        for="patient-name">
-                                        <?php echo e(__('prescription.upload_step1.patient_name')); ?>
-
-                                    </label>
-                                    <input
-                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                        id="patient-name"
-                                        placeholder="<?php echo e(__('prescription.upload_step1.patient_name_placeholder')); ?>"
-                                        type="text" />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                        for="doctor-name">
-                                        <?php echo e(__('prescription.upload_step1.doctor_name')); ?>
-
-                                    </label>
-                                    <input
-                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                        id="doctor-name"
-                                        placeholder="<?php echo e(__('prescription.upload_step1.doctor_name_placeholder')); ?>"
-                                        type="text" />
-                                </div>
-                            </div>
-
-                            <!-- Medications Section -->
-                            <div class="flex flex-col gap-4">
-                                <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark">
-                                    <?php echo e(__('prescription.upload_step1.medications')); ?>
-
-                                </h3>
-
-                                <!-- Medication Row 1 -->
-                                <div
-                                    class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark">
-                                    <div class="lg:col-span-5">
-                                        <label
-                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                            for="medication-1">
-                                            <?php echo e(__('prescription.upload_step1.medication_name')); ?>
-
-                                        </label>
-                                        <input
-                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                            id="medication-1"
-                                            placeholder="<?php echo e(__('prescription.upload_step1.medication_name_placeholder')); ?>"
-                                            type="text" />
-                                    </div>
-                                    <div class="lg:col-span-3">
-                                        <label
-                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                            for="dosage-1">
-                                            <?php echo e(__('prescription.upload_step1.dosage')); ?>
-
-                                        </label>
-                                        <input
-                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                            id="dosage-1"
-                                            placeholder="<?php echo e(__('prescription.upload_step1.dosage_placeholder')); ?>"
-                                            type="text" />
-                                    </div>
-                                    <div class="lg:col-span-3">
-                                        <label
-                                            class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                            for="quantity-1">
-                                            <?php echo e(__('prescription.upload_step1.quantity')); ?>
-
-                                        </label>
-                                        <input
-                                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                            id="quantity-1"
-                                            placeholder="<?php echo e(__('prescription.upload_step1.quantity_placeholder')); ?>"
-                                            type="number" />
-                                    </div>
-                                    <div class="lg:col-span-1">
-                                        <button
-                                            class="w-full flex items-center justify-center h-10 rounded-lg bg-transparent text-neutral-text dark:text-neutral-text-dark hover:bg-red-500/10 hover:text-red-500 transition">
-                                            <span class="material-symbols-outlined text-xl">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Add Medication Button -->
-                                <button
-                                    class="flex items-center gap-2 self-start rounded-lg h-10 px-4 bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold hover:bg-primary/20 dark:hover:bg-primary/30 transition">
-                                    <span class="material-symbols-outlined text-xl">add</span>
-                                    <span><?php echo e(__('prescription.upload_step1.add_medication')); ?></span>
-                                </button>
-                            </div>
-
-                            <!-- Special Instructions -->
-                            <div>
-                                <label class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                    for="notes">
-                                    <?php echo e(__('prescription.upload_step1.special_instructions')); ?>
-
-                                </label>
-                                <textarea
-                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                    id="notes" placeholder="<?php echo e(__('prescription.upload_step1.special_instructions_placeholder')); ?>"
-                                    rows="4"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="flex justify-end p-4 mt-4 border-t border-border-light dark:border-border-dark">
-                            <button
-                                class="flex w-full md:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide disabled:bg-neutral-text disabled:cursor-not-allowed hover:bg-primary/90 transition"
-                                disabled>
-                                <span><?php echo e(__('prescription.upload_step1.submit')); ?></span>
-                                <span class="material-symbols-outlined">arrow_forward</span>
-                            </button>
-                        </div>
+                        </form>
                     </main>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
+<script>
+    window.prescriptionTranslations = <?php echo json_encode([
+        'select_option' => __('prescription.upload_step1.select_option'), ], 512) ?>;
+    window.routes = {
+        sucursalesByCadena: "<?php echo e(route('prescription.sucursales.by_cadena', ['cadena_id' => '%%CADENA%%'])); ?>"
+    };
+</script>
+<?php echo app('Illuminate\Foundation\Vite')(['resources/js/patient/prescription-upload.js']); ?>
 
 </html>
 <?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/prescription/upload-step1.blade.php ENDPATH**/ ?>

@@ -35,6 +35,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
     Route::get('/orders', [PatientController::class, 'orders'])->name('orders');
     Route::get('/orders/history', [PatientController::class, 'orderHistory'])->name('orders.history');
     Route::get('/profile', [PatientController::class, 'profile'])->name('profile');
+    Route::put('/profile', [PatientController::class, 'updateProfile'])->name('profile.update');
     Route::get('/penalties', [PatientController::class, 'penalties'])->name('penalties');
     Route::get('/help', [PatientController::class, 'help'])->name('help');
   });
@@ -42,12 +43,15 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   // Prescription Routes
   Route::prefix('prescription')->name('prescription.')->group(function () {
     Route::get('/upload/step1', [GestionPedidoController::class, 'nuevoPedido'])->name('upload.step1');
-    
     Route::get('/upload/step2', [PrescriptionController::class, 'uploadStep2'])->name('upload.step2');
+    Route::post('/upload/step2', [PrescriptionController::class, 'storePrescriptionStep2'])->name('upload.step2.store');
     Route::get('/pharmacy-map', [PrescriptionController::class, 'pharmacyMap'])->name('pharmacy-map');
 
     //ruta para procesar la sucursal
     Route::post('/sucursal/procesar', [GestionPedidoController::class, 'seleccionarSucursal'])->name('sucursal.procesar');
+
+    // AJAX: obtener sucursales por cadena
+    Route::get('/sucursales/{cadena_id}', [PrescriptionController::class, 'sucursalesPorCadena'])->name('sucursales.by_cadena');
   });
 
   // Pharmacy Routes

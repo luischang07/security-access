@@ -169,9 +169,9 @@ class DatabaseSeeder extends Seeder
 
     // Create Lineas Pedidos
     DB::table('lineas_pedidos')->insert([
-      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 1, 'medicamento_id' => 1, 'precio_unitario' => 50.00],
-      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 2, 'medicamento_id' => 2, 'precio_unitario' => 75.00],
-      ['folio_pedido' => $pedido2, 'id_linea_pedido' => 1, 'medicamento_id' => 3, 'precio_unitario' => 180.00],
+      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 1, 'medicamento_id' => 1, 'cantidad' => 50],
+      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 2, 'medicamento_id' => 2, 'cantidad' => 75],
+      ['folio_pedido' => $pedido2, 'id_linea_pedido' => 1, 'medicamento_id' => 3, 'cantidad' => 180],
     ]);
 
     // Create Detalle Lineas Pedidos
