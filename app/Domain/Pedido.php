@@ -30,7 +30,12 @@ class Pedido{
         $instancia->fecha_recoleccion=$datosPedido['fecha_recoleccion'];
         $instancia->fecha_entrega=$datosPedido['fecha_entrega'];
         $instancia->estatus=$datosPedido['estatus'];
-        $instancia->lineas_pedido=$datosPedido['lineas_pedido'];
+        foreach ($datosPedido['lineas_pedido'] ?? [] as $ldpData) {
+            $instancia->agregarMedicamento(
+                    $ldpData['medicamento_id'],
+                    $ldpData['cantidad']
+                );
+        }
         $instancia->paciente_id=$datosPedido['paciente_id'];
         $instancia->sucursal_id=$datosPedido['sucursal_id'];
         $instancia->cadena_id=$datosPedido['cadena_id'];
@@ -40,7 +45,7 @@ class Pedido{
     private function createColeccionLineas(){
         $this->lineas_pedido=array();
     }
-    public function asociarSucursalAPedido($sucursal_id,$cadena_id){
+    public function asociarSucursalAPedido($cadena_id,$sucursal_id){
         $this->sucursal_id=$sucursal_id;
         $this->cadena_id=$cadena_id;
     }
@@ -68,7 +73,12 @@ class Pedido{
             'fecha_recoleccion' => $this->fecha_recoleccion,
             'fecha_entrega' => $this->fecha_entrega,
             'estatus' => $this->estatus,
-            'lineas_pedido' => $this->lineas_pedido,
+            'lineas_pedido' => array_map(function (LineaPedido $ldp) {
+                return [
+                    'medicamento_id' => $ldp->medicamento_id,
+                    'cantidad'       => $ldp->cantidad,
+                ];
+            }, $this->lineas_pedido),
             'paciente_id' => $this->paciente_id,
             'sucursal_id' => $this->sucursal_id,
             'cadena_id' => $this->cadena_id

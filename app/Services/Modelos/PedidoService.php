@@ -25,13 +25,18 @@ class PedidoService
         return $this->pedido;
     }
 
+
     public function asociarSucursalAPedido($sucursal_id,$cadena_id){
 
-        $datosPedido = Session::get('pedido_temporal', []);
+        $datosPedido = Session::get('pedido_temporal');
+
+        if (!$datosPedido) {
+            throw new \RuntimeException('No hay pedido en captura en la sesión.');
+        }
 
         $pedido = Pedido::createPedidoFromSession($datosPedido);
 
-        $pedido->asociarSucursalAPedido($sucursal_id,$cadena_id);
+        $pedido->asociarSucursalAPedido($cadena_id,$sucursal_id);
 
         Session::put('pedido_temporal', $pedido->toArray());
 
@@ -39,7 +44,11 @@ class PedidoService
 
     public function agregarMedicamento($medId,$cantidad){
 
-        $datosPedido = Session::get('pedido_temporal', []);
+        $datosPedido = Session::get('pedido_temporal');
+
+        if (!$datosPedido) {
+            throw new \RuntimeException('No hay pedido en captura para agregar medicamento.');
+        }
 
         $pedido = Pedido::createPedidoFromSession($datosPedido);
 
@@ -48,6 +57,11 @@ class PedidoService
         Session::put('pedido_temporal', $pedido->toArray());
     }
 
+    public function eliminarMedicamento($medId){
+
+        // Código para eliminar medicamento del pedido
+        
+    }
     public function obtenerSucursal(Array $sucursal){
 
         $this->sucursal=$this->dataBase->obtenerSucursal($sucursal[0],$sucursal[1]);

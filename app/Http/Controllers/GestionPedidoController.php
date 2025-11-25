@@ -35,21 +35,24 @@ class GestionPedidoController extends Controller
 
         return view('prescription.upload-step1', compact('cadenas'));
     }
+
+
     public function seleccionarSucursal(Request $request){
 
         $sucursal_id = $request->input('sucursal_id');
         $cadena_id = $request->input('cadena_id');
-
         $this->pedidoService->asociarSucursalAPedido($cadena_id,$sucursal_id);
 
-        return true;
+        return response()->json(['ok' => true]);
     }
+
 
     public function agregarMedicamento(Request $request){
         $medId = $request->input('medId');
         $cantidad = $request->input('cantidad');
         $this->pedidoService->agregarMedicamento($medId,$cantidad);
     }
+
 
     public function confirmarPedido(){
 
