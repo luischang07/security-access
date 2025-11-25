@@ -22,4 +22,13 @@ class BaseDatos{
 
         return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible,$data->precio_unitario);
     }
+    public function obtenerCadenas()
+    {
+        return CadenaFarmaceutica::select('cadena_id', 'nombre')->orderBy('nombre')->get();
+    }
+    // obtener sucursales por cadena
+    public function obtenerSucursalesPorCadena($cadena_id)
+    {
+        return Sucursal::where('cadena_id', $cadena_id)->get();
+    }
 }
