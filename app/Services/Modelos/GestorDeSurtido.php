@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Session;
 class GestorDeSurtido
 {
   private SucursalService $sucursalService;
-  private SucursalService $pedidoService;
+  private PedidoService $pedidoService;
   private $SinStock=array();
   public function __construct(SucursalService $sucursalService, PedidoService $pedidoService)
   {
