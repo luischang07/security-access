@@ -13,52 +13,56 @@ use Illuminate\Support\Facades\Session;
 
 class GestionPedidoController extends Controller
 {
-    private PedidoService $pedidoService;
-    private SucursalService $sucursalService;
-    private GestorDeSurtido $GestorDeSurtido;
+  private PedidoService $pedidoService;
+  private SucursalService $sucursalService;
+  private GestorDeSurtido $GestorDeSurtido;
 
-    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService,GestorDeSurtido $GestorDeSurtido){
-        $this->pedidoService = $pedidoService;
-        $this->sucursalService = $sucursalService;
-        $this->GestorDeSurtido = $GestorDeSurtido;
-    }
-    
-    public function nuevoPedido(){
+  public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido)
+  {
+    $this->pedidoService = $pedidoService;
+    $this->sucursalService = $sucursalService;
+    $this->GestorDeSurtido = $GestorDeSurtido;
+  }
 
-        $paciente_id = Auth::user()->user_id;
+  public function nuevoPedido()
+  {
+    $paciente_id = Auth::user()->user_id;
 
-        $pedido = $this->pedidoService->nuevoPedido($paciente_id);
-        $sucursales = $this->sucursalService->obtenerTodasSucursales();
+    $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+    $sucursales = $this->sucursalService->obtenerTodasSucursales();
 
-        return view('prescription.upload-step1', compact('sucursales'));
-    }
-    public function seleccionarSucursal(Request $request){
+    return view('prescription.upload-step1', compact('sucursales'));
+  }
+  public function seleccionarSucursal(Request $request)
+  {
 
-        $sucursal_id = $request->input('sucursal_id');
-        $cadena_id = $request->input('cadena_id');
+    $sucursal_id = $request->input('sucursal_id');
+    $cadena_id = $request->input('cadena_id');
 
-        $this->pedidoService->asociarSucursalAPedido($cadena_id,$sucursal_id);
+    $this->pedidoService->asociarSucursalAPedido($cadena_id, $sucursal_id);
 
-        return true;
-    }
+    return true;
+  }
 
-    public function agregarMedicamento(Request $request){
-        $medId = $request->input('medId');
-        $cantidad = $request->input('cantidad');
-        $this->pedidoService->agregarMedicamento($medId,$cantidad);
-    }
+  public function agregarMedicamento(Request $request)
+  {
+    $medId = $request->input('medId');
+    $cantidad = $request->input('cantidad');
+    $this->pedidoService->agregarMedicamento($medId, $cantidad);
+  }
 
-    public function confirmarCaptura(){
-        $paciente_id = Auth::user()->user_id;
+  public function confirmarCaptura()
+  {
+    $paciente_id = Auth::user()->user_id;
 
-        $pedido = $this->pedidoService->nuevoPedido($paciente_id);
-        $pedido->asociarSucursalAPedido("CAD001","SUC001");
+    $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+    $pedido->asociarSucursalAPedido("CAD001", "SUC001");
 
-        $datosPedido = Session::get('pedido_temporal', []);
+    $datosPedido = Session::get('pedido_temporal', []);
 
 
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
+    $pedido = Pedido::createPedidoFromSession($datosPedido);
 
-        $this->GestorDeSurtido->surtir($pedido);
-    }
+    $this->GestorDeSurtido->surtir($pedido);
+  }
 }

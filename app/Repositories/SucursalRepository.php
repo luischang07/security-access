@@ -35,16 +35,20 @@ class SucursalRepository
    */
   public function getGrowthPercentage(): float
   {
-    // Since we don't have created_at, we'll calculate based on total
-    // This is a placeholder - adjust based on your business logic
-    $total = $this->getTotalCount();
-    $lastMonthTotal = $total - rand(1, 5); // Simulated for now
+    $currentTotal = $this->getTotalCount();
 
-    if ($lastMonthTotal === 0) {
-      return $total > 0 ? 100.0 : 0.0;
+    // Calculate the date one month ago
+    $oneMonthAgo = now()->subMonth();
+
+    // Get the count of sucursales that existed one month ago
+    $totalOneMonthAgo = Sucursal::where('created_at', '<', $oneMonthAgo)->count();
+
+    if ($totalOneMonthAgo === 0) {
+      // If there were no sucursales a month ago, and now there are, it's 100% growth (or 0% if still none)
+      return $currentTotal > 0 ? 100.0 : 0.0;
     }
 
-    return round((($total - $lastMonthTotal) / $lastMonthTotal) * 100, 1);
+    return round((($currentTotal - $totalOneMonthAgo) / $totalOneMonthAgo) * 100, 1);
   }
 
   /**
@@ -71,5 +75,29 @@ class SucursalRepository
       ->groupBy('cadena_id')
       ->get()
       ->toArray();
+  }
+
+  /**
+   * Find a pharmacy by composite key
+   *
+   * @param string $cadenaId
+   * @param string $sucursalId
+   * @return Sucursal
+   */
+  public function findSucursal(string $cadenaId, string $sucursalId)
+  {
+    return Sucursal::where('cadena_id', $cadenaId)
+      ->where('sucursal_id', $sucursalId)
+      ->firstOrFail();
+  }
+
+  /**
+   * Get all pharmacies with their schedules and chain info
+   *
+   * @return \Illuminate\Database\Eloquent\Collection
+   */
+  public function getAllSucursalesWithRelations()
+  {
+    return Sucursal::with(['horarios', 'cadena'])->get();
   }
 }

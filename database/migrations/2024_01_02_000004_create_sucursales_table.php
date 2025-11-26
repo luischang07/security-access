@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
   public function up(): void
   {
     Schema::create('sucursales', function (Blueprint $table) {
@@ -17,11 +16,13 @@ return new class extends Migration
       $table->string('numero_int', 10)->nullable();
       $table->string('ciudad', 10)->nullable();
       $table->string('colonia', 100);
+      $table->string('contacto', 50)->nullable();
       $table->decimal('latitud', 10, 8);
       $table->decimal('longitud', 11, 8);
 
       $table->primary(['cadena_id', 'sucursal_id']);
       $table->foreign('cadena_id')->references('cadena_id')->on('cadena_farmaceuticas')->onDelete('cascade');
+      $table->timestamps();
     });
   }
 

@@ -42,6 +42,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 
   // Prescription Routes
   Route::prefix('prescription')->name('prescription.')->group(function () {
+    Route::get('/medications/search', [PrescriptionController::class, 'searchMedications'])->name('medications.search');
     Route::get('/upload/step1', [PrescriptionController::class, 'uploadStep1'])->name('upload.step1');
     Route::post('/upload/step1', [PrescriptionController::class, 'storePrescriptionStep1'])->name('upload.step1.store');
     Route::get('/upload/step2', [PrescriptionController::class, 'uploadStep2'])->name('upload.step2');
@@ -53,6 +54,9 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 
     // AJAX: obtener sucursales por cadena
     Route::get('/sucursales/{cadena_id}', [PrescriptionController::class, 'sucursalesPorCadena'])->name('sucursales.by_cadena');
+
+    // AJAX: obtener datos del mapa de farmacias
+    Route::get('/pharmacies-data', [PrescriptionController::class, 'getPharmaciesData'])->name('pharmacies.data');
   });
 
   // Pharmacy Routes
