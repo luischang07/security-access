@@ -11,7 +11,8 @@ class Pedido{
     private $lineas_pedido;
     private $paciente_id,$sucursal_id,$cadena_id;
 
-    private function __construct() {}
+    private function __construct() {
+    }
 
     public static function createPedido($paciente_id){
 
@@ -40,16 +41,20 @@ class Pedido{
     private function createColeccionLineas(){
         $this->lineas_pedido=collect();
     }
-    public function asociarSucursalAPedido($sucursal_id,$cadena_id){
+    public function asociarSucursalAPedido($cadena_id,$sucursal_id){
         $this->sucursal_id=$sucursal_id;
         $this->cadena_id=$cadena_id;
     }
     public function agregarMedicamento($medId,$cantidad){
         $linea_pedido=new LineaPedido($medId,$cantidad);
-        $lineas_pedido->push($linea_pedido)
+        $this->lineas_pedido->push($linea_pedido);
     }
 
     public function getLineasPedido(){
+        return $this->lineas_pedido->get(0);
+    }
+
+        public function getLineasPedidos(){
         return $this->lineas_pedido;
     }
 
@@ -61,6 +66,26 @@ class Pedido{
         return $this->cadena_id;
     }
     
+    public function crearDetalleLineaPedido($precio_unitario,$cantidadSurtida,$sucursal,$medicamento_id){
+
+        $linea = $this->lineas_pedido->firstWhere('medicamento_id', $medicamento_id);
+
+
+        if ($linea) {
+            $linea->crearDetalleLineaPedido($precio_unitario,$cantidadSurtida,$sucursal);
+
+        }
+
+        
+        $this->lineas_pedido = $this->lineas_pedido->map(function ($item) use ($medicamento_id,$precio_unitario,$cantidadSurtida,$sucursal) {
+            if ($item->getMedicamentoId() === $medicamento_id) {
+                $item->crearDetalleLineaPedido($precio_unitario,$cantidadSurtida,$sucursal);// se reemplaza
+            }
+            return $item;
+        });
+        
+        info( "cambio? ",[$linea = $this->lineas_pedido->firstWhere('medicamento_id', $medicamento_id)]);
+    }
     public function toArray(){
         return [
             'cedulaProfesional' => $this->cedulaProfesional,
@@ -74,4 +99,6 @@ class Pedido{
             'cadena_id' => $this->cadena_id
         ];
     }
+
+    
 }

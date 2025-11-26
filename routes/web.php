@@ -41,7 +41,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 
   // Prescription Routes
   Route::prefix('prescription')->name('prescription.')->group(function () {
-    Route::get('/upload/step1', [GestionPedidoController::class, 'nuevoPedido'])->name('upload.step1');
+    Route::get('/upload/step1', [GestionPedidoController::class, 'confirmarCaptura'])->name('upload.step1');
     
     Route::get('/upload/step2', [PrescriptionController::class, 'uploadStep2'])->name('upload.step2');
     Route::get('/pharmacy-map', [PrescriptionController::class, 'pharmacyMap'])->name('pharmacy-map');
