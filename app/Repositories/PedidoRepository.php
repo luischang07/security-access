@@ -160,14 +160,17 @@ class PedidoRepository
 
       // Crear líneas de pedido
       foreach ($medications as $index => $medication) {
-        // Buscar medicamento por nombre (simple match por ahora)
-        $medModel = \App\Models\Medicamento::where('nombre', 'LIKE', '%' . $medication['name'] . '%')->first();
+        $medicationId = $medication['medication_id'] ?? $medication['id'] ?? null;
+        if (!$medicationId && !empty($medication['name'])) {
+          $medModel = \App\Models\Medicamento::where('nombre', 'LIKE', '%' . $medication['name'] . '%')->first();
+          $medicationId = $medModel?->id;
+        }
 
-        if ($medModel) {
+        if ($medicationId) {
           \App\Models\LineaPedido::create([
             'folio_pedido' => $folio,
             'id_linea_pedido' => $index + 1,
-            'medicamento_id' => $medModel->id,
+            'medicamento_id' => $medicationId,
             'cantidad' => $medication['quantity'],
           ]);
         }

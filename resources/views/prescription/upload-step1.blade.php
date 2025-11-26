@@ -170,61 +170,90 @@
                                         {{ __('prescription.upload_step1.medications') }}
                                     </h3>
 
-                                    <div id="medications-container">
-                                        <!-- Medication Row 1 -->
-                                        <div
-                                            class="medication-row grid grid-cols-1 lg:grid-cols-12 gap-4 items-end p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark mb-4">
-                                            <div class="lg:col-span-5">
-                                                <label
-                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                                    for="medication-0">
-                                                    {{ __('prescription.upload_step1.medication_name') }}
-                                                </label>
-                                                <input
+                                    <div class="p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark space-y-4">
+                                        <div class="flex flex-col gap-2">
+                                            <label class="text-sm font-medium text-body-text dark:text-body-text-dark" for="medication-search">
+                                                Buscar medicamento
+                                            </label>
+                                            <div class="relative">
+                                                <input id="medication-search" type="text"
                                                     class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                                    id="medication-0" name="medications[0][name]"
-                                                    placeholder="{{ __('prescription.upload_step1.medication_name_placeholder') }}"
-                                                    type="text" required />
+                                                    placeholder="Ingresa el nombre del medicamento" autocomplete="off" />
+                                                <div id="medication-suggestions"
+                                                    class="absolute left-0 right-0 mt-1 z-20 hidden rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-lg max-h-56 overflow-y-auto">
+                                                </div>
                                             </div>
-                                            <div class="lg:col-span-3">
-                                                <label
-                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                                    for="dosage-0">
-                                                    {{ __('prescription.upload_step1.dosage') }}
-                                                </label>
-                                                <input
-                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                                    id="dosage-0" name="medications[0][dosage]"
-                                                    placeholder="{{ __('prescription.upload_step1.dosage_placeholder') }}"
-                                                    type="text" required />
-                                            </div>
-                                            <div class="lg:col-span-3">
-                                                <label
-                                                    class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                                    for="quantity-0">
-                                                    {{ __('prescription.upload_step1.quantity') }}
-                                                </label>
-                                                <input
-                                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                                    id="quantity-0" name="medications[0][quantity]"
-                                                    placeholder="{{ __('prescription.upload_step1.quantity_placeholder') }}"
-                                                    type="number" min="1" required />
-                                            </div>
-                                            <div class="lg:col-span-1">
-                                                <button type="button"
-                                                    class="delete-medication w-full flex items-center justify-center h-10 rounded-lg bg-transparent text-neutral-text dark:text-neutral-text-dark hover:bg-red-500/10 hover:text-red-500 transition">
-                                                    <span class="material-symbols-outlined text-xl">delete</span>
+                                            <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                                                Escribe al menos 2 caracteres para buscar y selecciona un resultado de la lista.
+                                            </p>
+                                        </div>
+
+                                        <div id="selected-medication-panel"
+                                            class="hidden rounded-lg border border-dashed border-primary/40 bg-primary/5 dark:bg-primary/10 p-4 space-y-3">
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div class="flex items-center gap-2 text-primary font-semibold">
+                                                    <span class="material-symbols-outlined text-xl">check_circle</span>
+                                                    <span>Elemento seleccionado</span>
+                                                </div>
+                                                <button type="button" id="clear-selected-medication"
+                                                    class="text-sm text-neutral-text dark:text-neutral-text-dark hover:text-red-500 transition">
+                                                    Cambiar selección
                                                 </button>
+                                            </div>
+                                            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+                                                <div class="flex-1">
+                                                    <p class="text-base font-bold text-body-text dark:text-body-text-dark" id="selected-medication-name">
+                                                        --
+                                                    </p>
+                                                    <p class="text-xs text-neutral-text dark:text-neutral-text-dark" id="selected-medication-meta"></p>
+                                                </div>
+                                                <div class="sm:w-36">
+                                                    <label
+                                                        class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                                                        for="selected-quantity">
+                                                        Cantidad
+                                                    </label>
+                                                    <input id="selected-quantity" type="number" min="1" value="1"
+                                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50" />
+                                                </div>
+                                                <button type="button" id="add-selected-medication"
+                                                    class="flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition">
+                                                    <span class="material-symbols-outlined text-xl">add_circle</span>
+                                                    <span>Agregar</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-col gap-3">
+                                            <div class="flex items-center justify-between">
+                                                <h4 class="text-base font-semibold text-body-text dark:text-body-text-dark">Medicamentos agregados</h4>
+                                                <span id="medications-count"
+                                                    class="rounded-full bg-background-light dark:bg-background-dark px-3 py-1 text-xs font-semibold text-neutral-text dark:text-neutral-text-dark">
+                                                    0 seleccionados
+                                                </span>
+                                            </div>
+                                            <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark">
+                                                <table class="min-w-full divide-y divide-border-light dark:divide-border-dark text-sm">
+                                                    <thead class="bg-background-light/60 dark:bg-background-dark/60">
+                                                        <tr>
+                                                            <th class="px-4 py-3 text-left font-semibold text-body-text dark:text-body-text-dark">Medicamento</th>
+                                                            <th class="px-4 py-3 text-left font-semibold text-body-text dark:text-body-text-dark">Cantidad</th>
+                                                            <th class="px-4 py-3 text-right font-semibold text-body-text dark:text-body-text-dark"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="medications-table-body" class="divide-y divide-border-light dark:divide-border-dark">
+                                                        <tr id="medications-empty-state">
+                                                            <td colspan="3" class="px-4 py-4 text-neutral-text dark:text-neutral-text-dark text-center">
+                                                                Aún no has agregado medicamentos.
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Add Medication Button -->
-                                    <button type="button" id="add-medication"
-                                        class="flex items-center gap-2 self-start rounded-lg h-10 px-4 bg-primary/10 dark:bg-primary/20 text-primary text-sm font-bold hover:bg-primary/20 dark:hover:bg-primary/30 transition">
-                                        <span class="material-symbols-outlined text-xl">add</span>
-                                        <span>{{ __('prescription.upload_step1.add_medication') }}</span>
-                                    </button>
+                                    <div id="medications-hidden-inputs" class="hidden"></div>
                                 </div>
 
                                 <!-- Special Instructions -->
@@ -264,8 +293,12 @@
         'select_option' => __('prescription.upload_step1.select_option'),
     ]);
     window.routes = {
-        sucursalesByCadena: "{{ route('prescription.sucursales.by_cadena', ['cadena_id' => '%%CADENA%%']) }}"
+        sucursalesByCadena: "{{ route('prescription.sucursales.by_cadena', ['cadena_id' => '%%CADENA%%']) }}",
+        medicationsSearch: "{{ route('prescription.medications.search') }}",
+        medicationsAdd: "{{ route('prescription.medications.add') }}",
+        medicationsRemove: "{{ route('prescription.medications.remove') }}"
     };
+    window.initialMedications = @json(old('medications', []));
 </script>
 @vite(['resources/js/patient/prescription-upload.js'])
 

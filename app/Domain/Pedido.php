@@ -12,6 +12,7 @@ class Pedido{
     private $paciente_id,$sucursal_id,$cadena_id;
 
     private function __construct() {
+        $this->createColeccionLineas();
     }
 
     public static function createPedido($paciente_id){
@@ -19,27 +20,27 @@ class Pedido{
         $instancia = new self();
 
         $instancia->paciente_id=$paciente_id;
-        $instancia->createColeccionLineas();
 
         return $instancia;
     }
 
     public static function createPedidoFromSession($datosPedido){
         $instancia = new self();
-        $instancia->cedulaProfesional=$datosPedido['cedulaProfesional'];
-        $instancia->fecha_pedido=$datosPedido['fecha_pedido'];
-        $instancia->fecha_recoleccion=$datosPedido['fecha_recoleccion'];
-        $instancia->fecha_entrega=$datosPedido['fecha_entrega'];
-        $instancia->estatus=$datosPedido['estatus'];
+        $instancia->createColeccionLineas();
+        $instancia->cedulaProfesional=$datosPedido['cedulaProfesional'] ?? null;
+        $instancia->fecha_pedido=$datosPedido['fecha_pedido'] ?? null;
+        $instancia->fecha_recoleccion=$datosPedido['fecha_recoleccion'] ?? null;
+        $instancia->fecha_entrega=$datosPedido['fecha_entrega'] ?? null;
+        $instancia->estatus=$datosPedido['estatus'] ?? null;
         foreach ($datosPedido['lineas_pedido'] ?? [] as $ldpData) {
             $instancia->agregarMedicamento(
-                    $ldpData['medicamento_id'],
-                    $ldpData['cantidad']
+                    $ldpData['medicamento_id'] ?? null,
+                    $ldpData['cantidad'] ?? 0
                 );
         }
-        $instancia->paciente_id=$datosPedido['paciente_id'];
-        $instancia->sucursal_id=$datosPedido['sucursal_id'];
-        $instancia->cadena_id=$datosPedido['cadena_id'];
+        $instancia->paciente_id=$datosPedido['paciente_id'] ?? null;
+        $instancia->sucursal_id=$datosPedido['sucursal_id'] ?? null;
+        $instancia->cadena_id=$datosPedido['cadena_id'] ?? null;
         return $instancia;
     }
 
@@ -51,19 +52,37 @@ class Pedido{
         $this->cadena_id=$cadena_id;
     }
     public function agregarMedicamento($medId,$cantidad){
+        if (!$medId) {
+            return;
+        }
+        if (!$this->lineas_pedido instanceof Collection) {
+            $this->createColeccionLineas();
+        }
+
+        $existing = $this->lineas_pedido->first(function ($ldp) use ($medId) {
+            return $ldp->getMedicamentoId() === (int) $medId;
+        });
+
+        if ($existing) {
+            $existing->setCantidad((int) $cantidad);
+            return;
+        }
+
         $linea_pedido=new LineaPedido($medId,$cantidad);
-        $lineas_pedido->push($linea_pedido);
+        $this->lineas_pedido->push($linea_pedido);
     }
 
     public function eliminarMedicamento($medId): void
     {
-        
-        $this->lineas_pedido = array_values(array_filter(
-            $this->lineas_pedido,
-            function (LineaPedido $ldp) use ($medId) {
-                return $ldp->medicamento_id !== $medId;
-            }
-        ));
+        if (!$this->lineas_pedido instanceof Collection) {
+            return;
+        }
+
+        $this->lineas_pedido = $this->lineas_pedido
+            ->filter(function (LineaPedido $ldp) use ($medId) {
+                return $ldp->getMedicamentoId() !== (int) $medId;
+            })
+            ->values();
     }
 
     public function getLineasPedido(){
@@ -109,16 +128,20 @@ class Pedido{
             'fecha_recoleccion' => $this->fecha_recoleccion,
             'fecha_entrega' => $this->fecha_entrega,
             'estatus' => $this->estatus,
-            'lineas_pedido' => array_map(function (LineaPedido $ldp) {
+            'lineas_pedido' => $this->lineas_pedido->map(function (LineaPedido $ldp) {
                 return [
-                    'medicamento_id' => $ldp->medicamento_id,
-                    'cantidad'       => $ldp->cantidad,
+                    'medicamento_id' => $ldp->getMedicamentoId(),
+                    'cantidad'       => $ldp->getCantidad(),
                 ];
-            }, $this->lineas_pedido),
+            })->values()->toArray(),
             'paciente_id' => $this->paciente_id,
             'sucursal_id' => $this->sucursal_id,
             'cadena_id' => $this->cadena_id
         ];
+    }
+
+    public function toSessionArray(){
+        return $this->toArray();
     }
 
     

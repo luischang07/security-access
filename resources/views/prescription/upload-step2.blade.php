@@ -165,11 +165,13 @@
                             <tr>
                               <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
                                 <div class="font-medium text-body-text dark:text-body-text-dark">
-                                  {{ $medication['name'] }}
+                                  {{ $medication['name'] ?? '' }}
                                 </div>
-                                <div class="text-neutral-text dark:text-neutral-text-dark">
-                                  {{ $medication['dosage'] }}
-                                </div>
+                                @if (!empty($medication['medication_id']))
+                                  <div class="text-neutral-text dark:text-neutral-text-dark">
+                                    ID: {{ $medication['medication_id'] }}
+                                  </div>
+                                @endif
                               </td>
                               <td
                                 class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">

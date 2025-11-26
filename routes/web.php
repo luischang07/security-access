@@ -50,6 +50,9 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 
     //ruta para procesar la sucursal
     Route::post('/sucursal/procesar', [GestionPedidoController::class, 'seleccionarSucursal'])->name('sucursal.procesar');
+    Route::get('/medications/search', [GestionPedidoController::class, 'buscarMedicamentos'])->name('medications.search');
+    Route::post('/medications/add', [GestionPedidoController::class, 'agregarMedicamento'])->name('medications.add');
+    Route::post('/medications/remove', [GestionPedidoController::class, 'eliminarMedicamento'])->name('medications.remove');
 
     // AJAX: obtener sucursales por cadena
     Route::get('/sucursales/{cadena_id}', [PrescriptionController::class, 'sucursalesPorCadena'])->name('sucursales.by_cadena');

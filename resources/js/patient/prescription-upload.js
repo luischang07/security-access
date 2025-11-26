@@ -1,109 +1,284 @@
 // Prescription Upload Step 1 JavaScript
-// Handles form validation, dynamic medication rows, and form submission
+// New medication search + selection flow with backend sync
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   initializePrescriptionForm();
   initializeBranchSelection();
-  initializeExistingDeleteButtons();
 });
+
+const medicationState = {
+  selected: null,
+  list: [],
+  suggestionsTimer: null,
+};
 
 /** Initialize prescription form functionality */
 function initializePrescriptionForm() {
   const form = document.getElementById('prescription-form');
-  const submitButton = document.getElementById('submit-button');
-  const addMedicationButton = document.getElementById('add-medication');
-
   if (!form) return;
 
-  // Enable/disable submit button based on form validity
-  form.addEventListener('input', validateForm);
-
-  // Add medication row
-  if (addMedicationButton) {
-    addMedicationButton.addEventListener('click', function (e) {
-      e.preventDefault();
-      addMedicationRow();
-    });
-  }
-
-  // Handle form submission
-  form.addEventListener('submit', function (e) {
+  form.addEventListener('submit', (e) => {
     if (!validateForm()) {
       e.preventDefault();
-      alert('Por favor completa todos los campos requeridos.');
+      alert('Por favor completa los campos requeridos antes de continuar.');
     }
+  });
+
+  setupMedicationSearch();
+  hydrateInitialMedications(window.initialMedications || []);
+  validateForm();
+}
+
+function setupMedicationSearch() {
+  const searchInput = document.getElementById('medication-search');
+  const suggestionsBox = document.getElementById('medication-suggestions');
+  const selectedPanel = document.getElementById('selected-medication-panel');
+  const selectedName = document.getElementById('selected-medication-name');
+  const selectedMeta = document.getElementById('selected-medication-meta');
+  const clearSelectionButton = document.getElementById('clear-selected-medication');
+  const addButton = document.getElementById('add-selected-medication');
+  const quantityInput = document.getElementById('selected-quantity');
+
+  if (!searchInput || !suggestionsBox || !selectedPanel || !selectedName || !selectedMeta || !addButton || !quantityInput) {
+    return;
+  }
+
+  searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.trim();
+    if (medicationState.suggestionsTimer) {
+      clearTimeout(medicationState.suggestionsTimer);
+    }
+    medicationState.suggestionsTimer = setTimeout(() => {
+      if (term.length < 2) {
+        hideSuggestions(suggestionsBox);
+        return;
+      }
+      searchMedications(term, suggestionsBox);
+    }, 250);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!suggestionsBox.contains(event.target) && event.target !== searchInput) {
+      hideSuggestions(suggestionsBox);
+    }
+  });
+
+  clearSelectionButton.addEventListener('click', () => {
+    medicationState.selected = null;
+    selectedPanel.classList.add('hidden');
+    searchInput.value = '';
+  });
+
+  addButton.addEventListener('click', () => {
+    const quantity = parseInt(quantityInput.value, 10);
+    if (!medicationState.selected) {
+      alert('Selecciona un medicamento de la lista.');
+      return;
+    }
+    if (!quantity || quantity < 1) {
+      alert('Ingresa una cantidad válida.');
+      return;
+    }
+    addMedicationToBackend(medicationState.selected.id, quantity);
+  });
+}
+
+function searchMedications(term, container) {
+  const url = (window.routes && window.routes.medicationsSearch) || '/prescription/medications/search';
+  fetch(`${url}?q=${encodeURIComponent(term)}`, { headers: { Accept: 'application/json' } })
+    .then((res) => res.ok ? res.json() : Promise.reject(res.statusText))
+    .then((results) => renderSuggestions(results || [], container))
+    .catch((err) => {
+      console.error('Error buscando medicamentos', err);
+      container.innerHTML = `<div class="px-4 py-3 text-sm text-red-500">No se pudo cargar la búsqueda</div>`;
+      container.classList.remove('hidden');
+    });
+}
+
+function renderSuggestions(results, container) {
+  container.innerHTML = '';
+  if (!results.length) {
+    container.innerHTML = `<div class="px-4 py-3 text-sm text-neutral-text dark:text-neutral-text-dark">Sin resultados</div>`;
+    container.classList.remove('hidden');
+    return;
+  }
+
+  results.forEach((item) => {
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = 'w-full text-left px-4 py-3 hover:bg-background-light dark:hover:bg-background-dark transition';
+    option.innerHTML = `
+      <div class="font-semibold text-body-text dark:text-body-text-dark">${item.nombre}</div>
+      <div class="text-xs text-neutral-text dark:text-neutral-text-dark">${item.unidades ? item.unidades : ''} ${item.unidad_medida ?? ''}</div>
+    `;
+    option.addEventListener('click', () => handleMedicationSelection(item));
+    container.appendChild(option);
+  });
+
+  container.classList.remove('hidden');
+}
+
+function hideSuggestions(container) {
+  container.classList.add('hidden');
+  container.innerHTML = '';
+}
+
+function handleMedicationSelection(medication) {
+  const selectedPanel = document.getElementById('selected-medication-panel');
+  const selectedName = document.getElementById('selected-medication-name');
+  const selectedMeta = document.getElementById('selected-medication-meta');
+  const searchInput = document.getElementById('medication-search');
+  const suggestionsBox = document.getElementById('medication-suggestions');
+
+  medicationState.selected = {
+    id: medication.id,
+    name: medication.nombre,
+    meta: `${medication.unidades ?? ''} ${medication.unidad_medida ?? ''}`.trim()
+  };
+
+  selectedName.textContent = medicationState.selected.name;
+  selectedMeta.textContent = medicationState.selected.meta;
+  selectedPanel.classList.remove('hidden');
+  hideSuggestions(suggestionsBox);
+  searchInput.value = medicationState.selected.name;
+}
+
+function addMedicationToBackend(medId, quantity) {
+  const addUrl = (window.routes && window.routes.medicationsAdd) || '/prescription/medications/add';
+  fetch(addUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': getCsrfToken(),
+      Accept: 'application/json'
+    },
+    body: JSON.stringify({ medId, cantidad: quantity })
+  })
+    .then((res) => res.ok ? res.json() : Promise.reject(res.statusText))
+    .then((data) => {
+      medicationState.list = Array.isArray(data.medications) ? data.medications : [];
+      renderMedicationTable();
+      syncHiddenInputs();
+      const quantityField = document.getElementById('selected-quantity');
+      if (quantityField) quantityField.value = 1;
+      validateForm();
+    })
+    .catch((err) => {
+      console.error('Error al agregar medicamento', err);
+      alert('No se pudo agregar el medicamento. Intenta de nuevo.');
+    });
+}
+
+function removeMedication(medId) {
+  const removeUrl = (window.routes && window.routes.medicationsRemove) || '/prescription/medications/remove';
+  fetch(removeUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': getCsrfToken(),
+      Accept: 'application/json'
+    },
+    body: JSON.stringify({ medId })
+  })
+    .then((res) => res.ok ? res.json() : Promise.reject(res.statusText))
+    .then((data) => {
+      medicationState.list = Array.isArray(data.medications) ? data.medications : [];
+      renderMedicationTable();
+      syncHiddenInputs();
+      validateForm();
+    })
+    .catch((err) => {
+      console.error('Error al eliminar medicamento', err);
+      alert('No se pudo eliminar el medicamento. Intenta de nuevo.');
+    });
+}
+
+function renderMedicationTable() {
+  const tableBody = document.getElementById('medications-table-body');
+  const emptyRow = document.getElementById('medications-empty-state');
+  const countBadge = document.getElementById('medications-count');
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML = '';
+
+  if (!medicationState.list.length) {
+    if (emptyRow) {
+      tableBody.appendChild(emptyRow);
+      emptyRow.classList.remove('hidden');
+    }
+    if (countBadge) countBadge.textContent = '0 seleccionados';
+    return;
+  }
+
+  medicationState.list.forEach((med) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="px-4 py-3">
+        <div class="font-semibold text-body-text dark:text-body-text-dark">${med.name}</div>
+        <div class="text-xs text-neutral-text dark:text-neutral-text-dark">ID: ${med.id}</div>
+      </td>
+      <td class="px-4 py-3 text-body-text dark:text-body-text-dark">${med.quantity}</td>
+      <td class="px-4 py-3 text-right">
+        <button type="button" class="text-red-500 hover:text-red-600" data-med-id="${med.id}">
+          <span class="material-symbols-outlined text-xl">delete</span>
+        </button>
+      </td>
+    `;
+    const deleteButton = row.querySelector('button');
+    deleteButton.addEventListener('click', () => removeMedication(med.id));
+    tableBody.appendChild(row);
+  });
+
+  if (countBadge) {
+    countBadge.textContent = `${medicationState.list.length} seleccionado${medicationState.list.length === 1 ? '' : 's'}`;
+  }
+}
+
+function hydrateInitialMedications(initialMedications = []) {
+  if (!Array.isArray(initialMedications) || !initialMedications.length) return;
+
+  medicationState.list = initialMedications.map((med) => ({
+    id: med.medication_id || med.id,
+    name: med.name || '',
+    quantity: parseInt(med.quantity, 10) || 1
+  })).filter((med) => med.id);
+
+  if (medicationState.list.length) {
+    renderMedicationTable();
+    syncHiddenInputs();
+    validateForm();
+  }
+}
+
+function syncHiddenInputs() {
+  const hiddenContainer = document.getElementById('medications-hidden-inputs');
+  if (!hiddenContainer) return;
+
+  hiddenContainer.innerHTML = '';
+  medicationState.list.forEach((med, index) => {
+    hiddenContainer.insertAdjacentHTML('beforeend', `
+      <input type="hidden" name="medications[${index}][medication_id]" value="${med.id}">
+      <input type="hidden" name="medications[${index}][name]" value="${med.name}">
+      <input type="hidden" name="medications[${index}][quantity]" value="${med.quantity}">
+    `);
   });
 }
 
 /** Validate form fields */
 function validateForm() {
-  const sucursalId = document.getElementById('sucursal_id').value;
+  const sucursalSelect = document.getElementById('sucursal_id');
   const submitButton = document.getElementById('submit-button');
 
-  // Check at least one medication is filled
-  const medicationRows = document.querySelectorAll('.medication-row');
-  let hasValidMedication = false;
-  medicationRows.forEach(row => {
-    const name = row.querySelector('[name$="[name]"]').value.trim();
-    const dosage = row.querySelector('[name$="[dosage]"]').value.trim();
-    const quantity = row.querySelector('[name$="[quantity]"]').value.trim();
-    if (name && dosage && quantity) {
-      hasValidMedication = true;
-    }
-  });
+  const hasSucursal = sucursalSelect && sucursalSelect.value;
+  const hasMedications = medicationState.list.length > 0;
+  const isValid = !!(hasSucursal && hasMedications);
 
-  const isValid = sucursalId && hasValidMedication;
-  if (submitButton) submitButton.disabled = !isValid;
+  if (submitButton) {
+    submitButton.disabled = !isValid;
+  }
+
   return isValid;
-}
-
-/** Add a new medication row */
-function addMedicationRow() {
-  const container = document.getElementById('medications-container');
-  const rows = container.querySelectorAll('.medication-row');
-  const newIndex = rows.length;
-
-  const newRow = document.createElement('div');
-  newRow.className = 'medication-row grid grid-cols-1 lg:grid-cols-12 gap-4 items-end p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark';
-  newRow.innerHTML = `
-    <div class="lg:col-span-5">
-      <label class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5" for="medication-${newIndex}">Nombre del Medicamento</label>
-      <input class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-             id="medication-${newIndex}" name="medications[${newIndex}][name]"
-             placeholder="ej., Amoxicilina" type="text" required />
-    </div>
-    <div class="lg:col-span-3">
-      <label class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5" for="dosage-${newIndex}">Dosificación</label>
-      <input class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-             id="dosage-${newIndex}" name="medications[${newIndex}][dosage]"
-             placeholder="ej., 500" type="number" min="1" required />
-    </div>
-    <div class="lg:col-span-3">
-      <label class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5" for="quantity-${newIndex}">Cantidad</label>
-      <input class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-             id="quantity-${newIndex}" name="medications[${newIndex}][quantity]"
-             placeholder="ej., 30" type="number" min="1" required />
-    </div>
-    <div class="lg:col-span-1">
-      <button type="button" class="delete-medication w-full flex items-center justify-center h-10 rounded-lg bg-transparent text-neutral-text dark:text-neutral-text-dark hover:bg-red-500/10 hover:text-red-500 transition">
-        <span class="material-symbols-outlined text-xl">delete</span>
-      </button>
-    </div>
-  `;
-
-  container.appendChild(newRow);
-
-  // Delete functionality for the new row
-  const deleteButton = newRow.querySelector('.delete-medication');
-  deleteButton.addEventListener('click', function () {
-    newRow.remove();
-    validateForm();
-  });
-
-  // Add input listeners for validation on the new fields
-  newRow.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', validateForm);
-  });
 }
 
 /** Initialize branch selection handling and sync hidden cadena_id */
@@ -111,9 +286,7 @@ function initializeBranchSelection() {
   const cadenaSelect = document.getElementById('cadena_id');
   const sucursalSelect = document.getElementById('sucursal_id');
 
-  // Populate sucursal options based on selected cadena
   function populateSucursales(cadenaId) {
-    // Clear existing options
     sucursalSelect.innerHTML = '';
     const placeholder = document.createElement('option');
     placeholder.value = '';
@@ -123,7 +296,6 @@ function initializeBranchSelection() {
     placeholder.textContent = defaultSelectOption;
     sucursalSelect.appendChild(placeholder);
 
-    // Build URL from route template exposed by Blade
     const template = window.routes && window.routes.sucursalesByCadena;
     const url = template ? template.replace('%%CADENA%%', encodeURIComponent(cadenaId)) : ('/prescription/sucursales/' + encodeURIComponent(cadenaId));
 
@@ -150,7 +322,6 @@ function initializeBranchSelection() {
       });
   }
 
-  // When cadena changes, repopulate sucursales
   if (cadenaSelect) {
     cadenaSelect.addEventListener('change', function () {
       const cadenaId = this.value;
@@ -164,7 +335,6 @@ function initializeBranchSelection() {
     });
   }
 
-  // When sucursal changes, optional server sync
   if (sucursalSelect) {
     sucursalSelect.addEventListener('change', function () {
       const selectedOption = this.options[this.selectedIndex];
@@ -172,12 +342,11 @@ function initializeBranchSelection() {
       if (sucursalJson) {
         try {
           const sucursalObjeto = JSON.parse(sucursalJson);
-          // Optional server call
           fetch('/prescription/sucursal/procesar', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+              'X-CSRF-TOKEN': getCsrfToken()
             },
             body: JSON.stringify({
               sucursal_id: sucursalObjeto.sucursal_id,
@@ -196,20 +365,7 @@ function initializeBranchSelection() {
   }
 }
 
-
-/** Initialize delete buttons for existing medication rows */
-function initializeExistingDeleteButtons() {
-  const deleteButtons = document.querySelectorAll('.delete-medication');
-  deleteButtons.forEach(button => {
-    button.addEventListener('click', function () {
-      const row = this.closest('.medication-row');
-      const container = document.getElementById('medications-container');
-      if (container.querySelectorAll('.medication-row').length > 1) {
-        row.remove();
-        validateForm();
-      } else {
-        alert('Debe haber al menos un medicamento.');
-      }
-    });
-  });
+function getCsrfToken() {
+  const el = document.querySelector('meta[name="csrf-token"]');
+  return el ? el.content : '';
 }

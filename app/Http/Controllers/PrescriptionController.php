@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Repositories\BaseDatos;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\PedidoRepository;
+use App\Models\Medicamento;
 
 class PrescriptionController extends Controller
 {
@@ -65,15 +66,21 @@ class PrescriptionController extends Controller
     $validated = $request->validate([
       'cadena_id' => 'required|string',
       'sucursal_id' => 'required|string',
-      'patient_name' => 'required|string|max:255',
-      'doctor_name' => 'required|string|max:255',
       'cedula_profesional' => 'required|string|max:50',
       'medications' => 'required|array|min:1',
-      'medications.*.name' => 'required|string|max:255',
-      'medications.*.dosage' => 'required|numeric|min:1',
+      'medications.*.medication_id' => 'required|integer|exists:medicamentos,id',
       'medications.*.quantity' => 'required|integer|min:1',
       'special_instructions' => 'nullable|string|max:1000',
     ]);
+
+    $validated['medications'] = collect($validated['medications'])->map(function ($medication) {
+      $med = Medicamento::find($medication['medication_id']);
+      return [
+        'medication_id' => $medication['medication_id'],
+        'name' => $med->nombre ?? 'Medicamento ' . $medication['medication_id'],
+        'quantity' => $medication['quantity'],
+      ];
+    })->values()->toArray();
 
     // Store prescription data in session
     session([

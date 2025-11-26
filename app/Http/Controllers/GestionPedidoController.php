@@ -10,6 +10,7 @@ use App\Services\Modelos\CadenaService;
 use App\Services\Modelos\GestorDeSurtido;
 use App\Domain\Pedido;
 use Illuminate\Support\Facades\Session;
+use App\Models\Medicamento;
 
 
 class GestionPedidoController extends Controller
@@ -48,18 +49,42 @@ class GestionPedidoController extends Controller
 
 
     public function agregarMedicamento(Request $request){
-        $medId = $request->input('medId');
-        $cantidad = $request->input('cantidad');
-        $this->pedidoService->agregarMedicamento($medId,$cantidad);
+        $medId = (int) $request->input('medId');
+        $cantidad = (int) $request->input('cantidad');
+
+        if ($medId <= 0 || $cantidad < 1) {
+            return response()->json(['ok' => false, 'message' => 'Datos de medicamento inválidos'], 422);
+        }
+
+        try {
+            $this->pedidoService->agregarMedicamento($medId,$cantidad);
+            return response()->json([
+                'ok' => true,
+                'medications' => $this->lineasPedidoActuales()
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
+        }
     }
 
     public function eliminarMedicamento(Request $request)
     {
-        $medId = $request->input('medId');
+        $medId = (int) $request->input('medId');
 
-        $this->pedidoService->eliminarMedicamento($medId);
+        if ($medId <= 0) {
+            return response()->json(['ok' => false, 'message' => 'ID de medicamento inválido'], 422);
+        }
 
-        return response()->json(['ok' => true]);
+        try {
+            $this->pedidoService->eliminarMedicamento($medId);
+        } catch (\Throwable $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'medications' => $this->lineasPedidoActuales()
+        ]);
     }
 
     public function confirmarCaptura(){
@@ -74,5 +99,43 @@ class GestionPedidoController extends Controller
         $pedido = Pedido::createPedidoFromSession($datosPedido);
 
         $this->GestorDeSurtido->surtir($pedido);
+    }
+
+    public function buscarMedicamentos(Request $request){
+        $query = $request->input('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $medicamentos = Medicamento::where('nombre', 'like', '%' . $query . '%')
+            ->orderBy('nombre')
+            ->limit(10)
+            ->get(['id','nombre','unidad_medida','unidades']);
+
+        return response()->json($medicamentos);
+    }
+
+    private function lineasPedidoActuales(): array
+    {
+        $datosPedido = Session::get('pedido_temporal');
+
+        if (!$datosPedido || empty($datosPedido['lineas_pedido'])) {
+            return [];
+        }
+
+        $lineas = collect($datosPedido['lineas_pedido']);
+        $medicamentos = Medicamento::whereIn('id', $lineas->pluck('medicamento_id'))
+            ->get(['id','nombre'])
+            ->keyBy('id');
+
+        return $lineas->map(function ($linea) use ($medicamentos) {
+            $med = $medicamentos->get($linea['medicamento_id']);
+            return [
+                'id' => $linea['medicamento_id'],
+                'name' => $med->nombre ?? 'Medicamento ' . $linea['medicamento_id'],
+                'quantity' => (int) $linea['cantidad'],
+            ];
+        })->values()->all();
     }
 }

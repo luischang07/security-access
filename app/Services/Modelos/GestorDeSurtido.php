@@ -23,7 +23,7 @@ class GestorDeSurtido
     $this->pedidoService = $pedidoService;
     $this->SinStock=collect();
   }
- 
+
   public function surtir(Pedido $pedido)
   {
 
