@@ -23,7 +23,7 @@ class Sucursal{
         $this->longitud = $longitud;
         $this->inventario = array();
     }
-    public function crear($data){
+    public static function crear($data){
         return new self($data->cadena_id,$data->sucursal_id,$data->nombre,$data->calle,$data->numero_exterior,$data->numero_interior,$data->ciudad,$data->colonia,$data->latitud,$data->longitud);
     }
 

@@ -2,17 +2,14 @@
 
 namespace App\Domain;
 
-use App\Models\DetalleLineaPedido;
+use App\Domain\DetalleLineaPedido;
 use Illuminate\Support\Collection;
 class LineaPedido {
-    private $folio_pedido;
     private $cantidad;
     private $medicamento_id;
-    private $stock_disponible;
     private $detalleLineaPedido;
 
-    public function __construct($folio_pedido,$medicamentoId,$cantidad,$stock_disponible){
-        $this->folio_pedido=$folio_pedido;
+    public function __construct($medicamentoId,$cantidad){
         $this->medicamento_id=$medicamentoId;
         $this->cantidad=$cantidad;
         $this->detalleLineaPedido = collect();
@@ -42,4 +39,15 @@ class LineaPedido {
         $this->detalleLineaPedido->push($dlp);
     }   
 
+    public function getCantidadFaltante(){
+        $faltante=$this->cantidad;
+        foreach($this->detalleLineaPedido as $detalle){
+            $faltante -= $detalle->getCantidadSurtida();
+        }
+        return $faltante;
+    }
+
+    public function getDetalleLineaPedido(){
+        return $this->detalleLineaPedido->get(0);
+    }
 }

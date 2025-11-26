@@ -13,5 +13,10 @@ class DetalleLineaPedido {
         $this->cantidadSurtida = $cantidadSurtida;
         $this->sucsel=$sucsel;
     }
-
+    public function getCantidadSurtida(){
+        return $this->cantidadSurtida;
+    } 
+    public function getSucursal(){
+        return $this->sucsel;
+    }
 }
