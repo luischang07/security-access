@@ -5,6 +5,7 @@ use App\Models\Sucursal;
 use App\Models\Inventario;
 use App\Models\CadenaFarmaceutica;
 use App\Domain\LineaInventario;
+use App\Models\Medicamento;
 
 use App\Domain\Sucursal as DomainSucursal;
 use Illuminate\Support\Collection;
@@ -73,5 +74,16 @@ class BaseDatos{
         }
 
         return $collectionSucursales;
+    }
+
+    public function buscarMedicamentosPorNombre(string $nombre){
+        return Medicamento::where('nombre', 'like', '%' . $nombre . '%')
+            ->orderBy('nombre')
+            ->limit(10)
+            ->get(['id','nombre','unidad_medida','unidades']);
+    }
+
+    public function obtenerMedicamentosPorIds(array $ids){
+        return Medicamento::whereIn('id', $ids)->get(['id','nombre'])->keyBy('id');
     }
 }

@@ -8,9 +8,9 @@ use App\Services\Modelos\PedidoService;
 use App\Services\Modelos\SucursalService;
 use App\Services\Modelos\CadenaService;
 use App\Services\Modelos\GestorDeSurtido;
+use App\Services\Modelos\MedicamentoService;
 use App\Domain\Pedido;
 use Illuminate\Support\Facades\Session;
-use App\Models\Medicamento;
 
 
 class GestionPedidoController extends Controller
@@ -19,12 +19,14 @@ class GestionPedidoController extends Controller
     private SucursalService $sucursalService;
     private GestorDeSurtido $GestorDeSurtido;
     private CadenaService $cadenaService;
+    private MedicamentoService $medicamentoService;
 
-    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService,GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService){
+    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService,GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService){
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
         $this->GestorDeSurtido = $GestorDeSurtido;
         $this->cadenaService = $cadenaService;
+        $this->medicamentoService = $medicamentoService;
     }
     
     public function nuevoPedido(){
@@ -60,7 +62,7 @@ class GestionPedidoController extends Controller
             $this->pedidoService->agregarMedicamento($medId,$cantidad);
             return response()->json([
                 'ok' => true,
-                'medications' => $this->lineasPedidoActuales()
+                'medications' => $this->pedidoService->obtenerLineasPedidoActuales()
             ]);
         } catch (\Throwable $e) {
             return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
@@ -83,7 +85,7 @@ class GestionPedidoController extends Controller
 
         return response()->json([
             'ok' => true,
-            'medications' => $this->lineasPedidoActuales()
+            'medications' => $this->pedidoService->obtenerLineasPedidoActuales()
         ]);
     }
 
@@ -101,6 +103,8 @@ class GestionPedidoController extends Controller
         $this->GestorDeSurtido->surtir($pedido);
     }
 
+
+
     public function buscarMedicamentos(Request $request){
         $query = $request->input('q', '');
 
@@ -108,34 +112,8 @@ class GestionPedidoController extends Controller
             return response()->json([]);
         }
 
-        $medicamentos = Medicamento::where('nombre', 'like', '%' . $query . '%')
-            ->orderBy('nombre')
-            ->limit(10)
-            ->get(['id','nombre','unidad_medida','unidades']);
+        $medicamentos = $this->medicamentoService->obtenerMedicamentosPorNombre($query);
 
         return response()->json($medicamentos);
-    }
-
-    private function lineasPedidoActuales(): array
-    {
-        $datosPedido = Session::get('pedido_temporal');
-
-        if (!$datosPedido || empty($datosPedido['lineas_pedido'])) {
-            return [];
-        }
-
-        $lineas = collect($datosPedido['lineas_pedido']);
-        $medicamentos = Medicamento::whereIn('id', $lineas->pluck('medicamento_id'))
-            ->get(['id','nombre'])
-            ->keyBy('id');
-
-        return $lineas->map(function ($linea) use ($medicamentos) {
-            $med = $medicamentos->get($linea['medicamento_id']);
-            return [
-                'id' => $linea['medicamento_id'],
-                'name' => $med->nombre ?? 'Medicamento ' . $linea['medicamento_id'],
-                'quantity' => (int) $linea['cantidad'],
-            ];
-        })->values()->all();
     }
 }

@@ -51,9 +51,9 @@ class PedidoService
         }
 
         $pedido = Pedido::createPedidoFromSession($datosPedido);
-
+        
         $pedido->agregarMedicamento($medId,$cantidad);
-
+        info("Pedido después de agregar medicamento: " . json_encode($pedido->toArray()));
         Session::put('pedido_temporal', $pedido->toArray());
     }
 
@@ -75,5 +75,26 @@ class PedidoService
     public function obtenerSucursal($cadena_id, $sucursal_id){
         $this->sucursal=$this->dataBase->obtenerSucursal($cadena_id,$sucursal_id);
         return $this->sucursal;
+    }
+
+    public function obtenerLineasPedidoActuales(): array
+    {
+        $datosPedido = Session::get('pedido_temporal');
+
+        if (!$datosPedido || empty($datosPedido['lineas_pedido'])) {
+            return [];
+        }
+
+        $lineas = collect($datosPedido['lineas_pedido']);
+        $medicamentos = $this->dataBase->obtenerMedicamentosPorIds($lineas->pluck('medicamento_id')->toArray());
+
+        return $lineas->map(function ($linea) use ($medicamentos) {
+            $med = $medicamentos->get($linea['medicamento_id']);
+            return [
+                'id' => $linea['medicamento_id'],
+                'name' => $med->nombre ?? 'Medicamento ' . $linea['medicamento_id'],
+                'quantity' => (int) $linea['cantidad'],
+            ];
+        })->values()->all();
     }
 }
