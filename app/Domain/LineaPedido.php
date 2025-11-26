@@ -50,4 +50,10 @@ class LineaPedido {
     public function getDetalleLineaPedido(){
         return $this->detalleLineaPedido->get(0);
     }
+
+    // Retornar todos los detalles (colección) para poder iterar y calcular totales
+    public function getDetalles()
+    {
+        return $this->detalleLineaPedido;
+    }
 }
