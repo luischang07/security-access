@@ -53,6 +53,14 @@ class GestionPedidoController extends Controller
         $this->pedidoService->agregarMedicamento($medId,$cantidad);
     }
 
+    public function eliminarMedicamento(Request $request)
+    {
+        $medId = $request->input('medId');
+
+        $this->pedidoService->eliminarMedicamento($medId);
+
+        return response()->json(['ok' => true]);
+    }
 
     public function confirmarPedido(){
 

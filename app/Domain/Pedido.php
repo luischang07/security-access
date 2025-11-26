@@ -51,7 +51,18 @@ class Pedido{
     }
     public function agregarMedicamento($medId,$cantidad){
         $linea_pedido=new LineaPedido($medId,$cantidad);
-        $lineas_pedido->push($linea_pedido)
+        $lineas_pedido->push($linea_pedido);
+    }
+
+    public function eliminarMedicamento($medId): void
+    {
+        
+        $this->lineas_pedido = array_values(array_filter(
+            $this->lineas_pedido,
+            function (LineaPedido $ldp) use ($medId) {
+                return $ldp->medicamento_id !== $medId;
+            }
+        ));
     }
 
     public function getLineasPedido(){

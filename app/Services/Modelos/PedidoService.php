@@ -57,11 +57,21 @@ class PedidoService
         Session::put('pedido_temporal', $pedido->toArray());
     }
 
-    public function eliminarMedicamento($medId){
+    public function eliminarMedicamento($medId)
+    {
+        $datosPedido = Session::get('pedido_temporal');
 
-        // Código para eliminar medicamento del pedido
-        
+        if (!$datosPedido) {
+            throw new \RuntimeException('No hay pedido en captura para eliminar un medicamento.');
+        }
+
+        $pedido = Pedido::createPedidoFromSession($datosPedido);
+
+        $pedido->eliminarMedicamento($medId);
+
+        Session::put('pedido_temporal', $pedido->toSessionArray());
     }
+
     public function obtenerSucursal($cadena_id, $sucursal_id){
         $this->sucursal=$this->dataBase->obtenerSucursal($cadena_id,$sucursal_id);
         return $this->sucursal;
