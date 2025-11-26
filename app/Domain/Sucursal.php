@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Http\Dominio;
+namespace App\Domain;
 use App\Http\ServiciosTecnicos\BaseDatos;
 
 class Sucursal{
@@ -8,6 +8,7 @@ class Sucursal{
     private $cadena_id,$sucursal_id,$nombre;
     private $calle,$numero_exterior,$numero_interiror,$ciudad,$colonia;
     private $latitud,$longitud;
+    private $inventario;
 
     public function __construct($cadena_id,$sucursal_id,$nombre,$calle,$numero_exterior,$numero_interior,$ciudad,$colonia,$latitud,$longitud){
         $this->cadena_id = $cadena_id;
@@ -20,8 +21,9 @@ class Sucursal{
         $this->colonia = $colonia;
         $this->latitud = $latitud;
         $this->longitud = $longitud;
+        $this->inventario = array();
     }
-    public function crear($data){
+    public static function crear($data){
         return new self($data->cadena_id,$data->sucursal_id,$data->nombre,$data->calle,$data->numero_exterior,$data->numero_interior,$data->ciudad,$data->colonia,$data->latitud,$data->longitud);
     }
 
@@ -85,5 +87,21 @@ class Sucursal{
     }
     public function setLongitud($longitud){
         $this->longitud = $longitud;
+    }
+
+    public static function fromModel($modelo)
+    {
+        return new self(
+            $modelo->cadena_id,
+            $modelo->sucursal_id,
+            $modelo->nombre,
+            $modelo->calle,
+            $modelo->numero_exterior,
+            $modelo->numero_interior,
+            $modelo->ciudad,
+            $modelo->colonia,
+            $modelo->latitud,
+            $modelo->longitud
+        );
     }
 }
