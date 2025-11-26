@@ -16,7 +16,7 @@ class GestionPedidoController extends Controller
     private PedidoService $pedidoService;
     private SucursalService $sucursalService;
     private GestorDeSurtido $GestorDeSurtido;
-
+    private $pedido;
     public function __construct(PedidoService $pedidoService,SucursalService $sucursalService,GestorDeSurtido $GestorDeSurtido){
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
@@ -29,7 +29,7 @@ class GestionPedidoController extends Controller
 
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
         $sucursales = $this->sucursalService->obtenerTodasSucursales();
-
+        Session::put('pedido_temporal', serialize($pedido));
         return view('prescription.upload-step1', compact('sucursales'));
     }
     public function seleccionarSucursal(Request $request){
@@ -54,11 +54,12 @@ class GestionPedidoController extends Controller
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
         $pedido->asociarSucursalAPedido("CAD001","SUC001");
 
-        $datosPedido = Session::get('pedido_temporal', []);
+        $pedido = unserialize(Session::get('pedido_temporal'));
 
+        $pedido = $this->GestorDeSurtido->surtir($pedido);
+                Session::forget('pedido_temporal');
+        Session::put('pedido_temporal', serialize($pedido));
 
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
-
-        $this->GestorDeSurtido->surtir($pedido);
+        return view('prescription.upload-step2', compact('pedido'));
     }
 }

@@ -20,32 +20,31 @@ class PedidoService
     public function nuevoPedido($paciente_id){
         $this->pedido=Pedido::createPedido($paciente_id);
 
-        Session::put('pedido_temporal', $this->pedido->toArray());
+        Session::put('pedido_temporal', serialize($this->pedido));
 
         return $this->pedido;
     }
 
     public function asociarSucursalAPedido($sucursal_id,$cadena_id){
 
-        $datosPedido = Session::get('pedido_temporal', []);
-
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
-
+        $pedido = unserialize( Session::get('pedido_temporal'));
+        
         $pedido->asociarSucursalAPedido($sucursal_id,$cadena_id);
-
-        Session::put('pedido_temporal', $pedido->toArray());
+        
+        Session::forget('pedido_temporal');
+        Session::put('pedido_temporal', serialize($pedido));
 
     }
 
     public function agregarMedicamento($medId,$cantidad){
 
-        $datosPedido = Session::get('pedido_temporal', []);
+        $datosPedido = unserialize(Session::get('pedido_temporal'));
+        Session::forget('pedido_temporal');
 
         $pedido = Pedido::createPedidoFromSession($datosPedido);
 
         $pedido->agregarMedicamento($medId,$cantidad);
-
-        Session::put('pedido_temporal', $pedido->toArray());
+        Session::put('pedido_temporal', serialize($pedido));
     }
 
     public function obtenerSucursal($cadena_id, $sucursal_id){

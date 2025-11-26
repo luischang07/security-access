@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html class="light" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html class="light" lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('prescription.upload_step2.title') }} - Te Acerco Salud</title>
+    <title><?php echo e(__('prescription.upload_step2.title')); ?> - Te Acerco Salud</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
@@ -71,7 +71,7 @@
                         <div class="flex flex-1 justify-end gap-4 sm:gap-8">
                             <div class="hidden sm:flex items-center gap-9">
                                 <a class="text-sm font-medium leading-normal text-body-text dark:text-body-text-dark hover:text-primary transition"
-                                    href="{{ route('patient.dashboard') }}">
+                                    href="<?php echo e(route('patient.dashboard')); ?>">
                                     Dashboard
                                 </a>
                             </div>
@@ -80,7 +80,7 @@
                                 <span class="material-symbols-outlined text-xl">help</span>
                             </button>
                             <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-                                style='background-image: url("https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=137fec&color=fff");'>
+                                style='background-image: url("https://ui-avatars.com/api/?name=<?php echo e(urlencode(auth()->user()->name ?? 'User')); ?>&background=137fec&color=fff");'>
                             </div>
                         </div>
                     </header>
@@ -90,11 +90,13 @@
                         <div class="flex flex-col gap-2 px-4">
                             <h1
                                 class="text-3xl lg:text-4xl font-black tracking-[-0.033em] text-body-text dark:text-body-text-dark">
-                                {{ __('prescription.upload_step2.heading') }}
+                                <?php echo e(__('prescription.upload_step2.heading')); ?>
+
                             </h1>
                             <p
                                 class="text-base font-normal leading-normal text-neutral-text dark:text-neutral-text-dark">
-                                {{ __('prescription.upload_step2.subtitle') }}
+                                <?php echo e(__('prescription.upload_step2.subtitle')); ?>
+
                             </p>
                         </div>
 
@@ -109,7 +111,8 @@
                                         class="material-symbols-outlined text-2xl text-primary mt-1">local_pharmacy</span>
                                     <div class="flex flex-col">
                                         <h3 class="text-sm font-medium text-neutral-text dark:text-neutral-text-dark">
-                                            {{ __('prescription.upload_step2.selected_pharmacy') }}
+                                            <?php echo e(__('prescription.upload_step2.selected_pharmacy')); ?>
+
                                         </h3>
                                         <p class="text-base font-bold text-body-text dark:text-body-text-dark">
                                             Farmacia del Ahorro - Sucursal Centro
@@ -123,13 +126,15 @@
                                     <span class="material-symbols-outlined text-2xl text-primary mt-1">schedule</span>
                                     <div class="flex flex-col">
                                         <h3 class="text-sm font-medium text-neutral-text dark:text-neutral-text-dark">
-                                            {{ __('prescription.upload_step2.estimated_pickup') }}
+                                            <?php echo e(__('prescription.upload_step2.estimated_pickup')); ?>
+
                                         </h3>
                                         <p class="text-base font-bold text-body-text dark:text-body-text-dark">
                                             Today, 2:30 PM - 3:00 PM
                                         </p>
                                         <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            {{ __('prescription.upload_step2.pickup_notification') }}
+                                            <?php echo e(__('prescription.upload_step2.pickup_notification')); ?>
+
                                         </p>
                                     </div>
                                 </div>
@@ -138,7 +143,8 @@
                             <!-- Medications Table -->
                             <div class="flex flex-col">
                                 <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark mb-4">
-                                    {{ __('prescription.upload_step2.prescribed_medications') }}
+                                    <?php echo e(__('prescription.upload_step2.prescribed_medications')); ?>
+
                                 </h3>
                                 <div class="flow-root">
                                     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -149,15 +155,18 @@
                                                     <tr>
                                                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-body-text dark:text-body-text-dark sm:pl-0"
                                                             scope="col">
-                                                            {{ __('prescription.upload_step2.medication') }}
+                                                            <?php echo e(__('prescription.upload_step2.medication')); ?>
+
                                                         </th>
                                                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark"
                                                             scope="col">
-                                                            {{ __('prescription.upload_step2.quantity') }}
+                                                            <?php echo e(__('prescription.upload_step2.quantity')); ?>
+
                                                         </th>
                                                         <th class="px-3 py-3.5 text-right text-sm font-semibold text-body-text dark:text-body-text-dark"
                                                             scope="col">
-                                                            {{ __('prescription.upload_step2.price') }}
+                                                            <?php echo e(__('prescription.upload_step2.price')); ?>
+
                                                         </th>
                                                     </tr>
                                                 </thead>
@@ -169,11 +178,11 @@
                                                             <div
                                                                 class="font-medium text-body-text dark:text-body-text-dark">
                                                                 Amoxicillin 500mg</div>
-                                                                @php
-                                                                    echo $pedido->getLineasPedido()->getMedicamentoId()
-                                                                @endphp
+                                                    <?php
+                                                        echo $pedido->getLineasPedido()->getMedicamentoId()
+                                                    ?>
                                                             <div class="text-neutral-text dark:text-neutral-text-dark">
-                                                                {{ __('prescription.upload_step2.capsules') }}</div>
+                                                                <?php echo e(__('prescription.upload_step2.capsules')); ?></div>
                                                         </td>
                                                         <td
                                                             class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
@@ -189,7 +198,7 @@
                                                                 class="font-medium text-body-text dark:text-body-text-dark">
                                                                 Ibuprofen 200mg</div>
                                                             <div class="text-neutral-text dark:text-neutral-text-dark">
-                                                                {{ __('prescription.upload_step2.tablets') }}</div>
+                                                                <?php echo e(__('prescription.upload_step2.tablets')); ?></div>
                                                         </td>
                                                         <td
                                                             class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
@@ -205,7 +214,7 @@
                                                                 class="font-medium text-body-text dark:text-body-text-dark">
                                                                 Loratadine 10mg</div>
                                                             <div class="text-neutral-text dark:text-neutral-text-dark">
-                                                                {{ __('prescription.upload_step2.tablets') }}</div>
+                                                                <?php echo e(__('prescription.upload_step2.tablets')); ?></div>
                                                         </td>
                                                         <td
                                                             class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
@@ -226,25 +235,26 @@
                                 class="flex flex-col items-end gap-2 border-t border-border-light dark:border-border-dark pt-6">
                                 <div class="flex justify-between w-full max-w-xs">
                                     <span
-                                        class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ __('prescription.upload_step2.subtotal') }}</span>
+                                        class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.subtotal')); ?></span>
                                     <span
                                         class="text-sm font-medium text-body-text dark:text-body-text-dark">$37.24</span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs">
                                     <span
-                                        class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ __('prescription.upload_step2.service_fee') }}</span>
+                                        class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.service_fee')); ?></span>
                                     <span
                                         class="text-sm font-medium text-body-text dark:text-body-text-dark">$1.00</span>
                                 </div>
                                 <div
                                     class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
                                     <span
-                                        class="text-lg font-bold text-body-text dark:text-body-text-dark">{{ __('prescription.upload_step2.estimated_total') }}</span>
+                                        class="text-lg font-bold text-body-text dark:text-body-text-dark"><?php echo e(__('prescription.upload_step2.estimated_total')); ?></span>
                                     <span class="text-lg font-bold text-primary">$38.24</span>
                                 </div>
                                 <p
                                     class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">
-                                    {{ __('prescription.upload_step2.price_disclaimer') }}
+                                    <?php echo e(__('prescription.upload_step2.price_disclaimer')); ?>
+
                                 </p>
                             </div>
                         </div>
@@ -254,11 +264,11 @@
                             <button
                                 class="flex items-center justify-center gap-2 rounded-lg h-12 px-8 text-neutral-text dark:text-neutral-text-dark text-base font-bold tracking-wide hover:bg-background-light dark:hover:bg-background-dark transition">
                                 <span class="material-symbols-outlined">arrow_back</span>
-                                <span>{{ __('prescription.upload_step2.edit_prescription') }}</span>
+                                <span><?php echo e(__('prescription.upload_step2.edit_prescription')); ?></span>
                             </button>
                             <button
                                 class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
-                                <span>{{ __('prescription.upload_step2.confirm_order') }}</span>
+                                <span><?php echo e(__('prescription.upload_step2.confirm_order')); ?></span>
                                 <span class="material-symbols-outlined">check_circle</span>
                             </button>
                         </div>
@@ -270,3 +280,4 @@
 </body>
 
 </html>
+<?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/prescription/upload-step2.blade.php ENDPATH**/ ?>

@@ -49,12 +49,14 @@ class GestorDeSurtido
         $this->SinStock->push( $lineaPedido);
       }
     }
+
     if($this->SinStock->count()>0){
       $sucCercanas= $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
       $this->CalculaFaltantes($this->SinStock,$sucCercanas, $pedido);
     }
     //info("pedido", [$pedido->getLineasPedido()->getDetalleLineaPedido()->getSucursal()->getSucursalId()]);
     //info("sucursales", [$sucCercanas]);
+    return $pedido;
   }
 
   public function CalculaFaltantes($SinStock,$sucCercanas, $pedido){
