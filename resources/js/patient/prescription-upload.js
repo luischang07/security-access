@@ -286,7 +286,7 @@ function initializeBranchSelection() {
   const cadenaSelect = document.getElementById('cadena_id');
   const sucursalSelect = document.getElementById('sucursal_id');
 
-  function populateSucursales(cadenaId) {
+  function populateSucursales(cadenaId, onComplete) {
     sucursalSelect.innerHTML = '';
     const placeholder = document.createElement('option');
     placeholder.value = '';
@@ -314,6 +314,9 @@ function initializeBranchSelection() {
           sucursalSelect.appendChild(opt);
         });
         sucursalSelect.disabled = false;
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
         validateForm();
       })
       .catch(err => {
@@ -363,9 +366,27 @@ function initializeBranchSelection() {
       validateForm();
     });
   }
+
+  handlePrefillFromQuery(cadenaSelect, sucursalSelect, populateSucursales);
 }
 
 function getCsrfToken() {
   const el = document.querySelector('meta[name="csrf-token"]');
   return el ? el.content : '';
+}
+
+function handlePrefillFromQuery(cadenaSelect, sucursalSelect, populateSucursales) {
+  if (!cadenaSelect || !sucursalSelect) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const cadenaId = params.get('cadena_id');
+  const sucursalId = params.get('sucursal_id');
+
+  if (!cadenaId || !sucursalId) return;
+
+  cadenaSelect.value = cadenaId;
+  populateSucursales(cadenaId, () => {
+    sucursalSelect.value = sucursalId;
+    sucursalSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  });
 }

@@ -45,7 +45,6 @@ class PrescriptionController extends Controller
   public function sucursalesPorCadena($cadena_id)
   {
     $sucursales = $this->dataBase->obtenerSucursalesPorCadena($cadena_id);
-    info(['sucursales' => $sucursales]);
     return response()->json($sucursales);
   }
 
