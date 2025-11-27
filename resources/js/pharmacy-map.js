@@ -1,66 +1,5 @@
-// Note: Using real Lat/Lng coordinates for accurate mapping
-const pharmacies = [
-  {
-    id: 1,
-    name: "Farmacia del Ahorro",
-    address: "Av. Insurgentes Sur 123, Roma Nte.",
-    distance: "1.2 km",
-    status: "Open",
-    statusClass: "success",
-    closeTime: "Closes at 9:00 PM",
-    lat: 19.415,  // Latitude
-    lng: -99.165, // Longitude
-    stock: true,
-    phone: "+52 55 1234 5678",
-    is24Hours: false,
-    hours: { today: "8:00 AM - 9:00 PM", weekday: "8:00 AM - 9:00 PM", weekend: "9:00 AM - 6:00 PM" }
-  },
-  {
-    id: 2,
-    name: "Farmacias San Pablo",
-    address: "Calle de Durango 200, Condesa",
-    distance: "2.5 km",
-    status: "Open",
-    statusClass: "success",
-    closeTime: "Open 24 Hours",
-    lat: 19.420,
-    lng: -99.170,
-    stock: true,
-    phone: "+52 55 9876 5432",
-    is24Hours: true,
-    hours: { today: "24 Hours", weekday: "24 Hours", weekend: "24 Hours" }
-  },
-  {
-    id: 3,
-    name: "Farmacia Guadalajara",
-    address: "Av. Revolución 550, San Pedro",
-    distance: "3.1 km",
-    status: "Closed",
-    statusClass: "danger",
-    closeTime: "Opens at 8:00 AM",
-    lat: 19.390,
-    lng: -99.185,
-    stock: false,
-    phone: "+52 55 4567 8901",
-    is24Hours: false,
-    hours: { today: "Closed", weekday: "8:00 AM - 10:00 PM", weekend: "9:00 AM - 8:00 PM" }
-  },
-  {
-    id: 4,
-    name: "Farmacia Benavides",
-    address: "Blvd. Miguel de Cervantes 789",
-    distance: "4.2 km",
-    status: "Open",
-    statusClass: "success",
-    closeTime: "Closes at 10:00 PM",
-    lat: 19.435,
-    lng: -99.195,
-    stock: true,
-    phone: "+52 55 7654 3210",
-    is24Hours: false,
-    hours: { today: "8:00 AM - 10:00 PM", weekday: "8:00 AM - 10:00 PM", weekend: "10:00 AM - 6:00 PM" }
-  }
-];
+// Data will be fetched from API
+let pharmacies = [];
 
 let map;
 let markers = {};
@@ -99,7 +38,7 @@ const selectedIcon = createIcon('text-red-600', true);
 
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
-  renderList();
+  // renderList(); // Called after fetching data
 
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
@@ -136,12 +75,30 @@ function initMap() {
   }).addTo(map);
   L.control.zoom({ position: 'topright' }).addTo(map);
 
-  pharmacies.forEach(p => {
-    // Creating marker using Lat/Lng from data
-    const marker = L.marker([p.lat, p.lng], { icon: defaultIcon }).addTo(map);
-    marker.on('click', () => selectPharmacy(p.id));
-    markers[p.id] = marker;
-  });
+  // Fetch data from API
+  fetch('/prescription/pharmacies-data')
+    .then(response => response.json())
+    .then(data => {
+      pharmacies = data;
+
+      pharmacies.forEach(p => {
+        // Creating marker using Lat/Lng from data
+        const marker = L.marker([p.lat, p.lng], { icon: defaultIcon }).addTo(map);
+        marker.on('click', () => selectPharmacy(p.id));
+        markers[p.id] = marker;
+      });
+
+      renderList();
+
+      // If we have data, fit bounds
+      if (pharmacies.length > 0) {
+        const group = new L.featureGroup(Object.values(markers));
+        map.fitBounds(group.getBounds().pad(0.1));
+      }
+    })
+    .catch(error => {
+      console.error('Error loading pharmacy data:', error);
+    });
 }
 
 function toggleFilter(filterType) {
@@ -167,7 +124,7 @@ function selectPharmacy(id) {
   if (!p) return;
 
   Object.keys(markers).forEach(k => {
-    const isTarget = parseInt(k) === id;
+    const isTarget = k === id;
     markers[k].setIcon(isTarget ? selectedIcon : defaultIcon);
     markers[k].setZIndexOffset(isTarget ? 1000 : 0);
   });
@@ -221,7 +178,11 @@ function closeDetailCard() {
 }
 
 function selectPharmacyAction() {
-  alert(`Pharmacy ID ${selectedId} selected!`);
+  const p = pharmacies.find(x => x.id === selectedId);
+  if (p) {
+    // Redirect to upload step 1 with pre-selected chain and branch
+    window.location.href = `/prescription/upload/step1?cadena_id=${p.cadenaId}&sucursal_id=${p.sucursalId}`;
+  }
 }
 
 function renderList(searchQuery = "") {

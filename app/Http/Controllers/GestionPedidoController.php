@@ -29,8 +29,9 @@ class GestionPedidoController extends Controller
         $this->medicamentoService = $medicamentoService;
     }
     
-    public function nuevoPedido(){
 
+    public function nuevoPedido()
+    {
         $paciente_id = Auth::user()->user_id;
 
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
@@ -89,11 +90,12 @@ class GestionPedidoController extends Controller
         ]);
     }
 
-    public function confirmarCaptura(){
+    public function confirmarCaptura()
+    {
         $paciente_id = Auth::user()->user_id;
 
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
-        $pedido->asociarSucursalAPedido("CAD001","SUC001");
+        $pedido->asociarSucursalAPedido("CAD001", "SUC001");
 
         $datosPedido = Session::get('pedido_temporal', []);
 

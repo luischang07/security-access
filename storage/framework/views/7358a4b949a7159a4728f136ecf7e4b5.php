@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', __('patient.profile.title')); ?>
 
 <?php $__env->startSection('spa-content'); ?>
