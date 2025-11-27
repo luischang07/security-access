@@ -2,59 +2,59 @@
 <html class="light" lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo e(__('prescription.upload_step2.title')); ?> - Te Acerco Salud</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#137fec",
-                        "secondary": "#2ECC71",
-                        "accent": "#F39C12",
-                        "background-light": "#f6f7f8",
-                        "background-dark": "#101922",
-                        "success": "#28A745",
-                        "warning": "#FFC107",
-                        "neutral-text": "#617589",
-                        "neutral-text-dark": "#90a4b8",
-                        "body-text": "#111418",
-                        "body-text-dark": "#f0f2f4",
-                        "border-light": "#f0f2f4",
-                        "border-dark": "#2a3b4c",
-                        "card-light": "#ffffff",
-                        "card-dark": "#1a2734",
-                    },
-                    fontFamily: {
-                        "display": ["Manrope", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><?php echo e(__('prescription.upload_step2.title')); ?> - Te Acerco Salud</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "secondary": "#2ECC71",
+            "accent": "#F39C12",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+            "success": "#28A745",
+            "warning": "#FFC107",
+            "neutral-text": "#617589",
+            "neutral-text-dark": "#90a4b8",
+            "body-text": "#111418",
+            "body-text-dark": "#f0f2f4",
+            "border-light": "#f0f2f4",
+            "border-dark": "#2a3b4c",
+            "card-light": "#ffffff",
+            "card-dark": "#1a2734",
+          },
+          fontFamily: {
+            "display": ["Manrope", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark">
-    <div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-        <div class="layout-container flex h-full grow flex-col">
-            <div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
-                <div class="layout-content-container flex flex-col w-full max-w-4xl flex-1">
+  <div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    <div class="layout-container flex h-full grow flex-col">
+      <div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
+        <div class="layout-content-container flex flex-col w-full max-w-4xl flex-1">
 
                     <!-- Top Navigation Bar -->
                     <header
@@ -115,10 +115,12 @@
 
                                         </h3>
                                         <p class="text-base font-bold text-body-text dark:text-body-text-dark">
-                                            Farmacia del Ahorro - Sucursal Centro
+                                            <?php echo e($pedido->getSucursal()->getNombre()); ?>
+
                                         </p>
                                         <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            Av. Siempre Viva 123, Springfield
+                                            <?php echo e($pedido->getSucursal()->getDireccion()); ?>
+
                                         </p>
                                     </div>
                                 </div>
@@ -175,14 +177,12 @@
                                                         $lineas = $pedido->getLineasPedidos();
                                                         $subtotal = 0;
                                                         $serviceFee = 1.00; // tarifa de servicio fija
-                                                        echo $pedido->getCadenaSeleccionada();
                                                     ?>
                                                          
                                                     <?php if($lineas && count($lineas) > 0): ?>
                                                        
                                                         <?php $__currentLoopData = $lineas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $linea): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                             <?php
-                                                            echo "entro";
                                                             
                                                                 $detalles = method_exists($linea, 'getDetalles') ? $linea->getDetalleLineaPedido() : collect();
                                                                 $lineTotal = 0;
@@ -194,7 +194,7 @@
                                                             <tr>
                                                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
                                                                     <div class="font-medium text-body-text dark:text-body-text-dark">
-                                                                        <?php echo e('Medicamento #' . $linea->getMedicamento()->getNombre()); ?></div>
+                                                                        <?php echo e($linea->getMedicamento()->getNombre()); ?></div>
                                                                     <div class="text-neutral-text dark:text-neutral-text-dark">
                                                                         <?php echo e(__('prescription.upload_step2.capsules')); ?></div>
                                                                 </td>
@@ -258,9 +258,8 @@
                     </main>
                 </div>
             </div>
-        </div>
     </div>
+  </div>
 </body>
-
 </html>
 <?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/prescription/upload-step2.blade.php ENDPATH**/ ?>
