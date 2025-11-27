@@ -171,58 +171,47 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody class="divide-y divide-border-light dark:divide-border-dark">
-
-                                                    <!-- Medication 1 -->
-                                                    <tr>
-                                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
-                                                            <div
-                                                                class="font-medium text-body-text dark:text-body-text-dark">
-                                                                Amoxicillin 500mg</div>
                                                     <?php
-                                                        echo $pedido->getLineasPedido()->getMedicamentoId()
+                                                        $lineas = $pedido->getLineasPedidos();
+                                                        $subtotal = 0;
+                                                        $serviceFee = 1.00; // tarifa de servicio fija
+                                                        echo $pedido->getCadenaSeleccionada();
                                                     ?>
-                                                            <div class="text-neutral-text dark:text-neutral-text-dark">
-                                                                <?php echo e(__('prescription.upload_step2.capsules')); ?></div>
-                                                        </td>
-                                                        <td
-                                                            class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                            30</td>
-                                                        <td
-                                                            class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
-                                                            $15.99</td>
-                                                    </tr>
-                                                    <!-- Medication 2 -->
-                                                    <tr>
-                                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
-                                                            <div
-                                                                class="font-medium text-body-text dark:text-body-text-dark">
-                                                                Ibuprofen 200mg</div>
-                                                            <div class="text-neutral-text dark:text-neutral-text-dark">
-                                                                <?php echo e(__('prescription.upload_step2.tablets')); ?></div>
-                                                        </td>
-                                                        <td
-                                                            class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                            50</td>
-                                                        <td
-                                                            class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
-                                                            $8.50</td>
-                                                    </tr>
-                                                    <!-- Medication 3 -->
-                                                    <tr>
-                                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
-                                                            <div
-                                                                class="font-medium text-body-text dark:text-body-text-dark">
-                                                                Loratadine 10mg</div>
-                                                            <div class="text-neutral-text dark:text-neutral-text-dark">
-                                                                <?php echo e(__('prescription.upload_step2.tablets')); ?></div>
-                                                        </td>
-                                                        <td
-                                                            class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                            20</td>
-                                                        <td
-                                                            class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
-                                                            $12.75</td>
-                                                    </tr>
+                                                         
+                                                    <?php if($lineas && count($lineas) > 0): ?>
+                                                       
+                                                        <?php $__currentLoopData = $lineas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $linea): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                            <?php
+                                                            echo "entro";
+                                                            
+                                                                $detalles = method_exists($linea, 'getDetalles') ? $linea->getDetalleLineaPedido() : collect();
+                                                                $lineTotal = 0;
+                                                                foreach($detalles as $detalle) {
+                                                                    $lineTotal += $detalle->getPrecio() * $detalle->getCantidadSurtida();
+                                                                }
+                                                                $subtotal += $lineTotal;
+                                                            ?>
+                                                            <tr>
+                                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
+                                                                    <div class="font-medium text-body-text dark:text-body-text-dark">
+                                                                        <?php echo e('Medicamento #' . $linea->getMedicamento()->getNombre()); ?></div>
+                                                                    <div class="text-neutral-text dark:text-neutral-text-dark">
+                                                                        <?php echo e(__('prescription.upload_step2.capsules')); ?></div>
+                                                                </td>
+                                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                                                    <?php echo e($linea->getCantidad()); ?></td>
+                                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
+                                                                    <?php echo e('$' . number_format($lineTotal, 2)); ?></td>
+                                                            </tr>
+                                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                    <?php else: ?>
+                                                        <tr>
+                                                            <td colspan="3" class="py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                                                <?php echo e(__('prescription.upload_step2.no_medications') ?? 'No hay medicamentos en el pedido.'); ?>
+
+                                                            </td>
+                                                        </tr>
+                                                    <?php endif; ?>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -234,22 +223,16 @@
                             <div
                                 class="flex flex-col items-end gap-2 border-t border-border-light dark:border-border-dark pt-6">
                                 <div class="flex justify-between w-full max-w-xs">
-                                    <span
-                                        class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.subtotal')); ?></span>
-                                    <span
-                                        class="text-sm font-medium text-body-text dark:text-body-text-dark">$37.24</span>
+                                    <span class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.subtotal')); ?></span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format($subtotal, 2)); ?></span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs">
-                                    <span
-                                        class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.service_fee')); ?></span>
-                                    <span
-                                        class="text-sm font-medium text-body-text dark:text-body-text-dark">$1.00</span>
+                                    <span class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.service_fee')); ?></span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format($serviceFee, 2)); ?></span>
                                 </div>
-                                <div
-                                    class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
-                                    <span
-                                        class="text-lg font-bold text-body-text dark:text-body-text-dark"><?php echo e(__('prescription.upload_step2.estimated_total')); ?></span>
-                                    <span class="text-lg font-bold text-primary">$38.24</span>
+                                <div class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
+                                    <span class="text-lg font-bold text-body-text dark:text-body-text-dark"><?php echo e(__('prescription.upload_step2.estimated_total')); ?></span>
+                                    <span class="text-lg font-bold text-primary"><?php echo e('$' . number_format($subtotal + $serviceFee, 2)); ?></span>
                                 </div>
                                 <p
                                     class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">

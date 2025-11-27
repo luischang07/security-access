@@ -27,11 +27,14 @@ class GestorDeSurtido
   public function surtir(Pedido $pedido)
   {
 
-    $pedido->agregarMedicamento(1, 1);
-    $pedido->agregarMedicamento(2, 1);
-    $pedido->agregarMedicamento(3, 1);
+    $this->pedidoService->agregarMedicamento(1, 1);
+    $this->pedidoService->agregarMedicamento(2, 1);
+    $this->pedidoService->agregarMedicamento(3, 1);
 
     $pedido->asociarSucursalAPedido("CAD001","SUC001");
+    $pedido=unserialize(Session::get('pedido_temporal'));
+
+    info('pedidossssssss', [$pedido->getLineasPedidos()]);
 
     $sucsel = $this->pedidoService->obtenerSucursal($pedido->getCadenaSeleccionada(), $pedido->getSucursalSeleccionada());
 
@@ -71,7 +74,6 @@ class GestorDeSurtido
 
           $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(),$cantidadSurtida,$suc);
 
-          info("pedido", [$pedido->getLineasPedido()->getDetalleLineaPedido()->getSucursal()->getCadenaId()]);
           if($cantidadSurtida == $cantFaltante){
             $this->SinStock = $this->SinStock->reject(function($item) use ($ldp) {
                 return $item === $ldp; // Elimina si es el mismo objeto

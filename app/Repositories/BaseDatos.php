@@ -4,6 +4,9 @@ namespace App\Repositories;
 use App\Models\Sucursal;
 use App\Models\Inventario;
 use App\Domain\LineaInventario;
+use App\Models\Medicamento;
+use App\Domain\Medicamento as med;
+
 
 use App\Domain\Sucursal as DomainSucursal;
 use Illuminate\Support\Collection;
@@ -26,6 +29,12 @@ class BaseDatos{
         $data=Inventario::where('cadena_id',$cadena_id)->where('sucursal_id',$sucursal_id)->where('medicamento_id',$medId)->first();
 
         return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible,$data->precio_unitario);
+    }
+
+    public function obtenerMedicamento($medId){
+        $medicamento = Medicamento::where('id',$medId)->first();
+        info('medicamento', [$medicamento]);
+        return new med($medicamento->id, $medicamento->nombre, $medicamento->descripcion, $medicamento->unidad_medida, $medicamento->unidades);
     }
 
     public function obtenerSucursalesOrdenadas($cadena_id, $sucursal_id){
@@ -65,4 +74,5 @@ class BaseDatos{
 
         return $collectionSucursales;
     }
+
 }

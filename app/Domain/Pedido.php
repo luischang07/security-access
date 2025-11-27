@@ -45,8 +45,9 @@ class Pedido{
         $this->sucursal_id=$sucursal_id;
         $this->cadena_id=$cadena_id;
     }
-    public function agregarMedicamento($medId,$cantidad){
-        $linea_pedido=new LineaPedido($medId,$cantidad);
+    public function agregarMedicamento($medId,$cantidad,$medicamento){
+        info('agregarMedicamento en Pedido', [$medId, $cantidad, $medicamento]);
+        $linea_pedido=new LineaPedido($medId,$cantidad,$medicamento);
         $this->lineas_pedido->push($linea_pedido);
     }
 

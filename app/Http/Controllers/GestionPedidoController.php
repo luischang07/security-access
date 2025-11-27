@@ -51,14 +51,16 @@ class GestionPedidoController extends Controller
     public function confirmarCaptura(){
         $paciente_id = Auth::user()->user_id;
 
+        //$pedido = unserialize(Session::get('pedido_temporal'));
+
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
         $pedido->asociarSucursalAPedido("CAD001","SUC001");
 
-        $pedido = unserialize(Session::get('pedido_temporal'));
-
-        $pedido = $this->GestorDeSurtido->surtir($pedido);
-                Session::forget('pedido_temporal');
         Session::put('pedido_temporal', serialize($pedido));
+        $pedido = $this->GestorDeSurtido->surtir($pedido);
+        
+
+        info('pedido final', [$pedido->getLineasPedidos()]);
 
         return view('prescription.upload-step2', compact('pedido'));
     }

@@ -38,12 +38,12 @@ class PedidoService
 
     public function agregarMedicamento($medId,$cantidad){
 
-        $datosPedido = unserialize(Session::get('pedido_temporal'));
+        $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
 
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
+        $medicamento = $this->dataBase->obtenerMedicamento($medId);
 
-        $pedido->agregarMedicamento($medId,$cantidad);
+        $pedido->agregarMedicamento($medId,$cantidad,$medicamento);
         Session::put('pedido_temporal', serialize($pedido));
     }
 

@@ -166,12 +166,16 @@
                                                         $lineas = $pedido->getLineasPedidos();
                                                         $subtotal = 0;
                                                         $serviceFee = 1.00; // tarifa de servicio fija
+                                                        echo $pedido->getCadenaSeleccionada();
                                                     @endphp
-
+                                                         
                                                     @if($lineas && count($lineas) > 0)
+                                                       
                                                         @foreach($lineas as $linea)
                                                             @php
-                                                                $detalles = method_exists($linea, 'getDetalles') ? $linea->getDetalles() : collect();
+                                                            echo "entro";
+                                                            
+                                                                $detalles = method_exists($linea, 'getDetalles') ? $linea->getDetalleLineaPedido() : collect();
                                                                 $lineTotal = 0;
                                                                 foreach($detalles as $detalle) {
                                                                     $lineTotal += $detalle->getPrecio() * $detalle->getCantidadSurtida();
@@ -181,7 +185,7 @@
                                                             <tr>
                                                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
                                                                     <div class="font-medium text-body-text dark:text-body-text-dark">
-                                                                        {{ 'Medicamento #' . $linea->getMedicamentoId() }}</div>
+                                                                        {{ 'Medicamento #' . $linea->getMedicamento()->getNombre() }}</div>
                                                                     <div class="text-neutral-text dark:text-neutral-text-dark">
                                                                         {{ __('prescription.upload_step2.capsules') }}</div>
                                                                 </td>
