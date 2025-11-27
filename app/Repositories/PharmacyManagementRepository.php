@@ -19,7 +19,7 @@ class PharmacyManagementRepository
       ->select(
         'cadena_id',
         'sucursal_id',
-        DB::raw('COUNT(DISTINCT pedido_id) as total_orders')
+        DB::raw('COUNT(DISTINCT folio_pedido) as total_orders')
       )
       ->groupBy('cadena_id', 'sucursal_id');
 

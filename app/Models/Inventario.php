@@ -5,8 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+
 class Inventario extends Model
 {
+  use HasRelationships;
   protected $table = 'inventarios';
   protected $primaryKey = ['cadena_id', 'sucursal_id', 'medicamento_id'];
   public $incrementing = false;

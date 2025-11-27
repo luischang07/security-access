@@ -20,10 +20,10 @@ class LineaPedido {
     }
 
     public function getCantidad(){
-    return $this->cantidad;
+        return $this->cantidad;
     }
     public function getMedicamentoId(){
-    return $this->medicamento_id;
+        return $this->medicamento_id;
     }
 
     public function getMedicamento(){
@@ -31,10 +31,10 @@ class LineaPedido {
     }
     
     public function setCantidad($cantidad){
-    $this->cantidad=$cantidad;
+        $this->cantidad=$cantidad;
     }
     public function setMedicamentoId($medicamentoId){
-    $this->medicamentoId=$medicamentoId;
+        $this->medicamento_id=$medicamentoId;
     }
     public function setStockDisponible($stock_disponible){
     $this->stock_disponible=$stock_disponible;
