@@ -11,7 +11,7 @@ return new class extends Migration {
       $table->String('folio_pedido');
       $table->unsignedBigInteger('id_linea_pedido');
       $table->unsignedBigInteger('medicamento_id');
-      $table->integer('cantidad');
+      $table->integer('cantidad');}
 
       $table->primary(['folio_pedido', 'id_linea_pedido']);
 
