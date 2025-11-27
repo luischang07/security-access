@@ -24,26 +24,6 @@ class Pedido{
         return $instancia;
     }
 
-    public static function createPedidoFromSession($datosPedido){
-        $instancia = new self();
-        $instancia->createColeccionLineas();
-        $instancia->cedulaProfesional=$datosPedido['cedulaProfesional'] ?? null;
-        $instancia->fecha_pedido=$datosPedido['fecha_pedido'] ?? null;
-        $instancia->fecha_recoleccion=$datosPedido['fecha_recoleccion'] ?? null;
-        $instancia->fecha_entrega=$datosPedido['fecha_entrega'] ?? null;
-        $instancia->estatus=$datosPedido['estatus'] ?? null;
-        foreach ($datosPedido['lineas_pedido'] ?? [] as $ldpData) {
-            $instancia->agregarMedicamento(
-                    $ldpData['medicamento_id'] ?? null,
-                    $ldpData['cantidad'] ?? 0
-                );
-        }
-        $instancia->paciente_id=$datosPedido['paciente_id'] ?? null;
-        $instancia->sucursal_id=$datosPedido['sucursal_id'] ?? null;
-        $instancia->cadena_id=$datosPedido['cadena_id'] ?? null;
-        return $instancia;
-    }
-
     private function createColeccionLineas(){
         $this->lineas_pedido=collect();
     }
@@ -51,7 +31,7 @@ class Pedido{
         $this->sucursal_id=$sucursal_id;
         $this->cadena_id=$cadena_id;
     }
-    public function agregarMedicamento($medId,$cantidad){
+    public function agregarMedicamento($medId,$cantidad, $medicamento){
         if (!$medId) {
             return;
         }
@@ -68,7 +48,7 @@ class Pedido{
             return;
         }
 
-        $linea_pedido=new LineaPedido($medId,$cantidad);
+        $linea_pedido=new LineaPedido($medId,$cantidad, $medicamento);
         $this->lineas_pedido->push($linea_pedido);
     }
 

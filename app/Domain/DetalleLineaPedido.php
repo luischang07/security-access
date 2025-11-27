@@ -19,4 +19,7 @@ class DetalleLineaPedido {
     public function getSucursal(){
         return $this->sucsel;
     }
+    public function getPrecio(){
+        return $this->precio;
+    }
 }

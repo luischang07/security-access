@@ -6,32 +6,49 @@ use App\Models\Inventario;
 use App\Models\CadenaFarmaceutica;
 use App\Domain\LineaInventario;
 use App\Models\Medicamento;
+use App\Domain\Sucursal as DomainSucursal;
+use App\Domain\Medicamento as med;
+
 
 use Illuminate\Support\Collection;
 class BaseDatos
 {
 
-    public function obtenerTodasSucursales()
-    {
-      $sucursales = Sucursal::all();
-      return $sucursales;
-    }
-    public function obtenerSucursal($cadena_id, $sucursal_id)
-    {
-      $sucursal = Sucursal::first()->where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id);
+  public function obtenerTodasSucursales()
+  {
+    $sucursales = Sucursal::all();
+    return $sucursales;
+  }
+  public function obtenerSucursal($cadena_id, $sucursal_id)
+  {
+    $sucursal = Sucursal::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->first();
 
-        return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible,$data->precio_unitario);
-    }
-    public function obtenerCadenas()
-    {
-        return CadenaFarmaceutica::select('cadena_id', 'nombre')->orderBy('nombre')->get();
-    }
-    // obtener sucursales por cadena
-    public function obtenerSucursalesPorCadena($cadena_id)
-    {
-        return Sucursal::where('cadena_id', $cadena_id)->get();
-    }
-    
+    $sucursal = DomainSucursal::crear($sucursal);
+    return $sucursal;
+  }
+
+  public function obtenerInventario($cadena_id, $sucursal_id, $medId)
+  {
+    $data = Inventario::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->where('medicamento_id', $medId)->first();
+
+    return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
+  }
+  public function obtenerCadenas()
+  {
+    return CadenaFarmaceutica::select('cadena_id', 'nombre')->orderBy('nombre')->get();
+  }
+  // obtener sucursales por cadena
+  public function obtenerSucursalesPorCadena($cadena_id)
+  {
+    return Sucursal::where('cadena_id', $cadena_id)->get();
+  }
+
+  public function obtenerMedicamento($medId)
+  {
+    $medicamento = Medicamento::where('id', $medId)->first();
+    return new med($medicamento->id, $medicamento->nombre, $medicamento->descripcion, $medicamento->unidad_medida, $medicamento->unidades);
+  }
+
   public function obtenerSucursalesOrdenadas($cadena_id, $sucursal_id)
   {
     // 1) Obtener la sucursal base
@@ -70,14 +87,11 @@ class BaseDatos
     return $collectionSucursales;
   }
 
-    public function buscarMedicamentosPorNombre(string $nombre){
-        return Medicamento::where('nombre', 'like', '%' . $nombre . '%')
-            ->orderBy('nombre')
-            ->limit(10)
-            ->get(['id','nombre','unidad_medida','unidades']);
-    }
-
-    public function obtenerMedicamentosPorIds(array $ids){
-        return Medicamento::whereIn('id', $ids)->get(['id','nombre'])->keyBy('id');
-    }
+  public function buscarMedicamentosPorNombre(string $nombre)
+  {
+    return Medicamento::where('nombre', 'like', '%' . $nombre . '%')
+      ->orderBy('nombre')
+      ->limit(10)
+      ->get(['id', 'nombre', 'unidad_medida', 'unidades']);
+  }
 }

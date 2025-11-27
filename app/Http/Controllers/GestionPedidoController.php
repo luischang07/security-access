@@ -21,37 +21,41 @@ class GestionPedidoController extends Controller
     private CadenaService $cadenaService;
     private MedicamentoService $medicamentoService;
 
-    public function __construct(PedidoService $pedidoService,SucursalService $sucursalService,GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService){
+    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService)
+    {
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
         $this->GestorDeSurtido = $GestorDeSurtido;
         $this->cadenaService = $cadenaService;
         $this->medicamentoService = $medicamentoService;
     }
-    
+
 
     public function nuevoPedido()
     {
         $paciente_id = Auth::user()->user_id;
 
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+        Session::put('pedido_temporal', serialize($pedido));
         $cadenas = $this->cadenaService->obtenerTodasCadenas();
 
-        return view('prescription.upload-step1', compact('cadenas'));
+        return view('prescription.upload-step1', compact('cadenas', ));
     }
 
 
-    public function seleccionarSucursal(Request $request){
+    public function seleccionarSucursal(Request $request)
+    {
 
         $sucursal_id = $request->input('sucursal_id');
         $cadena_id = $request->input('cadena_id');
-        $this->pedidoService->asociarSucursalAPedido($cadena_id,$sucursal_id);
+        $this->pedidoService->asociarSucursalAPedido($cadena_id, $sucursal_id);
 
         return response()->json(['ok' => true]);
     }
 
 
-    public function agregarMedicamento(Request $request){
+    public function agregarMedicamento(Request $request)
+    {
         $medId = (int) $request->input('medId');
         $cantidad = (int) $request->input('cantidad');
 
@@ -59,8 +63,10 @@ class GestionPedidoController extends Controller
             return response()->json(['ok' => false, 'message' => 'Datos de medicamento inválidos'], 422);
         }
 
+
+
         try {
-            $this->pedidoService->agregarMedicamento($medId,$cantidad);
+            $this->pedidoService->agregarMedicamento($medId, $cantidad);
             return response()->json([
                 'ok' => true,
                 'medications' => $this->pedidoService->obtenerLineasPedidoActuales()
@@ -94,20 +100,18 @@ class GestionPedidoController extends Controller
     {
         $paciente_id = Auth::user()->user_id;
 
-        $pedido = $this->pedidoService->nuevoPedido($paciente_id);
-        $pedido->asociarSucursalAPedido("CAD001", "SUC001");
+        $pedido = unserialize(Session::get('pedido_temporal'));
 
-        $datosPedido = Session::get('pedido_temporal', []);
+        $pedido = $this->GestorDeSurtido->surtir($pedido);
 
-
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
-
-        $this->GestorDeSurtido->surtir($pedido);
+        Session::put('pedido_temporal', serialize($pedido));
+        return view('prescription.upload-step2', compact('pedido'));
     }
 
 
 
-    public function buscarMedicamentos(Request $request){
+    public function buscarMedicamentos(Request $request)
+    {
         $query = $request->input('q', '');
 
         if (strlen($query) < 2) {

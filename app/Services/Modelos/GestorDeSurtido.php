@@ -27,11 +27,14 @@ class GestorDeSurtido
   public function surtir(Pedido $pedido)
   {
 
-    $pedido->agregarMedicamento(1, 1);
-    $pedido->agregarMedicamento(2, 1);
-    $pedido->agregarMedicamento(3, 1);
+    $this->pedidoService->agregarMedicamento(1, 1);
+    $this->pedidoService->agregarMedicamento(2, 1);
+    $this->pedidoService->agregarMedicamento(3, 1);
 
     $pedido->asociarSucursalAPedido("CAD001","SUC001");
+    $pedido=unserialize(Session::get('pedido_temporal'));
+
+    info('pedidossssssss', [$pedido->getLineasPedidos()]);
 
     $sucsel = $this->pedidoService->obtenerSucursal($pedido->getCadenaSeleccionada(), $pedido->getSucursalSeleccionada());
 
@@ -49,12 +52,14 @@ class GestorDeSurtido
         $this->SinStock->push( $lineaPedido);
       }
     }
+
     if($this->SinStock->count()>0){
       $sucCercanas= $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
       $this->CalculaFaltantes($this->SinStock,$sucCercanas, $pedido);
     }
     //info("pedido", [$pedido->getLineasPedido()->getDetalleLineaPedido()->getSucursal()->getSucursalId()]);
     //info("sucursales", [$sucCercanas]);
+    return $pedido;
   }
 
   public function CalculaFaltantes($SinStock,$sucCercanas, $pedido){
@@ -69,7 +74,6 @@ class GestorDeSurtido
 
           $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(),$cantidadSurtida,$suc);
 
-          info("pedido", [$pedido->getLineasPedido()->getDetalleLineaPedido()->getSucursal()->getCadenaId()]);
           if($cantidadSurtida == $cantFaltante){
             $this->SinStock = $this->SinStock->reject(function($item) use ($ldp) {
                 return $item === $ldp; // Elimina si es el mismo objeto

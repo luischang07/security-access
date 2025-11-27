@@ -13,87 +13,81 @@ class PedidoService
     private Sucursal $sucursal;
     private BaseDatos $dataBase;
 
-    public function __construct(){
-        $this->dataBase=new BaseDatos();
+    public function __construct()
+    {
+        $this->dataBase = new BaseDatos();
     }
-    
-    public function nuevoPedido($paciente_id){
-        $this->pedido=Pedido::createPedido($paciente_id);
 
-        Session::put('pedido_temporal', $this->pedido->toArray());
+    public function nuevoPedido($paciente_id)
+    {
+        $this->pedido = Pedido::createPedido($paciente_id);
+
+        Session::put('pedido_temporal', serialize($this->pedido));
 
         return $this->pedido;
     }
 
 
-    public function asociarSucursalAPedido($sucursal_id,$cadena_id){
+    public function asociarSucursalAPedido($sucursal_id, $cadena_id)
+    {
 
-        $datosPedido = Session::get('pedido_temporal');
+        $pedido = unserialize(Session::get('pedido_temporal'));
 
-        if (!$datosPedido) {
-            throw new \RuntimeException('No hay pedido en captura en la sesión.');
-        }
-
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
-
-        $pedido->asociarSucursalAPedido($cadena_id,$sucursal_id);
-
-        Session::put('pedido_temporal', $pedido->toArray());
+        $pedido->asociarSucursalAPedido($cadena_id, $sucursal_id);
+        Session::forget('pedido_temporal');
+        Session::put('pedido_temporal', serialize($pedido));
 
     }
 
-    public function agregarMedicamento($medId,$cantidad){
+    public function agregarMedicamento($medId, $cantidad)
+    {
 
-        $datosPedido = Session::get('pedido_temporal');
+        $pedido = unserialize(Session::get('pedido_temporal'));
+        Session::forget('pedido_temporal');
 
-        if (!$datosPedido) {
+        if (!$pedido) {
             throw new \RuntimeException('No hay pedido en captura para agregar medicamento.');
         }
-
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
-        
-        $pedido->agregarMedicamento($medId,$cantidad);
-        info("Pedido después de agregar medicamento: " . json_encode($pedido->toArray()));
-        Session::put('pedido_temporal', $pedido->toArray());
+        $medicamento = $this->dataBase->obtenerMedicamento($medId);
+        $pedido->agregarMedicamento($medId, $cantidad, $medicamento);
+        Session::put('pedido_temporal', serialize($pedido));
     }
 
     public function eliminarMedicamento($medId)
     {
-        $datosPedido = Session::get('pedido_temporal');
+        $pedido = unserialize(Session::get('pedido_temporal'));
 
-        if (!$datosPedido) {
+        if (!$pedido) {
             throw new \RuntimeException('No hay pedido en captura para eliminar un medicamento.');
         }
 
-        $pedido = Pedido::createPedidoFromSession($datosPedido);
-
         $pedido->eliminarMedicamento($medId);
 
-        Session::put('pedido_temporal', $pedido->toSessionArray());
+        Session::put('pedido_temporal', serialize($pedido));
     }
 
-    public function obtenerSucursal($cadena_id, $sucursal_id){
-        $this->sucursal=$this->dataBase->obtenerSucursal($cadena_id,$sucursal_id);
+    public function obtenerSucursal($cadena_id, $sucursal_id)
+    {
+        $this->sucursal = $this->dataBase->obtenerSucursal($cadena_id, $sucursal_id);
         return $this->sucursal;
     }
 
     public function obtenerLineasPedidoActuales(): array
     {
-        $datosPedido = Session::get('pedido_temporal');
+        $datosPedido = unserialize(Session::get('pedido_temporal'));
 
-        if (!$datosPedido || empty($datosPedido['lineas_pedido'])) {
+        if (!$datosPedido) {
             return [];
         }
 
-        $lineas = collect($datosPedido['lineas_pedido']);
-        $medicamentos = $this->dataBase->obtenerMedicamentosPorIds($lineas->pluck('medicamento_id')->toArray());
+        $lineas = $datosPedido->getLineasPedidos();
 
-        return $lineas->map(function ($linea) use ($medicamentos) {
-            $med = $medicamentos->get($linea['medicamento_id']);
+        return $lineas->map(function ($linea) {
+
             return [
-                'id' => $linea['medicamento_id'],
-                'name' => $med->nombre ?? 'Medicamento ' . $linea['medicamento_id'],
-                'quantity' => (int) $linea['cantidad'],
+                'id' => $linea->getMedicamentoId(),
+                'name' => $linea->getMedicamento()->getNombre(),
+                'quantity' => (int) $linea->getCantidad(),
             ];
         })->values()->all();
     }

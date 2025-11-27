@@ -3,15 +3,19 @@
 namespace App\Domain;
 
 use App\Domain\DetalleLineaPedido;
+
+use App\Domain\Medicamento;
 use Illuminate\Support\Collection;
 class LineaPedido {
     private $cantidad;
     private $medicamento_id;
+    private $medicamento;
     private $detalleLineaPedido;
 
-    public function __construct($medicamentoId,$cantidad){
+    public function __construct($medicamentoId,$cantidad, $medicamento) {
         $this->medicamento_id=$medicamentoId;
         $this->cantidad=$cantidad;
+        $this->medicamento=$medicamento;
         $this->detalleLineaPedido = collect();
     }
 
@@ -20,6 +24,10 @@ class LineaPedido {
     }
     public function getMedicamentoId(){
         return $this->medicamento_id;
+    }
+
+    public function getMedicamento(){
+    return $this->medicamento;
     }
     
     public function setCantidad($cantidad){
@@ -48,6 +56,12 @@ class LineaPedido {
     }
 
     public function getDetalleLineaPedido(){
-        return $this->detalleLineaPedido->get(0);
+        return $this->detalleLineaPedido;
+    }
+
+    // Retornar todos los detalles (colección) para poder iterar y calcular totales
+    public function getDetalles()
+    {
+        return $this->detalleLineaPedido;
     }
 }

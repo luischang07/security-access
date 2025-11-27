@@ -56,17 +56,196 @@
       <div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
         <div class="layout-content-container flex flex-col w-full max-w-4xl flex-1">
 
-          <!-- Top Navigation Bar -->
-          <header
-            class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-4 sm:px-10 py-3 bg-card-light dark:bg-card-dark rounded-xl mb-8">
-            <div class="flex items-center gap-4 text-body-text dark:text-body-text-dark">
-              <div class="size-6 text-primary">
-                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor">
-                  </path>
-                </svg>
-              </div>
-              <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Te Acerco Salud</h2>
+                    <!-- Top Navigation Bar -->
+                    <header
+                        class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-4 sm:px-10 py-3 bg-card-light dark:bg-card-dark rounded-xl mb-8">
+                        <div class="flex items-center gap-4 text-body-text dark:text-body-text-dark">
+                            <div class="size-6 text-primary">
+                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Te Acerco Salud</h2>
+                        </div>
+                        <div class="flex flex-1 justify-end gap-4 sm:gap-8">
+                            <div class="hidden sm:flex items-center gap-9">
+                                <a class="text-sm font-medium leading-normal text-body-text dark:text-body-text-dark hover:text-primary transition"
+                                    href="{{ route('patient.dashboard') }}">
+                                    Dashboard
+                                </a>
+                            </div>
+                            <button
+                                class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-border-light dark:hover:bg-border-dark transition">
+                                <span class="material-symbols-outlined text-xl">help</span>
+                            </button>
+                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
+                                style='background-image: url("https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=137fec&color=fff");'>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main class="flex flex-col gap-6">
+                        <!-- Page Heading -->
+                        <div class="flex flex-col gap-2 px-4">
+                            <h1
+                                class="text-3xl lg:text-4xl font-black tracking-[-0.033em] text-body-text dark:text-body-text-dark">
+                                {{ __('prescription.upload_step2.heading') }}
+                            </h1>
+                            <p
+                                class="text-base font-normal leading-normal text-neutral-text dark:text-neutral-text-dark">
+                                {{ __('prescription.upload_step2.subtitle') }}
+                            </p>
+                        </div>
+
+                        <!-- Order Summary Card -->
+                        <div class="flex flex-col gap-8 p-4 md:p-6 bg-card-light dark:bg-card-dark rounded-xl">
+
+                            <!-- Pharmacy and Pickup Info -->
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                                <div class="flex items-start gap-4">
+                                    <span
+                                        class="material-symbols-outlined text-2xl text-primary mt-1">local_pharmacy</span>
+                                    <div class="flex flex-col">
+                                        <h3 class="text-sm font-medium text-neutral-text dark:text-neutral-text-dark">
+                                            {{ __('prescription.upload_step2.selected_pharmacy') }}
+                                        </h3>
+                                        <p class="text-base font-bold text-body-text dark:text-body-text-dark">
+                                            Farmacia del Ahorro - Sucursal Centro
+                                        </p>
+                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            Av. Siempre Viva 123, Springfield
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <span class="material-symbols-outlined text-2xl text-primary mt-1">schedule</span>
+                                    <div class="flex flex-col">
+                                        <h3 class="text-sm font-medium text-neutral-text dark:text-neutral-text-dark">
+                                            {{ __('prescription.upload_step2.estimated_pickup') }}
+                                        </h3>
+                                        <p class="text-base font-bold text-body-text dark:text-body-text-dark">
+                                            Today, 2:30 PM - 3:00 PM
+                                        </p>
+                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            {{ __('prescription.upload_step2.pickup_notification') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Medications Table -->
+                            <div class="flex flex-col">
+                                <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark mb-4">
+                                    {{ __('prescription.upload_step2.prescribed_medications') }}
+                                </h3>
+                                <div class="flow-root">
+                                    <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                                        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                                            <table
+                                                class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-body-text dark:text-body-text-dark sm:pl-0"
+                                                            scope="col">
+                                                            {{ __('prescription.upload_step2.medication') }}
+                                                        </th>
+                                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark"
+                                                            scope="col">
+                                                            {{ __('prescription.upload_step2.quantity') }}
+                                                        </th>
+                                                        <th class="px-3 py-3.5 text-right text-sm font-semibold text-body-text dark:text-body-text-dark"
+                                                            scope="col">
+                                                            {{ __('prescription.upload_step2.price') }}
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-border-light dark:divide-border-dark">
+                                                    @php
+                                                        $lineas = $pedido->getLineasPedidos();
+                                                        $subtotal = 0;
+                                                        $serviceFee = 1.00; // tarifa de servicio fija
+                                                        echo $pedido->getCadenaSeleccionada();
+                                                    @endphp
+                                                         
+                                                    @if($lineas && count($lineas) > 0)
+                                                       
+                                                        @foreach($lineas as $linea)
+                                                            @php
+                                                            echo "entro";
+                                                            
+                                                                $detalles = method_exists($linea, 'getDetalles') ? $linea->getDetalleLineaPedido() : collect();
+                                                                $lineTotal = 0;
+                                                                foreach($detalles as $detalle) {
+                                                                    $lineTotal += $detalle->getPrecio() * $detalle->getCantidadSurtida();
+                                                                }
+                                                                $subtotal += $lineTotal;
+                                                            @endphp
+                                                            <tr>
+                                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
+                                                                    <div class="font-medium text-body-text dark:text-body-text-dark">
+                                                                        {{ 'Medicamento #' . $linea->getMedicamento()->getNombre() }}</div>
+                                                                    <div class="text-neutral-text dark:text-neutral-text-dark">
+                                                                        {{ __('prescription.upload_step2.capsules') }}</div>
+                                                                </td>
+                                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                                                    {{ $linea->getCantidad() }}</td>
+                                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
+                                                                    {{ '$' . number_format($lineTotal, 2) }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @else
+                                                        <tr>
+                                                            <td colspan="3" class="py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                                                {{ __('prescription.upload_step2.no_medications') ?? 'No hay medicamentos en el pedido.' }}
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Price Summary -->
+                            <div
+                                class="flex flex-col items-end gap-2 border-t border-border-light dark:border-border-dark pt-6">
+                                <div class="flex justify-between w-full max-w-xs">
+                                    <span class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ __('prescription.upload_step2.subtotal') }}</span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format($subtotal, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between w-full max-w-xs">
+                                    <span class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ __('prescription.upload_step2.service_fee') }}</span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format($serviceFee, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
+                                    <span class="text-lg font-bold text-body-text dark:text-body-text-dark">{{ __('prescription.upload_step2.estimated_total') }}</span>
+                                    <span class="text-lg font-bold text-primary">{{ '$' . number_format($subtotal + $serviceFee, 2) }}</span>
+                                </div>
+                                <p
+                                    class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">
+                                    {{ __('prescription.upload_step2.price_disclaimer') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 p-4 mt-2">
+                            <button
+                                class="flex items-center justify-center gap-2 rounded-lg h-12 px-8 text-neutral-text dark:text-neutral-text-dark text-base font-bold tracking-wide hover:bg-background-light dark:hover:bg-background-dark transition">
+                                <span class="material-symbols-outlined">arrow_back</span>
+                                <span>{{ __('prescription.upload_step2.edit_prescription') }}</span>
+                            </button>
+                            <button
+                                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
+                                <span>{{ __('prescription.upload_step2.confirm_order') }}</span>
+                                <span class="material-symbols-outlined">check_circle</span>
+                            </button>
+                        </div>
+                    </main>
+                </div>
             </div>
             <div class="flex flex-1 justify-end gap-4 sm:gap-8">
               <div class="hidden sm:flex items-center gap-9">
