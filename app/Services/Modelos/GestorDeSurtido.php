@@ -21,22 +21,13 @@ class GestorDeSurtido
   {
     $this->sucursalService = $sucursalService;
     $this->pedidoService = $pedidoService;
-    $this->SinStock=collect();
+    $this->SinStock = collect();
   }
 
   public function surtir(Pedido $pedido)
   {
 
-    $this->pedidoService->agregarMedicamento(1, 1);
-    $this->pedidoService->agregarMedicamento(2, 1);
-    $this->pedidoService->agregarMedicamento(3, 1);
-
-    $pedido->asociarSucursalAPedido("CAD001","SUC001");
-    $pedido=unserialize(Session::get('pedido_temporal'));
-
-    info('pedidossssssss', [$pedido->getLineasPedidos()]);
-
-    $sucsel = $this->pedidoService->obtenerSucursal($pedido->getCadenaSeleccionada(), $pedido->getSucursalSeleccionada());
+    $sucsel = $pedido->getSucursal();
 
     $ldp = $pedido->getLineasPedidos();
 
@@ -46,38 +37,55 @@ class GestorDeSurtido
       if ($ldi->getStockDisponible() > 0) {
         $cantidadSurtida = $lineaPedido->getCantidad() - $ldi->getStockDisponible() <= 0 ? $lineaPedido->getCantidad() : $ldi->getStockDisponible();
 
-        $lineaPedido->crearDetalleLineaPedido($ldi->getPrecioUnitario(),$cantidadSurtida,$sucsel);
+        $lineaPedido->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucsel);
       }
-      if($cantidadSurtida < $lineaPedido->getCantidad()){
-        $this->SinStock->push( $lineaPedido);
+      if ($cantidadSurtida < $lineaPedido->getCantidad()) {
+        $this->SinStock->push($lineaPedido);
       }
     }
 
-    if($this->SinStock->count()>0){
-      $sucCercanas= $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
-      $this->CalculaFaltantes($this->SinStock,$sucCercanas, $pedido);
+    if ($this->SinStock->count() > 0) {
+      $sucCercanas = $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
+      $this->CalculaFaltantes($this->SinStock, $sucCercanas, $pedido);
     }
     //info("pedido", [$pedido->getLineasPedido()->getDetalleLineaPedido()->getSucursal()->getSucursalId()]);
     //info("sucursales", [$sucCercanas]);
     return $pedido;
   }
 
-  public function CalculaFaltantes($SinStock,$sucCercanas, $pedido){
-    
+  public function CalculaFaltantes($SinStock, $sucCercanas, $pedido)
+  {
+
     foreach ($sucCercanas as $suc) {
-      foreach($SinStock as $ldp){
+      foreach ($SinStock as $ldp) {
         $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
-        $cantFaltante= $ldp->getCantidadFaltante();
-        $cantidadSurtida=0;
-        if($ldi->getStockDisponible() > 0 && $cantFaltante > 0 ){
+        $cantFaltante = $ldp->getCantidadFaltante();
+        $cantidadSurtida = 0;
+        if ($ldi->getStockDisponible() > 0 && $cantFaltante > 0) {
           $cantidadSurtida = $ldp->getCantidad() - $ldi->getStockDisponible() <= 0 ? $ldp->getCantidad() : $ldi->getStockDisponible();
 
-          $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(),$cantidadSurtida,$suc);
+          $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $suc);
 
-          if($cantidadSurtida == $cantFaltante){
-            $this->SinStock = $this->SinStock->reject(function($item) use ($ldp) {
-                return $item === $ldp; // Elimina si es el mismo objeto
+          if ($cantidadSurtida == $cantFaltante) {
+            $this->SinStock = $this->SinStock->reject(function ($item) use ($ldp) {
+              return $item === $ldp; // Elimina si es el mismo objeto
             });
+          }
+        }
+      }
+    }
+  }
+  public function confirmarPedido($pedido)
+  {
+    $this->SinStock = collect();
+    $detalles = $pedido->obtenerDetalleLineas();
+    foreach ($detalles as $dlp) {
+      foreach ($dlp as $detallito) {
+        if ($detallito->getEstatus() != "comprobado") {
+          $sinStock = $this->sucursalService->actualizarInventario($detallito->getCantidadSurtida(), $detallito->getMedicamentod(), $detallito->getSucursal());
+          if ($sinStock) {
+            $this->SinStock->push($detallito);
+
           }
         }
       }

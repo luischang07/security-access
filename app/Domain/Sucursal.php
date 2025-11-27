@@ -6,7 +6,7 @@ class Sucursal
 {
 
   private $cadena_id, $sucursal_id, $nombre;
-  private $calle, $numero_exterior, $numero_interiror, $ciudad, $colonia;
+  private $calle, $numero_exterior, $numero_interior, $ciudad, $colonia;
   private $latitud, $longitud;
   private $inventario;
 
@@ -26,7 +26,7 @@ class Sucursal
   }
   public static function crear($data)
   {
-    return new self($data->cadena_id, $data->sucursal_id, $data->nombre, $data->calle, $data->numero_exterior, $data->numero_interior, $data->ciudad, $data->colonia, $data->latitud, $data->longitud);
+    return new self($data->cadena_id, $data->sucursal_id, $data->nombre, $data->calle, $data->numero_ext, $data->numero_int, $data->ciudad, $data->colonia, $data->latitud, $data->longitud);
   }
 
   //Getters y Setters
@@ -111,19 +111,14 @@ class Sucursal
     $this->longitud = $longitud;
   }
 
-  public static function fromModel($modelo)
+  public function getDireccion()
   {
-    return new self(
-      $modelo->cadena_id,
-      $modelo->sucursal_id,
-      $modelo->nombre,
-      $modelo->calle,
-      $modelo->numero_exterior,
-      $modelo->numero_interior,
-      $modelo->ciudad,
-      $modelo->colonia,
-      $modelo->latitud,
-      $modelo->longitud
-    );
+    $direccion = $this->calle . ' ' . $this->numero_exterior;
+    if (!empty($this->numero_interior)) {
+      $direccion .= ', Int. ' . $this->numero_interior;
+    }
+    $direccion .= ', ' . $this->colonia . ', ' . $this->ciudad;
+    return $direccion;
   }
+
 }

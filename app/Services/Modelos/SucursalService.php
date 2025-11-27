@@ -10,23 +10,35 @@ class SucursalService
     private Sucursal $sucursal;
     private BaseDatos $dataBase;
 
-    public function __construct(){
-        $this->dataBase=new BaseDatos();
+    public function __construct()
+    {
+        $this->dataBase = new BaseDatos();
     }
-    
-    public function obtenerTodasSucursales(){
+
+    public function obtenerTodasSucursales()
+    {
         return $this->dataBase->obtenerTodasSucursales();
     }
 
-    public function obtenerSucursal($cadena_id,$sucursal_id){
-        return $this->dataBase->obtenerSucursal($cadena_id,$sucursal_id);
+    public function obtenerSucursal($cadena_id, $sucursal_id)
+    {
+        return $this->dataBase->obtenerSucursal($cadena_id, $sucursal_id);
     }
 
-    public function getLineaInventario($cadena_id,$sucursal_id,$medicamento_id){
-        return $this->dataBase->obtenerInventario($cadena_id,$sucursal_id,$medicamento_id);
+    public function getLineaInventario($cadena_id, $sucursal_id, $medicamento_id)
+    {
+        return $this->dataBase->obtenerInventario($cadena_id, $sucursal_id, $medicamento_id);
     }
 
-    public function calculaSucCercanas($cadena_id, $sucursal_id){
-        return $this->dataBase->obtenerSucursalesOrdenadas($cadena_id,$sucursal_id);
+    public function calculaSucCercanas($cadena_id, $sucursal_id)
+    {
+        return $this->dataBase->obtenerSucursalesOrdenadas($cadena_id, $sucursal_id);
     }
+
+    public function actualizarInventario($cantidad, $med_id, $sucursal)
+    {
+        return $this->dataBase->actualizarInventario($cantidad, $med_id, $sucursal);
+    }
+
+
 }

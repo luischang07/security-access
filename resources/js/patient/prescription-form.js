@@ -145,13 +145,6 @@ window.prescriptionForm = function () {
       }
     },
 
-    validateForm(e) {
-      if (this.medicationsItems.length === 0 || !this.professionalLicense) {
-        e.preventDefault();
-        alert('Please fill the professional license and add at least one medication');
-        return false;
-      }
-      return true;
-    }
+
   };
 };

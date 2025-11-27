@@ -112,10 +112,10 @@
                                             {{ __('prescription.upload_step2.selected_pharmacy') }}
                                         </h3>
                                         <p class="text-base font-bold text-body-text dark:text-body-text-dark">
-                                            Farmacia del Ahorro - Sucursal Centro
+                                            {{ $pedido->getSucursal()->getNombre() }}
                                         </p>
                                         <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            Av. Siempre Viva 123, Springfield
+                                            {{ $pedido->getSucursal()->getDireccion() }}
                                         </p>
                                     </div>
                                 </div>
@@ -166,14 +166,12 @@
                                                         $lineas = $pedido->getLineasPedidos();
                                                         $subtotal = 0;
                                                         $serviceFee = 1.00; // tarifa de servicio fija
-                                                        echo $pedido->getCadenaSeleccionada();
                                                     @endphp
                                                          
                                                     @if($lineas && count($lineas) > 0)
                                                        
                                                         @foreach($lineas as $linea)
                                                             @php
-                                                            echo "entro";
                                                             
                                                                 $detalles = method_exists($linea, 'getDetalles') ? $linea->getDetalleLineaPedido() : collect();
                                                                 $lineTotal = 0;
@@ -185,7 +183,7 @@
                                                             <tr>
                                                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
                                                                     <div class="font-medium text-body-text dark:text-body-text-dark">
-                                                                        {{ 'Medicamento #' . $linea->getMedicamento()->getNombre() }}</div>
+                                                                        {{$linea->getMedicamento()->getNombre() }}</div>
                                                                     <div class="text-neutral-text dark:text-neutral-text-dark">
                                                                         {{ __('prescription.upload_step2.capsules') }}</div>
                                                                 </td>
@@ -247,158 +245,7 @@
                     </main>
                 </div>
             </div>
-            <div class="flex flex-1 justify-end gap-4 sm:gap-8">
-              <div class="hidden sm:flex items-center gap-9">
-                <a class="text-sm font-medium leading-normal text-body-text dark:text-body-text-dark hover:text-primary transition"
-                  href="{{ route('patient.dashboard') }}">
-                  Dashboard
-                </a>
-              </div>
-              <button
-                class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-border-light dark:hover:bg-border-dark transition">
-                <span class="material-symbols-outlined text-xl">help</span>
-              </button>
-              <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-                style='background-image: url("https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=137fec&color=fff");'>
-              </div>
-            </div>
-          </header>
-
-          <main class="flex flex-col gap-6">
-            <!-- Page Heading -->
-            <div class="flex flex-col gap-2 px-4">
-              <h1 class="text-3xl lg:text-4xl font-black tracking-[-0.033em] text-body-text dark:text-body-text-dark">
-                {{ __('prescription.upload_step2.heading') }}
-              </h1>
-              <p class="text-base font-normal leading-normal text-neutral-text dark:text-neutral-text-dark">
-                {{ __('prescription.upload_step2.subtitle') }}
-              </p>
-            </div>
-
-            <!-- Order Summary Card -->
-            <div class="flex flex-col gap-8 p-4 md:p-6 bg-card-light dark:bg-card-dark rounded-xl">
-
-              <!-- Pharmacy and Pickup Info -->
-              <div
-                class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                <div class="flex items-start gap-4">
-                  <span class="material-symbols-outlined text-2xl text-primary mt-1">local_pharmacy</span>
-                  <div class="flex flex-col">
-                    <h3 class="text-sm font-medium text-neutral-text dark:text-neutral-text-dark">
-                      {{ __('prescription.upload_step2.selected_pharmacy') }}
-                    </h3>
-                    <p class="text-base font-bold text-body-text dark:text-body-text-dark">
-                      {{ $sucursal->nombre }}
-                    </p>
-                    <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                      {{ $sucursal->direccion }}
-                    </p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-4">
-                  <span class="material-symbols-outlined text-2xl text-primary mt-1">schedule</span>
-                  <div class="flex flex-col">
-                    <h3 class="text-sm font-medium text-neutral-text dark:text-neutral-text-dark">
-                      {{ __('prescription.upload_step2.estimated_pickup') }}
-                    </h3>
-                    <p class="text-base font-bold text-body-text dark:text-body-text-dark">
-                      {{ now()->addHours(2)->format('g:i A') }} - {{ now()->addHours(4)->format('g:i A') }}
-                    </p>
-                    <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                      {{ __('prescription.upload_step2.pickup_notification') }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Medications Table -->
-              <div class="flex flex-col">
-                <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark mb-4">
-                  {{ __('prescription.upload_step2.prescribed_medications') }}
-                </h3>
-                <div class="flow-root">
-                  <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                      <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
-                        <thead>
-                          <tr>
-                            <th
-                              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-body-text dark:text-body-text-dark sm:pl-0"
-                              scope="col">
-                              {{ __('prescription.upload_step2.medication') }}
-                            </th>
-                            <th
-                              class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark"
-                              scope="col">
-                              {{ __('prescription.upload_step2.quantity') }}
-                            </th>
-                            <th
-                              class="px-3 py-3.5 text-right text-sm font-semibold text-body-text dark:text-body-text-dark"
-                              scope="col">
-                              {{ __('prescription.upload_step2.price') }}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody class="divide-y divide-border-light dark:divide-border-dark">
-                          @foreach ($data['medications'] as $medication)
-                            <tr>
-                              <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
-                                <div class="font-medium text-body-text dark:text-body-text-dark">
-                                  {{ $medication['name'] ?? '' }}
-                                </div>
-                                @if (!empty($medication['medication_id']))
-                                  <div class="text-neutral-text dark:text-neutral-text-dark">
-                                    ID: {{ $medication['medication_id'] }}
-                                  </div>
-                                @endif
-                              </td>
-                              <td
-                                class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                {{ $medication['quantity'] }}
-                              </td>
-                              <td
-                                class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
-                                --
-                              </td>
-                            </tr>
-                          @endforeach
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Price Summary -->
-              <div class="flex flex-col items-end gap-2 border-t border-border-light dark:border-border-dark pt-6">
-                <p class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">
-                  {{ __('prescription.upload_step2.price_disclaimer') }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 p-4 mt-2">
-              <a href="{{ route('prescription.upload.step1') }}"
-                class="flex items-center justify-center gap-2 rounded-lg h-12 px-8 text-neutral-text dark:text-neutral-text-dark text-base font-bold tracking-wide hover:bg-background-light dark:hover:bg-background-dark transition">
-                <span class="material-symbols-outlined">arrow_back</span>
-                <span>{{ __('prescription.upload_step2.edit_prescription') }}</span>
-              </a>
-
-              <form method="POST" action="{{ route('prescription.upload.step2.store') }}">
-                @csrf
-                <button type="submit"
-                  class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
-                  <span>{{ __('prescription.upload_step2.confirm_order') }}</span>
-                  <span class="material-symbols-outlined">check_circle</span>
-                </button>
-              </form>
-            </div>
-          </main>
-        </div>
-      </div>
     </div>
   </div>
 </body>
-
 </html>

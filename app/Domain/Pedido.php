@@ -3,35 +3,42 @@
 
 namespace App\Domain;
 use Illuminate\Support\Collection;
-class Pedido{
+use App\Domain\Sucursales;
+class Pedido
+{
 
     private $cedulaProfesional;
-    private $fecha_pedido,$fecha_recoleccion,$fecha_entrega;
+    private $fecha_pedido, $fecha_recoleccion, $fecha_entrega;
     private $estatus;
     private $lineas_pedido;
-    private $paciente_id,$sucursal_id,$cadena_id;
+    private $paciente_id;
+    private $sucursal;
 
-    private function __construct() {
+    private function __construct()
+    {
         $this->createColeccionLineas();
     }
 
-    public static function createPedido($paciente_id){
+    public static function createPedido($paciente_id)
+    {
 
         $instancia = new self();
 
-        $instancia->paciente_id=$paciente_id;
+        $instancia->paciente_id = $paciente_id;
 
         return $instancia;
     }
 
-    private function createColeccionLineas(){
-        $this->lineas_pedido=collect();
+    private function createColeccionLineas()
+    {
+        $this->lineas_pedido = collect();
     }
-    public function asociarSucursalAPedido($cadena_id,$sucursal_id){
-        $this->sucursal_id=$sucursal_id;
-        $this->cadena_id=$cadena_id;
+    public function asociarSucursalAPedido($sucursal)
+    {
+        $this->sucursal = $sucursal;
     }
-    public function agregarMedicamento($medId,$cantidad, $medicamento){
+    public function agregarMedicamento($medId, $cantidad, $medicamento)
+    {
         if (!$medId) {
             return;
         }
@@ -48,7 +55,7 @@ class Pedido{
             return;
         }
 
-        $linea_pedido=new LineaPedido($medId,$cantidad, $medicamento);
+        $linea_pedido = new LineaPedido($medId, $cantidad, $medicamento);
         $this->lineas_pedido->push($linea_pedido);
     }
 
@@ -64,65 +71,76 @@ class Pedido{
             })
             ->values();
     }
+    public function eliminarDetalle($dlp): void
+    {
+        if (!$this->lineas_pedido instanceof Collection) {
+            return;
+        }
 
-    public function getLineasPedido(){
+        // Actualiza la colección removiendo la línea cuyo medicamento coincide
+        $this->lineas_pedido = $this->lineas_pedido
+            ->first(function (LineaPedido $ldp) use ($dlp) {
+                return $ldp->getMedicamentoId() !== (int) $dlp->getMedicamento_id();
+            })
+            ->values();
+    }
+
+    /**
+     * Devuelve la LineaPedido para el medicamento dado o null si no existe.
+     */
+    public function getLineaPedido($medId)
+    {
+        if (!$this->lineas_pedido instanceof Collection) {
+            return null;
+        }
+
+        return $this->lineas_pedido->first(function ($ldp) use ($medId) {
+            return $ldp->getMedicamentoId() === (int) $medId;
+        });
+    }
+
+    public function getLineasPedido()
+    {
         return $this->lineas_pedido->get(0);
     }
 
-        public function getLineasPedidos(){
+    public function getLineasPedidos()
+    {
         return $this->lineas_pedido;
     }
 
-    public function getSucursalSeleccionada(){
-        return $this->sucursal_id;
+    public function obtenerDetallesLineas()
+    {
+        $detalles = collect();
+        foreach ($this->lineas_pedido as $linea) {
+            $detalles->push($linea->getDetalleLineaPedido());
+        }
+        return $detalles;
     }
 
-    public function getCadenaSeleccionada(){
-        return $this->cadena_id;
+    public function getSucursal()
+    {
+        return $this->sucursal;
     }
-    
-    public function crearDetalleLineaPedido($precio_unitario,$cantidadSurtida,$sucursal,$medicamento_id){
+
+    public function crearDetalleLineaPedido($precio_unitario, $cantidadSurtida, $sucursal, $medicamento_id)
+    {
 
         $linea = $this->lineas_pedido->firstWhere('medicamento_id', $medicamento_id);
 
 
         if ($linea) {
-            $linea->crearDetalleLineaPedido($precio_unitario,$cantidadSurtida,$sucursal);
+            $linea->crearDetalleLineaPedido($precio_unitario, $cantidadSurtida, $sucursal, $medicamento_id);
 
         }
 
-        
-        $this->lineas_pedido = $this->lineas_pedido->map(function ($item) use ($medicamento_id,$precio_unitario,$cantidadSurtida,$sucursal) {
+
+        $this->lineas_pedido = $this->lineas_pedido->map(function ($item) use ($medicamento_id, $precio_unitario, $cantidadSurtida, $sucursal) {
             if ($item->getMedicamentoId() === $medicamento_id) {
-                $item->crearDetalleLineaPedido($precio_unitario,$cantidadSurtida,$sucursal);// se reemplaza
+                $item->crearDetalleLineaPedido($precio_unitario, $cantidadSurtida, $sucursal, $medicamento_id);// se reemplaza
             }
             return $item;
         });
-        
-        info( "cambio? ",[$linea = $this->lineas_pedido->firstWhere('medicamento_id', $medicamento_id)]);
-    }
-    public function toArray(){
-        return [
-            'cedulaProfesional' => $this->cedulaProfesional,
-            'fecha_pedido' => $this->fecha_pedido,
-            'fecha_recoleccion' => $this->fecha_recoleccion,
-            'fecha_entrega' => $this->fecha_entrega,
-            'estatus' => $this->estatus,
-            'lineas_pedido' => $this->lineas_pedido->map(function (LineaPedido $ldp) {
-                return [
-                    'medicamento_id' => $ldp->getMedicamentoId(),
-                    'cantidad'       => $ldp->getCantidad(),
-                ];
-            })->values()->toArray(),
-            'paciente_id' => $this->paciente_id,
-            'sucursal_id' => $this->sucursal_id,
-            'cadena_id' => $this->cadena_id
-        ];
-    }
 
-    public function toSessionArray(){
-        return $this->toArray();
     }
-
-    
 }

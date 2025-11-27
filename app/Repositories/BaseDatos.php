@@ -22,7 +22,6 @@ class BaseDatos
   public function obtenerSucursal($cadena_id, $sucursal_id)
   {
     $sucursal = Sucursal::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->first();
-
     $sucursal = DomainSucursal::crear($sucursal);
     return $sucursal;
   }
@@ -75,13 +74,12 @@ class BaseDatos
           ->where('sucursal_id', $sucursal_id);
       })
       ->orderBy('distancia', 'ASC')
-      ->get()
-      ->toArray();
+      ->get();
 
     $collectionSucursales = collect();
 
     foreach ($sucursales as $sucursal) {
-      $collectionSucursales->push(Sucursal::crear($sucursal));
+      $collectionSucursales->push(DomainSucursal::crear($sucursal));
     }
 
     return $collectionSucursales;
@@ -93,5 +91,20 @@ class BaseDatos
       ->orderBy('nombre')
       ->limit(10)
       ->get(['id', 'nombre', 'unidad_medida', 'unidades']);
+  }
+
+  public function actualizarInventario($cantidad, $med_id, $sucursal)
+  {
+    $inventario = Inventario::where('cadena_id', $sucursal->getCadenaId())
+      ->where('sucursal_id', $sucursal->getSucursalId())
+      ->where('medicamento_id', $med_id)
+      ->first();
+
+    if ($inventario && $inventario->stock_disponible >= $cantidad) {
+      $inventario->stock_disponible -= $cantidad;
+      $inventario->save();
+      return true;
+    }
+    return false;
   }
 }

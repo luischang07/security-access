@@ -4,12 +4,10 @@ namespace App\Services\Modelos;
 use App\Repositories\BaseDatos;
 use App\Domain\Pedido;
 use App\Domain\Sucursal;
-use Illuminate\Support\Facades\Session;
 
 class PedidoService
 {
 
-    private Pedido $pedido;
     private Sucursal $sucursal;
     private BaseDatos $dataBase;
 
@@ -20,42 +18,33 @@ class PedidoService
 
     public function nuevoPedido($paciente_id)
     {
-        $this->pedido = Pedido::createPedido($paciente_id);
+        $pedido = Pedido::createPedido($paciente_id);
 
-        Session::put('pedido_temporal', serialize($this->pedido));
-
-        return $this->pedido;
+        return $pedido;
     }
 
 
-    public function asociarSucursalAPedido($sucursal_id, $cadena_id)
+    public function asociarSucursalAPedido($sucursal, $pedido)
     {
 
-        $pedido = unserialize(Session::get('pedido_temporal'));
+        $pedido->asociarSucursalAPedido($sucursal);
 
-        $pedido->asociarSucursalAPedido($cadena_id, $sucursal_id);
-        Session::forget('pedido_temporal');
-        Session::put('pedido_temporal', serialize($pedido));
-
+        return $pedido;
     }
 
-    public function agregarMedicamento($medId, $cantidad)
+    public function agregarMedicamento($medId, $cantidad, $pedido)
     {
-
-        $pedido = unserialize(Session::get('pedido_temporal'));
-        Session::forget('pedido_temporal');
-
         if (!$pedido) {
             throw new \RuntimeException('No hay pedido en captura para agregar medicamento.');
         }
         $medicamento = $this->dataBase->obtenerMedicamento($medId);
         $pedido->agregarMedicamento($medId, $cantidad, $medicamento);
-        Session::put('pedido_temporal', serialize($pedido));
+
+        return $pedido;
     }
 
-    public function eliminarMedicamento($medId)
+    public function eliminarMedicamento($medId, $pedido)
     {
-        $pedido = unserialize(Session::get('pedido_temporal'));
 
         if (!$pedido) {
             throw new \RuntimeException('No hay pedido en captura para eliminar un medicamento.');
@@ -63,7 +52,7 @@ class PedidoService
 
         $pedido->eliminarMedicamento($medId);
 
-        Session::put('pedido_temporal', serialize($pedido));
+        return $pedido;
     }
 
     public function obtenerSucursal($cadena_id, $sucursal_id)
@@ -72,15 +61,14 @@ class PedidoService
         return $this->sucursal;
     }
 
-    public function obtenerLineasPedidoActuales(): array
+    public function obtenerLineasPedidoActuales($pedido): array
     {
-        $datosPedido = unserialize(Session::get('pedido_temporal'));
 
-        if (!$datosPedido) {
+        if (!$pedido) {
             return [];
         }
 
-        $lineas = $datosPedido->getLineasPedidos();
+        $lineas = $pedido->getLineasPedidos();
 
         return $lineas->map(function ($linea) {
 
@@ -91,4 +79,6 @@ class PedidoService
             ];
         })->values()->all();
     }
+
+
 }

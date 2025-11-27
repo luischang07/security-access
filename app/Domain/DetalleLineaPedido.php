@@ -3,23 +3,47 @@
 
 namespace App\Domain;
 
-class DetalleLineaPedido {
+class DetalleLineaPedido
+{
     private $precio;
     private $cantidadSurtida;
     private $sucsel;
 
-    public function __construct($precio, $cantidadSurtida, $sucsel){
-        $this->precio= $precio;
+    private $medicamento_id;
+
+    private $estatus;
+
+    public function __construct($precio, $cantidadSurtida, $sucsel, $medicamento_id)
+    {
+        $this->precio = $precio;
         $this->cantidadSurtida = $cantidadSurtida;
-        $this->sucsel=$sucsel;
+        $this->sucsel = $sucsel;
+        $this->medicamento_id = $medicamento_id;
     }
-    public function getCantidadSurtida(){
+    public function getCantidadSurtida()
+    {
         return $this->cantidadSurtida;
-    } 
-    public function getSucursal(){
+    }
+    public function getSucursal()
+    {
         return $this->sucsel;
     }
-    public function getPrecio(){
+    public function getPrecio()
+    {
         return $this->precio;
+    }
+    public function getEstatus()
+    {
+        return $this->estatus;
+    }
+    public function getMedicamento_id()
+    {
+        return $this->medicamento_id;
+    }
+
+    // Alias camelCase for callers that expect getMedicamentoId()
+    public function getMedicamentoId()
+    {
+        return $this->medicamento_id;
     }
 }
