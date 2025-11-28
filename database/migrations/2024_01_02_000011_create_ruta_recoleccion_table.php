@@ -11,10 +11,10 @@ return new class extends Migration {
 
       $table->string('cadena_id', 50);
       $table->string('sucursal_id', 50);
-      $table->string('folio_pedido');
+      $table->unsignedBigInteger('folio_pedido');
       $table->integer('orden_recoleccion');
 
-      $table->primary(['folio_pedido', 'cadena_id', 'sucursal_id'], 'ruta_recoleccion_primary');
+      $table->primary(['cadena_id', 'sucursal_id', 'folio_pedido'], 'ruta_recoleccion_primary');
 
       $table->foreign('folio_pedido')
         ->references('folio_pedido')

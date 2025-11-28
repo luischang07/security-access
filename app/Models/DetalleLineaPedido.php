@@ -17,12 +17,11 @@ class DetalleLineaPedido extends Model
 
   protected $fillable = [
     'folio_pedido',
-    'id_linea_pedido',
     'cadena_id',
     'sucursal_id',
+    'medicamento_id',
     'precio_unitario',
-    'cantidad_surtida',
-    'estatus',
+    'cantidad_surtida'
   ];
 
   protected $casts = [
@@ -33,7 +32,7 @@ class DetalleLineaPedido extends Model
 
   public function lineaPedido(): BelongsTo
   {
-    return $this->belongsTo(LineaPedido::class, ['folio_pedido', 'id_linea_pedido'], ['folio_pedido', 'id_linea_pedido']);
+    return $this->belongsTo(LineaPedido::class, ['folio_pedido', 'medicamento_id'], ['folio_pedido', 'medicamento_id']);
   }
 
   public function sucursal(): BelongsTo
