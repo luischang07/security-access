@@ -6,29 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+
 class LineaPedido extends Model
 {
+  use HasRelationships;
   protected $table = 'lineas_pedidos';
-  protected $primaryKey = ['pedido_id', 'linea_id'];
+  protected $primaryKey = ['folio_pedido', 'medicamento_id'];
   public $incrementing = false;
   public $timestamps = false;
 
   protected $fillable = [
-    'pedido_id',
-    'linea_id',
+    'folio_pedido',
     'medicamento_id',
-    'cantidad_solicitada',
-    'precio_unitario',
+    'cantidad',
   ];
 
   protected $casts = [
-    'cantidad_solicitada' => 'integer',
-    'precio_unitario' => 'decimal:2',
+    'cantidad' => 'integer',
   ];
 
   public function pedido(): BelongsTo
   {
-    return $this->belongsTo(Pedido::class, 'pedido_id', 'pedido_id');
+    return $this->belongsTo(Pedido::class, 'folio_pedido', 'folio_pedido');
   }
 
   public function medicamento(): BelongsTo
@@ -38,6 +38,6 @@ class LineaPedido extends Model
 
   public function detalles(): HasMany
   {
-    return $this->hasMany(DetalleLineaPedido::class, ['pedido_id', 'linea_id'], ['pedido_id', 'linea_id']);
+    return $this->hasMany(DetalleLineaPedido::class, ['folio_pedido', 'medicamento_id'], ['folio_pedido', 'medicamento_id']);
   }
 }

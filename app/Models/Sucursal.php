@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Awobaz\Compoships\Compoships;
 
 class Sucursal extends Model
 {
   use HasRelationships;
+  use Compoships;
 
   protected $table = 'sucursales';
   protected $primaryKey = ['cadena_id', 'sucursal_id'];
@@ -23,7 +25,7 @@ class Sucursal extends Model
     'calle',
     'numero_ext',
     'numero_int',
-    'colonia',
+    'ciudad',
     'latitud',
     'longitud',
   ];
@@ -49,6 +51,11 @@ class Sucursal extends Model
   public function cadena(): BelongsTo
   {
     return $this->belongsTo(CadenaFarmaceutica::class, 'cadena_id', 'cadena_id');
+  }
+
+  public function horarios(): HasMany
+  {
+    return $this->hasMany(SucursalHorario::class, ['cadena_id', 'sucursal_id'], ['cadena_id', 'sucursal_id']);
   }
 
   public function empleados(): HasMany

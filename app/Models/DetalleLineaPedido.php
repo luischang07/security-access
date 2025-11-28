@@ -5,30 +5,34 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+
 class DetalleLineaPedido extends Model
 {
+  use HasRelationships;
   protected $table = 'detalle_lineas_pedidos';
-  protected $primaryKey = ['pedido_id', 'linea_id', 'cadena_id', 'sucursal_id'];
+  protected $primaryKey = ['folio_pedido', 'id_linea_pedido', 'cadena_id', 'sucursal_id'];
   public $incrementing = false;
   public $timestamps = false;
 
   protected $fillable = [
-    'pedido_id',
-    'linea_id',
+    'folio_pedido',
     'cadena_id',
     'sucursal_id',
-    'cantidad_asignada',
-    'cantidad_recolectada',
+    'medicamento_id',
+    'precio_unitario',
+    'cantidad_surtida'
   ];
 
   protected $casts = [
-    'cantidad_asignada' => 'integer',
-    'cantidad_recolectada' => 'integer',
+    'precio_unitario' => 'decimal:2',
+    'cantidad_surtida' => 'integer',
+    'estatus' => 'integer',
   ];
 
   public function lineaPedido(): BelongsTo
   {
-    return $this->belongsTo(LineaPedido::class, ['pedido_id', 'linea_id'], ['pedido_id', 'linea_id']);
+    return $this->belongsTo(LineaPedido::class, ['folio_pedido', 'medicamento_id'], ['folio_pedido', 'medicamento_id']);
   }
 
   public function sucursal(): BelongsTo

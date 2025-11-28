@@ -11,22 +11,26 @@ class Pedido extends Model
 {
   use HasRelationships;
   protected $table = 'pedidos';
-  protected $primaryKey = 'pedido_id';
+  protected $primaryKey = 'folio_pedido';
+  public $incrementing = false;
+  protected $keyType = 'string';
   public $timestamps = false;
 
   protected $fillable = [
+    'folio_pedido',
     'paciente_id',
     'cadena_id',
     'sucursal_id',
+    'cedula_profesional',
     'fecha_pedido',
-    'fecha_entrega',
-    'estado',
+    'fecha_recoleccion',
+    'estatus',
     'costo_total',
   ];
 
   protected $casts = [
     'fecha_pedido' => 'date',
-    'fecha_entrega' => 'date',
+    'fecha_recoleccion' => 'date',
     'costo_total' => 'decimal:2',
   ];
 
@@ -61,12 +65,12 @@ class Pedido extends Model
 
   public function lineasPedidos(): HasMany
   {
-    return $this->hasMany(LineaPedido::class, 'pedido_id', 'pedido_id');
+    return $this->hasMany(LineaPedido::class, 'folio_pedido', 'folio_pedido')->with('medicamento');
   }
 
   public function rutaRecoleccion(): HasMany
   {
-    return $this->hasMany(RutaRecoleccion::class, 'pedido_id', 'pedido_id');
+    return $this->hasMany(RutaRecoleccion::class, 'folio_pedido', 'folio_pedido');
   }
 
   /**

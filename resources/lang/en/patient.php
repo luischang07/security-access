@@ -138,6 +138,46 @@ return [
     ],
   ],
 
+  // Patient Profile
+  'profile' => [
+    'title' => 'My Profile',
+    'subtitle' => 'Manage your personal information and account settings',
+    'edit_profile' => 'Edit Profile',
+    'save_changes' => 'Save Changes',
+    'cancel' => 'Cancel',
+    'personal_info' => [
+      'title' => 'Personal Information',
+      'first_name' => 'First Name',
+      'last_name' => 'Last Name',
+      'email' => 'Email Address',
+      'phone' => 'Phone',
+    ],
+    'account_stats' => [
+      'title' => 'Account Statistics',
+      'total_orders' => 'Total Orders',
+      'active_penalties' => 'Active Penalties',
+      'member_since' => 'Member Since',
+      'last_login' => 'Last Login',
+    ],
+    'security' => [
+      'title' => 'Security',
+      'last_login' => 'Last Login',
+      'session_info' => 'Session Information',
+      'change_password' => 'Change Password',
+    ],
+    'messages' => [
+      'update_success' => 'Profile updated successfully!',
+      'update_error' => 'Error updating profile. Please try again.',
+      'validation_error' => 'Please correct the errors in the form.',
+    ],
+    'placeholders' => [
+      'first_name' => 'Enter your first name',
+      'last_name' => 'Enter your last name',
+      'email' => 'you@email.com',
+      'phone' => '(555) 123-4567',
+    ],
+  ],
+
   // Patient Penalties
   'penalties' => [
     'title' => 'Penalty History',
