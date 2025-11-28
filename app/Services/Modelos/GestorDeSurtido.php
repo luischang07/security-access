@@ -141,6 +141,7 @@ class GestorDeSurtido
 
       $folioPedido = $pedidoBD->folio_pedido;
       foreach ($pedido->getLineasPedido() as $lineaPedido) {
+        info("Guardando linea de pedido", [$lineaPedido]);
         $lineaBD = $this->dataBase->guardarLineaPedido($lineaPedido, $folioPedido);
 
         $idLinea = $lineaBD->id_linea_pedido;

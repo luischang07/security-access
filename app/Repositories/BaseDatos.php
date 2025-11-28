@@ -155,9 +155,9 @@ class BaseDatos
   {
     return DetalleLineaPedido::create([
       'folio_pedido' => $folio_pedido,
-      'id_linea_pedido' => $id_lineapedido,
       'cadena_id' => $dlp->getSucursal()->getCadenaId(),
       'sucursal_id' => $dlp->getSucursal()->getSucursalId(),
+      'medicamento_id' => $dlp->getMedicamentoId(),
       'precio_unitario' => $dlp->getPrecio(),
       'cantidad_surtida' => $dlp->getCantidadSurtida(),
     ]);
