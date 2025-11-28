@@ -4,29 +4,48 @@
 namespace App\Domain;
 use Illuminate\Support\Collection;
 use App\Domain\Sucursales;
+use App\Domain\LineaPedido;
+use App\Domain\Medicamento;
+use Carbon\Carbon;
 class Pedido
 {
-
+    private $folio;
     private $cedulaProfesional;
-    private $fecha_pedido, $fecha_recoleccion, $fecha_entrega;
+    private $fecha_pedido, $fecha_recoleccion;
     private $estatus;
     private $lineas_pedido;
     private $paciente_id;
     private $sucursal;
+    private $costo_Total;
+
+    private $ruta;
 
     private function __construct()
     {
         $this->createColeccionLineas();
+        $this->ruta = collect();
     }
 
     public static function createPedido($paciente_id)
     {
-
         $instancia = new self();
 
         $instancia->paciente_id = $paciente_id;
 
         return $instancia;
+    }
+
+    public function getTotal()
+    {
+        $total = 0;
+        foreach ($this->lineas_pedido as $linea) {
+            $detalles = $linea->getDetalles();
+            foreach ($detalles as $dlp) {
+                $total += $dlp->getPrecio();
+            }
+        }
+        $this->costo_Total = $total;
+        return $this->costo_Total;
     }
 
     private function createColeccionLineas()
@@ -36,6 +55,11 @@ class Pedido
     public function asociarSucursalAPedido($sucursal)
     {
         $this->sucursal = $sucursal;
+    }
+
+    public function añadirARuta($sucursal)
+    {
+        $this->ruta->push($sucursal);
     }
     public function agregarMedicamento($medId, $cantidad, $medicamento)
     {
@@ -77,14 +101,13 @@ class Pedido
             return;
         }
 
-        // Actualiza la colección removiendo la línea cuyo medicamento coincide
-        $this->lineas_pedido = $this->lineas_pedido
-            ->first(function (LineaPedido $ldp) use ($dlp) {
-                return $ldp->getMedicamentoId() !== (int) $dlp->getMedicamento_id();
+        $linea_pedido = $this->lineas_pedido
+            ->filter(function (LineaPedido $ldp) use ($dlp) {
+                return $ldp->getMedicamentoId() === (int) $dlp->getMedicamento_id();
             })
             ->values();
+        $linea_pedido->get(0)->eliminarDetalle($dlp);
     }
-
     /**
      * Devuelve la LineaPedido para el medicamento dado o null si no existe.
      */
@@ -99,16 +122,6 @@ class Pedido
         });
     }
 
-    public function getLineasPedido()
-    {
-        return $this->lineas_pedido->get(0);
-    }
-
-    public function getLineasPedidos()
-    {
-        return $this->lineas_pedido;
-    }
-
     public function obtenerDetallesLineas()
     {
         $detalles = collect();
@@ -116,11 +129,6 @@ class Pedido
             $detalles->push($linea->getDetalleLineaPedido());
         }
         return $detalles;
-    }
-
-    public function getSucursal()
-    {
-        return $this->sucursal;
     }
 
     public function crearDetalleLineaPedido($precio_unitario, $cantidadSurtida, $sucursal, $medicamento_id)
@@ -142,5 +150,97 @@ class Pedido
             return $item;
         });
 
+    }
+
+    public function asignarFechaPedido()
+    {
+        $this->fecha_pedido = Carbon::now();
+    }
+
+    public function asignarFechaRecoleccion()
+    {
+        $this->fecha_recoleccion = $this->fecha_pedido->copy()->addDay();
+    }
+
+    public function getLineasPedido()
+    {
+        return $this->lineas_pedido->get(0);
+    }
+
+    public function getLineasPedidos()
+    {
+        return $this->lineas_pedido;
+    }
+
+    public function getSucursal()
+    {
+        return $this->sucursal;
+    }
+
+    public function setCedulaProfesional($cedula)
+    {
+        $this->cedulaProfesional = $cedula;
+    }
+
+    public function getCedulaProfesional()
+    {
+        return $this->cedulaProfesional;
+    }
+
+    public function getFechaRecoleccion()
+    {
+        return $this->fecha_recoleccion;
+    }
+
+    public function getEstatus()
+    {
+        return $this->estatus;
+    }
+
+    public function setEstatus()
+    {
+        $this->estatus = "confirmado";
+    }
+
+    public function getCostoTotal()
+    {
+        return $this->costo_Total;
+    }
+
+    public function getFolio()
+    {
+        return $this->folio;
+    }
+
+    public function getPacienteId()
+    {
+        return $this->paciente_id;
+    }
+    public function getRuta()
+    {
+        return $this->ruta;
+    }
+
+    //Crear pedido desde modelo Eloquent
+    public static function crear($pedidoModel)
+    {
+        $pedido = new self();
+        $pedido->folio = $pedidoModel->folio_pedido;
+        $pedido->paciente_id = $pedidoModel->paciente_id;
+        $pedido->cedulaProfesional = $pedidoModel->cedula_profesional;
+        $pedido->fecha_pedido = $pedidoModel->fecha_pedido;
+        $pedido->fecha_recoleccion = $pedidoModel->fecha_recoleccion;
+        $pedido->estatus = $pedidoModel->estatus;
+        $pedido->costo_Total = $pedidoModel->costo_total;
+
+        $lineasPedidoCollection = collect();
+        foreach ($pedidoModel->lineasPedidos as $lineaModel) {
+            $medicamento = new Medicamento($lineaModel->medicamento->medicamento_id, $lineaModel->medicamento->nombre, $lineaModel->medicamento->descripcion, $lineaModel->medicamento->unidad_medida, $lineaModel->medicamento->unidades);
+            $lineaPedido = $lineaPedido = new LineaPedido($lineaModel->medicamento_id, $lineaModel->cantidad, $medicamento);
+            $lineasPedidoCollection->push($lineaPedido);
+        }
+        $pedido->lineas_pedido = $lineasPedidoCollection;
+
+        return $pedido;
     }
 }

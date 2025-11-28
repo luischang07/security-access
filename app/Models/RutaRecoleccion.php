@@ -16,9 +16,9 @@ class RutaRecoleccion extends Model
   public $timestamps = false;
 
   protected $fillable = [
-    'folio_pedido',
     'cadena_id',
     'sucursal_id',
+    'folio_pedido',
     'orden_recoleccion',
   ];
 

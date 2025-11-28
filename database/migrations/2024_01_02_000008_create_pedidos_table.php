@@ -8,7 +8,7 @@ return new class extends Migration {
   public function up(): void
   {
     Schema::create('pedidos', function (Blueprint $table) {
-      $table->String('folio_pedido')->primary();
+      $table->id('folio_pedido')->autoIncrement();
       $table->foreign('paciente_id')
         ->references('user_id')
         ->on('pacientes');
@@ -18,7 +18,7 @@ return new class extends Migration {
       $table->unsignedBigInteger('paciente_id');
       $table->string('cedula_profesional', 50);
       $table->date('fecha_pedido');
-      $table->date('fecha_entrega')->nullable();
+      $table->date('fecha_recoleccion')->nullable();
       $table->string('estatus', 50);
       $table->decimal('costo_total', 10, 2);
 

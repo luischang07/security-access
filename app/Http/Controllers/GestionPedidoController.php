@@ -112,20 +112,25 @@ class GestionPedidoController extends Controller
         ]);
     }
 
-    public function confirmarCaptura()
+    public function confirmarCaptura(Request $request)
     {
+        $cedulaProfesional = $request->input("cedula_profesional");
+
         $paciente_id = Auth::user()->user_id;
 
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
         $pedido = $this->GestorDeSurtido->surtir($pedido);
-
+        $pedido = $this->pedidoService->asignarFechaRecoleccion($pedido);
+        $pedido = $this->pedidoService->setCedulaProfesional($cedulaProfesional, $pedido);
         Session::put('pedido_temporal', serialize($pedido));
         return view('prescription.upload-step2', compact('pedido'));
     }
 
-    public function confirmarPedido($pedido)
+    public function confirmarPedido()
     {
+        $pedido = unserialize(Session::get('pedido_temporal'));
+        info("Confirmando pedido...");
         $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
     }
 
@@ -141,5 +146,12 @@ class GestionPedidoController extends Controller
         $medicamentos = $this->medicamentoService->obtenerMedicamentosPorNombre($query);
 
         return response()->json($medicamentos);
+    }
+
+    public function getPedidos()
+    {
+        $pedidos = $this->pedidoService->obtenerPedidosPorPacienteId(Auth::user()->user_id);
+
+        return view('patient.orders', compact('pedidos'));
     }
 }

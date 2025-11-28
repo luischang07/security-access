@@ -80,5 +80,23 @@ class PedidoService
         })->values()->all();
     }
 
-
+    public function obtenerPedid($id)
+    {
+        $pedidos = $this->dataBase->getPedidos($id);
+    }
+    public function setCedulaProfesional($cedula, $pedido)
+    {
+        $pedido->setCedulaProfesional($cedula);
+        return $pedido;
+    }
+    public function obtenerPedidosPorPacienteId($paciente_id)
+    {
+        return $this->dataBase->getPedidos($paciente_id);
+    }
+    public function asignarFechaRecoleccion($pedido)
+    {
+        $pedido->asignarFechaPedido();
+        $pedido->asignarFechaRecoleccion();
+        return $pedido;
+    }
 }

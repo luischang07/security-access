@@ -13,6 +13,7 @@ class Notificacion extends Model
 
   protected $fillable = [
     'user_id',
+    'folio_pedido',
     'tipo',
     'mensaje',
     'fecha_hora',
@@ -27,5 +28,10 @@ class Notificacion extends Model
   public function user(): BelongsTo
   {
     return $this->belongsTo(User::class, 'user_id', 'user_id');
+  }
+
+  public function pedido(): BelongsTo
+  {
+    return $this->belongsTo(Pedido::class, 'folio_pedido', 'folio_pedido');
   }
 }

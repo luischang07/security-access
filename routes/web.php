@@ -32,7 +32,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   // Patient Routes
   Route::prefix('patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientController::class, 'dashboard'])->name('dashboard');
-    Route::get('/orders', [PatientController::class, 'orders'])->name('orders');
+    Route::get('/orders', [GestionPedidoController::class, 'getPedidos'])->name('orders');
     Route::get('/orders/history', [PatientController::class, 'orderHistory'])->name('orders.history');
     Route::get('/profile', [PatientController::class, 'profile'])->name('profile');
     Route::put('/profile', [PatientController::class, 'updateProfile'])->name('profile.update');
@@ -42,10 +42,11 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 
   // Prescription Routes
   Route::prefix('prescription')->name('prescription.')->group(function () {
+
     Route::get('/upload/step1', [GestionPedidoController::class, 'nuevoPedido'])->name('upload.step1');
-    Route::post('/upload/step1', [PrescriptionController::class, 'storePrescriptionStep1'])->name('upload.step1.store');
+    Route::post('/upload/step1', [GestionPedidoController::class, 'confirmarCaptura'])->name('upload.step1.store');
     Route::get('/upload/step2', [GestionPedidoController::class, 'confirmarCaptura'])->name('upload.step2');
-    Route::post('/upload/step2', [PrescriptionController::class, 'storePrescriptionStep2'])->name('upload.step2.store');
+    Route::post('/upload/step2', [GestionPedidoController::class, 'confirmarPedido'])->name('upload.step2.store');
     Route::get('/pharmacy-map', [PrescriptionController::class, 'pharmacyMap'])->name('pharmacy-map');
 
     //ruta para procesar la sucursal
