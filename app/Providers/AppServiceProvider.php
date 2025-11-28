@@ -15,10 +15,6 @@ class AppServiceProvider extends ServiceProvider
     // No application services to register at this time.
   }
 
-  public function boot(): void
-  {
-    // El throttling se maneja en la base de datos
-  }
   public function boot()
   {
     Schema::defaultStringLength(191);
