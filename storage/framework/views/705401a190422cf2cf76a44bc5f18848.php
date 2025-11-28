@@ -132,7 +132,23 @@
 
                                         </h3>
                                         <p class="text-base font-bold text-body-text dark:text-body-text-dark">
-                                            Today, 2:30 PM - 3:00 PM
+                                            <?php
+                                                $fechaReco = $pedido->getFechaRecoleccion();
+                                            ?>
+                                            <?php if($fechaReco instanceof \Carbon\Carbon): ?>
+                                                   <?php echo e($fechaReco->translatedFormat('l, j \de F Y') . ' a las 12:00 pm'); ?>
+
+                                            <?php elseif(is_string($fechaReco) && \Carbon\Carbon::canBeCreatedFromFormat($fechaReco)): ?>
+                                                   <?php $dt = \Carbon\Carbon::parse($fechaReco); ?>
+                                                   <?php echo e($dt->translatedFormat('l, j \de F Y') . ' a las ' . $dt->format('H:i')); ?>
+
+                                            <?php elseif(is_string($fechaReco)): ?>
+                                                <?php echo e($fechaReco); ?>
+
+                                            <?php else: ?>
+                                                <?php echo e(__('prescription.upload_step2.unknown_date') ?? '-'); ?>
+
+                                            <?php endif; ?>
                                         </p>
                                         <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
                                             <?php echo e(__('prescription.upload_step2.pickup_notification')); ?>
@@ -174,27 +190,48 @@
                                                 </thead>
                                                 <tbody class="divide-y divide-border-light dark:divide-border-dark">
                                                     <?php
-                                                        $lineas = $pedido->getLineasPedidos();
-                                                        $subtotal = 0;
-                                                        $serviceFee = 1.00; // tarifa de servicio fija
+$lineas = $pedido->getLineasPedidos();
+$subtotal = 0;
+$serviceFee = 1.00; // tarifa de servicio fija
                                                     ?>
                                                          
                                                     <?php if($lineas && count($lineas) > 0): ?>
-                                                       
+
                                                         <?php $__currentLoopData = $lineas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $linea): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                             <?php
-                                                            
-                                                                $detalles = method_exists($linea, 'getDetalles') ? $linea->getDetalleLineaPedido() : collect();
+                                                                // 1. Obtener la colección (Corregí el method_exists para que coincida con lo que llamas)
+                                                                $detalles = method_exists($linea, 'getDetalleLineaPedido')
+                                                                    ? $linea->getDetalleLineaPedido()
+                                                                    : collect();
+
                                                                 $lineTotal = 0;
-                                                                foreach($detalles as $detalle) {
+                                                            ?>
+
+                                                            
+                                                            <?php $__currentLoopData = $detalles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $detalle): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                                <?php
+                                                                    // Calcular el total de esta línea específica
                                                                     $lineTotal += $detalle->getPrecio() * $detalle->getCantidadSurtida();
-                                                                }
+                                                                ?>
+
+                                                                <div class="font-medium text-body-text dark:text-body-text-dark">
+                                                                    <?php echo e($detalle->getSucursal()->getCadenaId()); ?>
+
+                                                                    <?php echo e($detalle->getSucursal()->getSucursalId()); ?>
+
+                                                                </div>
+                                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                                                            <?php
+                                                                // 3. Sumar el total de estas líneas al subtotal global
                                                                 $subtotal += $lineTotal;
                                                             ?>
                                                             <tr>
                                                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
                                                                     <div class="font-medium text-body-text dark:text-body-text-dark">
-                                                                        <?php echo e($linea->getMedicamento()->getNombre()); ?></div>
+                                                                        <?php echo e($linea->getMedicamento()->getNombre()); ?>
+
+                                                                    </div>
                                                                     <div class="text-neutral-text dark:text-neutral-text-dark">
                                                                         <?php echo e(__('prescription.upload_step2.capsules')); ?></div>
                                                                 </td>
@@ -227,12 +264,12 @@
                                     <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format($subtotal, 2)); ?></span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs">
-                                    <span class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.service_fee')); ?></span>
-                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format($serviceFee, 2)); ?></span>
+                                    <span class="text-sm text-neutral-text dark:text-neutral-text-dark">Monto penalización </span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format(0, 2)); ?></span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
                                     <span class="text-lg font-bold text-body-text dark:text-body-text-dark"><?php echo e(__('prescription.upload_step2.estimated_total')); ?></span>
-                                    <span class="text-lg font-bold text-primary"><?php echo e('$' . number_format($subtotal + $serviceFee, 2)); ?></span>
+                                    <span class="text-lg font-bold text-primary"><?php echo e('$' . number_format($subtotal , 2)); ?></span>
                                 </div>
                                 <p
                                     class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">
@@ -243,18 +280,19 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 p-4 mt-2">
-                            <button
+                        <form action="/prescription/upload/step2" method="POST" class="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 p-4 mt-2 w-full">
+                            <?php echo csrf_field(); ?>
+                            <button type="button" onclick="window.history.back()"
                                 class="flex items-center justify-center gap-2 rounded-lg h-12 px-8 text-neutral-text dark:text-neutral-text-dark text-base font-bold tracking-wide hover:bg-background-light dark:hover:bg-background-dark transition">
                                 <span class="material-symbols-outlined">arrow_back</span>
                                 <span><?php echo e(__('prescription.upload_step2.edit_prescription')); ?></span>
                             </button>
-                            <button
+                            <button type="submit"
                                 class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
                                 <span><?php echo e(__('prescription.upload_step2.confirm_order')); ?></span>
                                 <span class="material-symbols-outlined">check_circle</span>
                             </button>
-                        </div>
+                        </form>
                     </main>
                 </div>
             </div>
@@ -262,4 +300,6 @@
   </div>
 </body>
 </html>
-<?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/prescription/upload-step2.blade.php ENDPATH**/ ?>
+
+<script>
+</script><?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/prescription/upload-step2.blade.php ENDPATH**/ ?>

@@ -21,13 +21,7 @@
                 'label' => __('patient.dashboard.sidebar.my_orders'),
                 'route' => 'patient.orders',
             ],
-            [
-                'icon' => 'history',
-                'label' => __('patient.dashboard.sidebar.order_history'),
-                'route' => 'patient.orders.history',
-            ],
             ['icon' => 'person', 'label' => __('patient.dashboard.sidebar.profile'), 'route' => 'patient.profile'],
-            ['icon' => 'help_outline', 'label' => __('patient.dashboard.sidebar.help'), 'route' => 'patient.help'],
         ],
         'pharmacy' => [
             [
@@ -81,9 +75,9 @@
                 </div>
                 <div class="flex flex-col">
                     <h1 class="text-gray-900 dark:text-white text-base font-medium leading-normal">
-                        {{ $user->name ?? 'User' }}</h1>
+                        {{ $user->nombre ?? 'User' }}</h1>
                     <p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">
-                        {{ $user->email ?? '' }}</p>
+                        {{ $user->correo ?? '' }}</p>
                 </div>
             </div>
 
@@ -103,11 +97,6 @@
 
         <!-- Bottom Actions -->
         <div class="flex flex-col gap-2">
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
-                href="{{ route('settings') }}" @if ($useSpa) data-spa @endif>
-                <span class="material-symbols-outlined">settings</span>
-                <p class="text-sm font-medium leading-normal">{{ __('patient.dashboard.sidebar.settings') }}</p>
-            </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"

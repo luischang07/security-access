@@ -65,7 +65,7 @@ class Pedido extends Model
 
   public function lineasPedidos(): HasMany
   {
-    return $this->hasMany(LineaPedido::class, 'folio_pedido', 'folio_pedido');
+    return $this->hasMany(LineaPedido::class, 'folio_pedido', 'folio_pedido')->with('medicamento');
   }
 
   public function rutaRecoleccion(): HasMany

@@ -7,10 +7,10 @@ class Sucursal
 
   private $cadena_id, $sucursal_id, $nombre;
   private $calle, $numero_exterior, $numero_interior, $ciudad, $colonia;
-  private $latitud, $longitud;
+  private $latitud, $longitud, $distancia;
   private $inventario;
 
-  public function __construct($cadena_id, $sucursal_id, $nombre, $calle, $numero_exterior, $numero_interior, $ciudad, $colonia, $latitud, $longitud)
+  public function __construct($cadena_id, $sucursal_id, $nombre, $calle, $numero_exterior, $numero_interior, $ciudad, $colonia, $latitud, $longitud, $distancia)
   {
     $this->cadena_id = $cadena_id;
     $this->sucursal_id = $sucursal_id;
@@ -22,11 +22,12 @@ class Sucursal
     $this->colonia = $colonia;
     $this->latitud = $latitud;
     $this->longitud = $longitud;
+    $this->distancia = $distancia;
     $this->inventario = array();
   }
   public static function crear($data)
   {
-    return new self($data->cadena_id, $data->sucursal_id, $data->nombre, $data->calle, $data->numero_ext, $data->numero_int, $data->ciudad, $data->colonia, $data->latitud, $data->longitud);
+    return new self($data->cadena_id, $data->sucursal_id, $data->nombre, $data->calle, $data->numero_ext, $data->numero_int, $data->ciudad, $data->colonia, $data->latitud, $data->longitud, $data->distancia);
   }
 
   //Getters y Setters
