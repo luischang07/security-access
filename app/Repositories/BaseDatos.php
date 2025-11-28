@@ -182,4 +182,19 @@ class BaseDatos
 
     return $pedidos;
   }
+
+  //Para el API
+  public function getPedidoPorFolio($folio)
+  {
+      $pedido = Pedido::where('folio_pedido', $folio)
+          ->with('lineasPedidos.medicamento')
+          ->first();
+
+      if (!$pedido) {
+          return null;
+      }
+
+      return DomainPedido::crear($pedido);
+  }
+
 }

@@ -99,4 +99,11 @@ class PedidoService
         $pedido->asignarFechaRecoleccion();
         return $pedido;
     }
+
+    //Para el API
+    public function obtenerPedidoPorFolio($folio_pedido)
+    {
+        return $this->dataBase->getPedidoPorFolio($folio_pedido);
+    }
+
 }
