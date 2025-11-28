@@ -12,13 +12,12 @@ class LineaPedido extends Model
 {
   use HasRelationships;
   protected $table = 'lineas_pedidos';
-  protected $primaryKey = ['folio_pedido', 'id_linea_pedido'];
+  protected $primaryKey = ['folio_pedido', 'medicamento_id'];
   public $incrementing = false;
   public $timestamps = false;
 
   protected $fillable = [
     'folio_pedido',
-    'id_linea_pedido',
     'medicamento_id',
     'cantidad',
   ];
@@ -39,6 +38,6 @@ class LineaPedido extends Model
 
   public function detalles(): HasMany
   {
-    return $this->hasMany(DetalleLineaPedido::class, ['folio_pedido', 'id_linea_pedido'], ['folio_pedido', 'id_linea_pedido']);
+    return $this->hasMany(DetalleLineaPedido::class, ['folio_pedido', 'medicamento_id'], ['folio_pedido', 'medicamento_id']);
   }
 }

@@ -23,14 +23,14 @@ class Pedido extends Model
     'sucursal_id',
     'cedula_profesional',
     'fecha_pedido',
-    'fecha_entrega',
+    'fecha_recoleccion',
     'estatus',
     'costo_total',
   ];
 
   protected $casts = [
     'fecha_pedido' => 'date',
-    'fecha_entrega' => 'date',
+    'fecha_recoleccion' => 'date',
     'costo_total' => 'decimal:2',
   ];
 

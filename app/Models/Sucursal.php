@@ -25,8 +25,7 @@ class Sucursal extends Model
     'calle',
     'numero_ext',
     'numero_int',
-    'colonia',
-    'contacto',
+    'ciudad',
     'latitud',
     'longitud',
   ];
