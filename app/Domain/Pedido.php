@@ -59,7 +59,13 @@ class Pedido
 
     public function añadirARuta($sucursal)
     {
-        $this->ruta->push($sucursal);
+        //Si ya existe la sucursal dentro de la ruta, no agregarla de nuevo
+        if (!$this->ruta->contains(function ($suc) use ($sucursal) {
+            return $suc->getCadenaId() === $sucursal->getCadenaId() &&
+                $suc->getSucursalId() === $sucursal->getSucursalId();
+        })) {
+            $this->ruta->push($sucursal);
+        }
     }
     public function agregarMedicamento($medId, $cantidad, $medicamento)
     {
@@ -152,6 +158,15 @@ class Pedido
 
     }
 
+    public function calcularTotales()
+    {
+        $acumulado = 0;
+        foreach ($this->lineas_pedido as $linea) {
+            $acumulado += $linea->calcularSubtotal();
+        }
+        $this->costo_Total = $acumulado;
+    }
+
     public function asignarFechaPedido()
     {
         $this->fecha_pedido = Carbon::now();
@@ -220,7 +235,10 @@ class Pedido
     {
         return $this->ruta;
     }
-
+    public function getFechaPedido()
+    {
+        return $this->fecha_pedido;
+    }
     //Crear pedido desde modelo Eloquent
     public static function crear($pedidoModel)
     {

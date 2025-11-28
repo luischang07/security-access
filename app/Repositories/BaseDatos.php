@@ -135,6 +135,7 @@ class BaseDatos
       'cadena_id' => $pedido->getSucursal()->getCadenaId(),
       'sucursal_id' => $pedido->getSucursal()->getSucursalId(),
       'cedula_profesional' => $pedido->getCedulaProfesional(),
+      'fecha_pedido' => $pedido->getFechaPedido(),
       'fecha_recoleccion' => $pedido->getFechaRecoleccion(),
       'estatus' => $pedido->getEstatus(),
       'costo_total' => $pedido->getCostoTotal(),
@@ -168,7 +169,7 @@ class BaseDatos
       'folio_pedido' => $data['folio_pedido'],
       'cadena_id' => $data['cadena_id'],
       'sucursal_id' => $data['sucursal_id'],
-      'orden_recoleccion' => $data['orden_recoleccion'],
+      'orden_recoleccion' => $data['orden'],
     ]);
   }
 

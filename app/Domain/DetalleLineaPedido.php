@@ -18,6 +18,12 @@ class DetalleLineaPedido
         $this->sucsel = $sucsel;
         $this->medicamento_id = $medicamento_id;
     }
+
+    public function calcularSubtotalDetalle()
+    {
+        return $this->precio * $this->cantidadSurtida;
+    }
+    
     public function getCantidadSurtida()
     {
         return $this->cantidadSurtida;
