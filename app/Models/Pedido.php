@@ -12,8 +12,8 @@ class Pedido extends Model
   use HasRelationships;
   protected $table = 'pedidos';
   protected $primaryKey = 'folio_pedido';
-  public $incrementing = false;
-  protected $keyType = 'string';
+  public $incrementing = true;
+  protected $keyType = 'int';
   public $timestamps = false;
 
   protected $fillable = [

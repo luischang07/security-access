@@ -104,6 +104,7 @@ class GestorDeSurtido
       $this->calculaFaltantesWithUpdate($this->SinStock, $sucCercanas, $pedido);
     }
     $pedido->setEstatus();
+    $pedido->calcularTotales();
     $this->guardarPedido($pedido);
     return $pedido;
   }
@@ -139,7 +140,6 @@ class GestorDeSurtido
       $pedidoBD = $this->dataBase->guardarPedido($pedido);
 
       $folioPedido = $pedidoBD->folio_pedido;
-
       foreach ($pedido->getLineasPedido() as $lineaPedido) {
         $lineaBD = $this->dataBase->guardarLineaPedido($lineaPedido, $folioPedido);
 
