@@ -11,8 +11,6 @@ class DetalleLineaPedido
 
     private $medicamento_id;
 
-    private $estatus;
-
     public function __construct($precio, $cantidadSurtida, $sucsel, $medicamento_id)
     {
         $this->precio = $precio;
@@ -31,10 +29,6 @@ class DetalleLineaPedido
     public function getPrecio()
     {
         return $this->precio;
-    }
-    public function getEstatus()
-    {
-        return $this->estatus;
     }
     public function getMedicamento_id()
     {

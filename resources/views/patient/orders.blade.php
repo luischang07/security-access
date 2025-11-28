@@ -5,3 +5,4 @@
 @section('spa-content')
     @include('patient.partials.orders-content')
 @endsection
+

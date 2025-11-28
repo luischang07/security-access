@@ -51,7 +51,7 @@ class LineaPedido
     //Crear detalle linea de pedido
     public function crearDetalleLineaPedido($precio, $cantidadSurtida, $sucsel, $medId)
     {
-        $dlp = new DetalleLineaPedido($precio, $cantidadSurtida, $sucsel, $mededicamento_id);
+        $dlp = new DetalleLineaPedido($precio, $cantidadSurtida, $sucsel, $medId);
         $this->detalleLineaPedido->push($dlp);
     }
 
@@ -74,16 +74,18 @@ class LineaPedido
     {
         return $this->detalleLineaPedido;
     }
-    public function eliminarDetalle($medId): void
+    public function eliminarDetalle($dlp): void
     {
-        if (!$this->lineas_pedido instanceof Collection) {
+        if (!$this->detalleLineaPedido instanceof Collection) {
             return;
         }
 
-        $this->lineas_pedido = $this->lineas_pedido
-            ->filter(function (LineaPedido $ldp) use ($medId) {
-                return $ldp->getMedicamentoId() !== (int) $medId;
+        $this->detalleLineaPedido = $this->detalleLineaPedido
+            ->filter(function (DetalleLineaPedido $detalle) use ($dlp) {
+                return $detalle !== $dlp;
             })
             ->values();
+
+        info("detallaaaaaaa", [$this->detalleLineaPedido->toArray()]);
     }
 }
