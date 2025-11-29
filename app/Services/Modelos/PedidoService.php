@@ -93,6 +93,11 @@ class PedidoService
     {
         return $this->dataBase->getPedidos($paciente_id);
     }
+
+    public function obtenerPedidoPorFolio($folio)
+    {
+        return $this->dataBase->getPedidoByFolio($folio);
+    }
     public function asignarFechaRecoleccion($pedido)
     {
         $pedido->asignarFechaPedido();

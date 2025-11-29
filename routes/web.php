@@ -33,6 +33,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   Route::prefix('patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientController::class, 'dashboard'])->name('dashboard');
     Route::get('/orders', [GestionPedidoController::class, 'getPedidos'])->name('orders');
+    Route::get('/orders/{id}', [GestionPedidoController::class, 'getPedido'])->name('orders.show');
     Route::get('/orders/history', [PatientController::class, 'orderHistory'])->name('orders.history');
     Route::get('/profile', [PatientController::class, 'profile'])->name('profile');
     Route::put('/profile', [PatientController::class, 'updateProfile'])->name('profile.update');

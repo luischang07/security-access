@@ -154,4 +154,16 @@ class GestionPedidoController extends Controller
 
         return view('patient.orders', compact('pedidos'));
     }
+
+    public function getPedido($id)
+    {
+        // $id is the folio_pedido of the Pedido
+        $pedido = $this->pedidoService->obtenerPedidoPorFolio($id);
+
+        if (!$pedido) {
+            abort(404);
+        }
+
+        return view('patient.order-detail', compact('pedido'));
+    }
 }

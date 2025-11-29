@@ -183,4 +183,15 @@ class BaseDatos
 
     return $pedidos;
   }
+
+  public function getPedidoByFolio($folio)
+  {
+    $pedido = Pedido::where('folio_pedido', $folio)->with('lineasPedidos')->first();
+    if (!$pedido) {
+      return null;
+    }
+    $pedido->append('sucursal');
+    info("Buscando pedido por folio: $pedido");
+    return DomainPedido::crear($pedido);
+  }
 }
