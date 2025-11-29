@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', __('auth.register.title')); ?>
 
 <?php $__env->startPush('styles'); ?>
