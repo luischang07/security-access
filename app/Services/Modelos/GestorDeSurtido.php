@@ -58,6 +58,7 @@ class GestorDeSurtido
       $this->CalculaFaltantes($this->SinStock, $sucCercanas, $pedido);
     }
     $pedido->setFaltantes($this->SinStock);
+    $pedido->removerLineasSinDetalles();
     return $pedido;
   }
 

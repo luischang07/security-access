@@ -317,4 +317,11 @@ class Pedido
 
         return ($totalSurtido / $totalSolicitado) * 100;
     }
+
+    public function removerLineasSinDetalles()
+    {
+        $this->lineas_pedido = $this->lineas_pedido->filter(function ($linea) {
+            return $linea->calcularCantidadSurtida() > 0;
+        })->values();
+    }
 }
