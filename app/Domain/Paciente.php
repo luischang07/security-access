@@ -8,12 +8,12 @@ use App\Domain\User\UserEntity;
 class Paciente
 {
     private $user;
-    private $monto_penalizacion;
+    private $monto_penalizacion = 0 ;
 
     public function __construct(PacienteModel $paciente, UserModel $user)
     {
-        $this->user = new UserEntity($user); ;
-        $this->monto_penalizacion = $monto_penalizacion;
+        $this->user = new UserEntity($user); 
+        $this->monto_penalizacion = $paciente->getMontoPenalizacion();
     }
 
     public function getUser()
@@ -24,7 +24,7 @@ class Paciente
     {
         return $this->monto_penalizacion;
     }
-    public function aplicarPenalizacion($monto)
+    public function setMontoPenalizacion($monto)
     {
         $this->monto_penalizacion += $monto;
     }
