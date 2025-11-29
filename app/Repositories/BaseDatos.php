@@ -114,24 +114,17 @@ class BaseDatos
       ->get(['id', 'nombre', 'unidad_medida', 'unidades']);
   }
 
-  public function actualizarInventario($cantidad, $med_id, $sucursal)
+  public function obtenerInventarioWithUpdate($cantidad, $med_id, $sucursal)
   {
-    $query = Inventario::where('cadena_id', $sucursal->getCadenaId())
-      ->where('sucursal_id', $sucursal->getSucursalId())
-      ->where('medicamento_id', $med_id);
+    $data = Inventario::where('cadena_id', $sucursal->getCadenaId())->where('sucursal_id', $sucursal->getSucursalId())->where('medicamento_id', $med_id)->lockForUpdate()->first();
 
-    $stockActual = $query->value('stock_disponible');
-
-    if (!is_null($stockActual) && $stockActual >= $cantidad) {
-
-      $query->decrement('stock_disponible', $cantidad);
-
-      info("Inventario descontado. Sucursal: {$sucursal->getSucursalId()}, Med: $med_id, Cant: $cantidad");
-
-      return false;
-    }
-
-    return true;
+    return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
+  }
+  public function actualizarInventario($ldi){
+    Inventario::where('cadena_id', $ldi->getCadenaId())
+      ->where('sucursal_id', $ldi->getSucursalId())
+      ->where('medicamento_id', $ldi->getMedicamentoId())
+      ->update(['stock_disponible' => $ldi->getStockDisponible()]);
   }
 
   public function actualizarInventarioCancelacion(LineaInventario $inventario)

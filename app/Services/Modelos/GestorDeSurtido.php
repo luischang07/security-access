@@ -85,14 +85,17 @@ class GestorDeSurtido
     foreach ($ldp as $linea) {
       $detalles = $linea->getDetalles();
       foreach ($detalles as $dlp) {
-        $existencia = $this->sucursalService->actualizarInventario($dlp->getCantidadSurtida(), $linea->getMedicamentoId(), $dlp->getSucursal());
-        if ($existencia) {
+        $this->dataBase->iniciarTransaccion();
+        $ldi = $this->sucursalService->obtenerInventarioWithUpdate($dlp->getCantidadSurtida(), $linea->getMedicamentoId(), $dlp->getSucursal());
+        if ($ldi->getStockDisponible()>=$dlp->getCantidadSurtida()) {
+          $ldi->disminuirStock($dlp->getCantidadSurtida());
+          $this->sucursalService->actualizarInventario($ldi);
+          $this->dataBase->commitTransaccion();   
+          $pedido->añadirARuta($dlp->getSucursal());
+        } else {
+          $this->dataBase->cancelarTransaccion();
           $this->SinStock->push($linea);
           $pedido->eliminarDetalle($dlp);
-        } else {
-          //Añadir sucursal a la ruta
-          $pedido->añadirARuta($dlp->getSucursal());
-
         }
       }
     }
