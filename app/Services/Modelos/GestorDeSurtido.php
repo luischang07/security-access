@@ -120,20 +120,25 @@ class GestorDeSurtido
   {
     foreach ($sucCercanas as $suc) {
       foreach ($SinStock as $ldp) {
+        $this->dataBase->iniciarTransaccion();
         $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
         $cantFaltante = $ldp->getCantidadFaltante();
         $cantidadSurtida = 0;
         if ($ldi->getStockDisponible() > 0 && $cantFaltante > 0) {
-          $cantidadSurtida = $ldp->getCantidad() - $ldi->getStockDisponible() <= 0 ? $ldp->getCantidad() : $ldi->getStockDisponible();
+          $cantidadSurtida = $cantFaltante - $ldi->getStockDisponible() <= 0 ? $cantFaltante : $ldi->getStockDisponible();
 
           $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $suc, $ldp->getMedicamentoId());
-          $this->sucursalService->actualizarInventario($cantidadSurtida, $ldp->getMedicamentoId(), $suc);
+          $ldi->disminuirStock($cantidadSurtida);
+          $this->sucursalService->actualizarInventario($ldi);
+          $this->dataBase->commitTransaccion();
           $pedido->añadirARuta($suc);
           if ($cantidadSurtida == $cantFaltante) {
             $this->SinStock = $this->SinStock->reject(function ($item) use ($ldp) {
               return $item === $ldp;
             });
           }
+        }else{
+          $this->dataBase->cancelarTransaccion();
         }
       }
     }
