@@ -35,10 +35,15 @@ class SucursalService
         return $this->dataBase->obtenerSucursalesOrdenadas($cadena_id, $sucursal_id);
     }
 
-    public function actualizarInventario($cantidad, $med_id, $sucursal)
+    public function actualizarInventario($ldi)
     {
-        return $this->dataBase->actualizarInventario($cantidad, $med_id, $sucursal);
+        return $this->dataBase->actualizarInventario($ldi);
     }
 
+    public function obtenerInventarioWithUpdate($cantidadSurtida, $medid, $sucursal)
+    {
+        $ldi = $this->dataBase->obtenerInventarioWithUpdate($cantidadSurtida, $medid, $sucursal);
+        return $ldi;
+    }
 
 }

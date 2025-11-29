@@ -259,7 +259,7 @@
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <!-- Price Summary -->
                             <div
                                 class="flex flex-col items-end gap-2 border-t border-border-light dark:border-border-dark pt-6">
@@ -267,13 +267,18 @@
                                     <span class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ __('prescription.upload_step2.subtotal') }}</span>
                                     <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format($subtotal, 2) }}</span>
                                 </div>
+                                @php
+                                    if($montoPenalizacion){
+                                    $subtotal+=$montoPenalizacion;
+                                    }
+                                @endphp
                                 <div class="flex justify-between w-full max-w-xs">
                                     <span class="text-sm text-neutral-text dark:text-neutral-text-dark">Monto penalización </span>
-                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format(0, 2) }}</span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format($montoPenalizacion, 2) }}</span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
                                     <span class="text-lg font-bold text-body-text dark:text-body-text-dark">{{ __('prescription.upload_step2.estimated_total') }}</span>
-                                    <span class="text-lg font-bold text-primary">{{ '$' . number_format($subtotal , 2) }}</span>
+                                    <span class="text-lg font-bold text-primary">{{ '$' . number_format($subtotal, 2) }}</span>
                                 </div>
                                 <p
                                     class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">

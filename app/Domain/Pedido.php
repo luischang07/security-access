@@ -12,6 +12,7 @@ class Pedido
 {
     private $folio;
     private $cedulaProfesional;
+
     private $fecha_pedido, $fecha_recoleccion;
     private $estatus;
     private $lineas_pedido;
@@ -220,6 +221,12 @@ class Pedido
     public function getCedulaProfesional()
     {
         return $this->cedulaProfesional;
+    }
+    public function setMontoPenalizacion($monto)
+    {
+        $this->costo_Total = $this->costo_Total + $monto;
+
+        info('monto final: ', [$this->costo_Total]);
     }
 
     public function getFechaRecoleccion()

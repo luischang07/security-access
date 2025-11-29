@@ -82,159 +82,51 @@
 
                         <!-- Order Cards List -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-2">
-                            <?php
-                                $orders = [
-                                    [
-                                        'name' => 'Carlos Rodriguez',
-                                        'order' => '#67890',
-                                        'icon' => 'storefront',
-                                        'time' => '2m',
-                                        'status' => 'new',
-                                    ],
-                                    [
-                                        'name' => 'Maria Gonzalez',
-                                        'order' => '#67889',
-                                        'icon' => 'storefront',
-                                        'time' => '10m',
-                                        'status' => 'new',
-                                    ],
-                                    [
-                                        'name' => 'Sofia Hernandez',
-                                        'order' => '#67888',
-                                        'icon' => 'local_shipping',
-                                        'time' => '25m',
-                                        'status' => 'new',
-                                    ],
-                                    [
-                                        'name' => 'Javier Lopez',
-                                        'order' => '#67887',
-                                        'icon' => 'storefront',
-                                        'time' => '1h',
-                                        'status' => 'new',
-                                    ],
-                                ];
-                            ?>
-
-                            <?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php $__empty_1 = true; $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                 <div
-                                    class="p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer">
+                                    onclick="selectOrder(this, <?php echo e($index); ?>)"
+                                    class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors <?php echo e($index === 0 ? 'bg-background-light dark:bg-background-dark' : ''); ?>"
+                                    data-order-index="<?php echo e($index); ?>"
+                                    data-folio="<?php echo e($pedido->getFolio()); ?>">
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <h3 class="font-bold text-body-text dark:text-body-text-dark">
-                                                <?php echo e($order['name']); ?></h3>
+                                                Folio: <?php echo e($pedido->getFolio()); ?></h3>
                                             <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                <?php echo e(__('pharmacy.orders.order_number')); ?> <?php echo e($order['order']); ?></p>
+                                                <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
                                         </div>
                                         <span
-                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark"><?php echo e($order['icon']); ?></span>
+                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
                                     </div>
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
-                                            class="inline-flex items-center rounded-full bg-danger px-2.5 py-0.5 text-xs font-medium text-white"><?php echo e(__('pharmacy.orders.status.new')); ?></span>
+                                            class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white"><?php echo e($pedido->getEstatus()); ?></span>
                                         <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.received_ago', ['time' => $order['time']])); ?></p>
+                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
                                     </div>
                                 </div>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                <div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">
+                                    <?php echo e(__('pharmacy.orders.no_orders')); ?>
+
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <!-- Order Detail Panel -->
                     <div class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
                         <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                            <?php if($pedidos->isNotEmpty()): ?>
+                                <div id="order-details-container">
+                                    <!-- Detalles del pedido se mostrarán aquí con JavaScript -->
+                                </div>
+                            <?php else: ?>
+                                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
+                                    <?php echo e(__('pharmacy.orders.no_orders')); ?>
 
-                            <!-- Patient Info Card -->
-                            <div
-                                class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                                        <?php echo e(__('pharmacy.orders.patient_info')); ?></h2>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.patient_name')); ?></p>
-                                        <p class="font-medium text-body-text dark:text-body-text-dark">Carlos Rodriguez
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.date_of_birth')); ?></p>
-                                        <p class="font-medium text-body-text dark:text-body-text-dark">15/08/1985</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.contact')); ?></p>
-                                        <p class="font-medium text-body-text dark:text-body-text-dark">(555) 123-4567
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Prescription Details -->
-                            <div
-                                class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                                        <?php echo e(__('pharmacy.orders.prescription_details')); ?></h2>
-                                    <div>
-                                        <!-- scan and print buttons removed per UI update -->
-                                    </div>
-                                </div>
-
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
-                                        <thead>
-                                            <tr>
-                                                <th
-                                                    class="py-3.5 px-6 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.medication')); ?></th>
-                                                <th
-                                                    class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.dosage')); ?></th>
-                                                <th
-                                                    class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.quantity')); ?></th>
-                                                <th
-                                                    class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.status_column')); ?></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-border-light dark:divide-border-dark">
-                                            <tr>
-                                                <td
-                                                    class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                                    Amoxicillin</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    500mg</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    30 <?php echo e(__('prescription.upload_step2.capsules')); ?></td>
-                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                                    <span
-                                                        class="inline-flex items-center rounded-full bg-success/20 px-2 py-1 text-xs font-medium text-success"><?php echo e(__('pharmacy.inventory.stock_status.in_stock')); ?></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td
-                                                    class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                                    Ibuprofen</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    200mg</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    50 <?php echo e(__('prescription.upload_step2.tablets')); ?></td>
-                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                                    <span
-                                                        class="inline-flex items-center rounded-full bg-success/20 px-2 py-1 text-xs font-medium text-success"><?php echo e(__('pharmacy.inventory.stock_status.in_stock')); ?></span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Footer Actions -->
@@ -257,13 +149,160 @@
                                 </div>
                             </div>
 
-                            <!-- Message input removed per request -->
+                        <!-- Message input removed per request -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <?php
+        $ordersData = [];
+        foreach ($pedidos as $p) {
+            $lineas_array = [];
+            foreach ($p->getLineasPedidos() as $linea) {
+                $detalles_array = [];
+                foreach ($linea->getDetalles() as $detalle) {
+                    $detalles_array[] = [
+                        'cantidad' => $detalle->getCantidadSurtida(),
+                        'precio' => $detalle->getPrecio(),
+                        'sucursal' => $detalle->getSucursal()->getNombre(),
+                    ];
+                }
+                $lineas_array[] = [
+                    'medicamento' => $linea->getMedicamento()->getNombre(),
+                    'detalles' => $detalles_array,
+                ];
+            }
+            $ordersData[] = [
+                'folio' => $p->getFolio(),
+                'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
+                'estatus' => $p->getEstatus(),
+                'lineas' => $lineas_array,
+            ];
+        }
+    ?>
+
+    <script>
+        // Data de los pedidos
+        const orders = <?php echo json_encode($ordersData, 15, 512) ?>;
+
+        let currentOrderIndex = 0;
+
+        function selectOrder(element, index) {
+            // Remover selección anterior
+            document.querySelectorAll('.order-card').forEach(card => {
+                card.classList.remove('bg-background-light', 'dark:bg-background-dark');
+                card.classList.add('border-transparent');
+            });
+
+            // Marcar el nuevo seleccionado
+            element.classList.add('bg-background-light', 'dark:bg-background-dark');
+            
+            currentOrderIndex = index;
+            renderOrderDetails();
+        }
+
+        function renderOrderDetails() {
+            const order = orders[currentOrderIndex];
+            const container = document.getElementById('order-details-container');
+
+            let html = `
+                <!-- Patient Info Card -->
+                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
+                            Información del Pedido</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Folio del Pedido</p>
+                            <p class="font-medium text-body-text dark:text-body-text-dark">${order.folio}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Fecha del Pedido</p>
+                            <p class="font-medium text-body-text dark:text-body-text-dark">${order.fecha_pedido}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Estado</p>
+                            <p class="font-medium text-body-text dark:text-body-text-dark">${order.estatus}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prescription Details -->
+                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
+                            Detalles de la Receta</h2>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                            <thead>
+                                <tr>
+                                    <th class="py-3.5 px-6 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Medicamento</th>
+                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Cantidad</th>
+                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Precio Unitario</th>
+                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Sucursal</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-light dark:divide-border-dark">
+            `;
+
+            if (order.lineas && order.lineas.length > 0) {
+                order.lineas.forEach(linea => {
+                    if (linea.detalles && linea.detalles.length > 0) {
+                        linea.detalles.forEach(detalle => {
+                            html += `
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
+                                        ${linea.medicamento}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                        ${detalle.cantidad}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                        $${parseFloat(detalle.precio).toFixed(2)}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                        ${detalle.sucursal}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                });
+            } else {
+                html += `
+                    <tr>
+                        <td colspan="4" class="whitespace-nowrap py-4 px-6 text-sm text-center text-neutral-text dark:text-neutral-text-dark">
+                            No hay medicamentos en este pedido</td>
+                    </tr>
+                `;
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Inicializar con el primer pedido
+        document.addEventListener('DOMContentLoaded', function() {
+            renderOrderDetails();
+            // Marcar el primer pedido como seleccionado
+            const firstCard = document.querySelector('.order-card');
+            if (firstCard) {
+                firstCard.classList.add('bg-background-light', 'dark:bg-background-dark');
+            }
+        });
+    </script>
 </body>
 
 </html>
