@@ -72,18 +72,6 @@
         </a>
 
         <div class="flex flex-1 justify-end gap-4 sm:gap-6 items-center">
-          
-          <label class="hidden sm:flex flex-col min-w-40 h-10 max-w-64">
-            <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-              <div
-                class="text-gray-500 dark:text-gray-400 flex items-center justify-center pl-4 rounded-l-lg border-r-0 bg-gray-100 dark:bg-gray-800">
-                <span class="material-symbols-outlined">search</span>
-              </div>
-              <input aria-label="Search"
-                class="form-input flex w-full min-w-0 flex-1 rounded-lg text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 focus:outline-0 focus:ring-0 border-none placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 text-base"
-                placeholder="Search orders..." value="" />
-            </div>
-          </label>
 
           <?php echo $__env->make('components.language-switcher', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
@@ -94,19 +82,6 @@
           </button>
 
           
-          <div class="relative">
-            <?php if($user && ($user->avatar ?? false)): ?>
-              <a href="#" class="block bg-center bg-no-repeat bg-cover rounded-full size-10"
-                style="background-image: url('<?php echo e($user->avatar); ?>'); width:40px; height:40px;">
-                <span class="sr-only"><?php echo e($user->name ?? 'User'); ?></span>
-              </a>
-            <?php else: ?>
-              <a href="#" class="flex items-center justify-center rounded-full bg-primary/10 text-primary w-10 h-10">
-                <span class="material-symbols-outlined">person</span>
-                <span class="sr-only"><?php echo e($user->name ?? 'User'); ?></span>
-              </a>
-            <?php endif; ?>
-          </div>
         </div>
       </div>
     </div>

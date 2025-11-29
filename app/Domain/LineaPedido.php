@@ -85,7 +85,14 @@ class LineaPedido
                 return $detalle !== $dlp;
             })
             ->values();
+    }
 
-        info("detallaaaaaaa", [$this->detalleLineaPedido->toArray()]);
+    public function calcularSubtotal()
+    {
+        $subtotal = 0;
+        foreach ($this->detalleLineaPedido as $detalle) {
+            $subtotal += $detalle->calcularSubtotalDetalle();
+        }
+        return $subtotal;
     }
 }

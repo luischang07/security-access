@@ -12,8 +12,8 @@ class Pedido extends Model
   use HasRelationships;
   protected $table = 'pedidos';
   protected $primaryKey = 'folio_pedido';
-  public $incrementing = false;
-  protected $keyType = 'string';
+  public $incrementing = true;
+  protected $keyType = 'int';
   public $timestamps = false;
 
   protected $fillable = [
@@ -65,7 +65,7 @@ class Pedido extends Model
 
   public function lineasPedidos(): HasMany
   {
-    return $this->hasMany(LineaPedido::class, 'folio_pedido', 'folio_pedido')->with('medicamento');
+    return $this->hasMany(LineaPedido::class, 'folio_pedido', 'folio_pedido')->with(['medicamento', 'detalles']);
   }
 
   public function rutaRecoleccion(): HasMany

@@ -3,10 +3,11 @@
 
 namespace App\Domain;
 use Illuminate\Support\Collection;
-use App\Domain\Sucursales;
+use App\Domain\Sucursal;
 use App\Domain\LineaPedido;
 use App\Domain\Medicamento;
 use Carbon\Carbon;
+
 class Pedido
 {
     private $folio;
@@ -59,7 +60,15 @@ class Pedido
 
     public function añadirARuta($sucursal)
     {
-        $this->ruta->push($sucursal);
+        //Si ya existe la sucursal dentro de la ruta, no agregarla de nuevo
+        if (
+            !$this->ruta->contains(function ($suc) use ($sucursal) {
+                return $suc->getCadenaId() === $sucursal->getCadenaId() &&
+                    $suc->getSucursalId() === $sucursal->getSucursalId();
+            })
+        ) {
+            $this->ruta->push($sucursal);
+        }
     }
     public function agregarMedicamento($medId, $cantidad, $medicamento)
     {
@@ -152,6 +161,15 @@ class Pedido
 
     }
 
+    public function calcularTotales()
+    {
+        $acumulado = 0;
+        foreach ($this->lineas_pedido as $linea) {
+            $acumulado += $linea->calcularSubtotal();
+        }
+        $this->costo_Total = $acumulado;
+    }
+
     public function asignarFechaPedido()
     {
         $this->fecha_pedido = Carbon::now();
@@ -202,6 +220,11 @@ class Pedido
         $this->estatus = "confirmado";
     }
 
+    public function cambiarEstatus($nuevoEstatus)
+    {
+        $this->estatus = $nuevoEstatus;
+    }
+
     public function getCostoTotal()
     {
         return $this->costo_Total;
@@ -212,6 +235,11 @@ class Pedido
         return $this->folio;
     }
 
+    public function asignarFolio($folio)
+    {
+        $this->folio = $folio;
+    }
+
     public function getPacienteId()
     {
         return $this->paciente_id;
@@ -220,7 +248,10 @@ class Pedido
     {
         return $this->ruta;
     }
-
+    public function getFechaPedido()
+    {
+        return $this->fecha_pedido;
+    }
     //Crear pedido desde modelo Eloquent
     public static function crear($pedidoModel)
     {
@@ -233,11 +264,20 @@ class Pedido
         $pedido->estatus = $pedidoModel->estatus;
         $pedido->costo_Total = $pedidoModel->costo_total;
 
+        //crear sucursal
+        $sucursal = Sucursal::crear($pedidoModel->sucursal);
+        $pedido->asociarSucursalAPedido($sucursal);
+
         $lineasPedidoCollection = collect();
         foreach ($pedidoModel->lineasPedidos as $lineaModel) {
             $medicamento = new Medicamento($lineaModel->medicamento->medicamento_id, $lineaModel->medicamento->nombre, $lineaModel->medicamento->descripcion, $lineaModel->medicamento->unidad_medida, $lineaModel->medicamento->unidades);
             $lineaPedido = $lineaPedido = new LineaPedido($lineaModel->medicamento_id, $lineaModel->cantidad, $medicamento);
             $lineasPedidoCollection->push($lineaPedido);
+            //Crear crearDetalleLineaPedido
+            foreach ($lineaModel->detalles as $detalleModel) {
+                $sucursalDetalle = Sucursal::crear($detalleModel->sucursal);
+                $lineaPedido->crearDetalleLineaPedido($detalleModel->precio_unitario, $detalleModel->cantidad_surtida, $sucursalDetalle, $detalleModel->medicamento_id);
+            }
         }
         $pedido->lineas_pedido = $lineasPedidoCollection;
 

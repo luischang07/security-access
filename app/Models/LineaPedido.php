@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Awobaz\Compoships\Compoships;
 
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class LineaPedido extends Model
 {
   use HasRelationships;
+  use Compoships;
   protected $table = 'lineas_pedidos';
   protected $primaryKey = ['folio_pedido', 'medicamento_id'];
   public $incrementing = false;
@@ -38,6 +40,11 @@ class LineaPedido extends Model
 
   public function detalles(): HasMany
   {
-    return $this->hasMany(DetalleLineaPedido::class, ['folio_pedido', 'medicamento_id'], ['folio_pedido', 'medicamento_id']);
+    // Ahora sí funciona tu código original
+    return $this->hasMany(
+      DetalleLineaPedido::class,
+      ['folio_pedido', 'medicamento_id'], // Llaves foráneas en Detalle
+      ['folio_pedido', 'medicamento_id']  // Llaves locales en este modelo
+    );
   }
 }

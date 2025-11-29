@@ -15,6 +15,8 @@ use App\Domain\Medicamento as med;
 use App\Models\Sucursal;
 use App\Domain\Sucursal as DomainSucursal;
 
+use App\Models\Paciente;
+use App\Domain\Paciente as DomainPaciente;
 
 use App\Models\Pedido;
 use App\Domain\Pedido as DomainPedido;
@@ -23,6 +25,8 @@ use App\Models\LineaPedido;
 use App\Domain\LineaPedido as DomainLineaPedido;
 
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
+
+use App\Models\Notificacion;
 
 use Illuminate\Support\Collection;
 class BaseDatos
@@ -127,18 +131,53 @@ class BaseDatos
     return true;
   }
 
+  public function actualizarInventarioCancelacion(LineaInventario $inventario)
+  {
+    Inventario::where('cadena_id', $inventario->getCadenaId())
+      ->where('sucursal_id', $inventario->getSucursalId())
+      ->where('medicamento_id', $inventario->getMedicamentoId())
+      ->update(['stock_disponible' => $inventario->getStockDisponible()]);
+  }
+
+  public function obtenerPaciente($paciente_id)
+  {
+    $paciente = Paciente::where('user_id', $paciente_id)->first();
+    $user = User::where('id', $paciente->user_id)->first();
+    $notificaciones = Notificacion::where('user_id', $paciente_id)->get();
+    return new DomainPaciente($paciente, $user, $notificaciones);
+  }
+
+  public function actualizarPaciente($paciente)
+  {
+    Paciente::where('user_id', $paciente->getUser()->getId())
+      ->update(['penalizacion' => $paciente->getPenalizacion()]);
+  }
+
+  public function guardarNotificacion($notificacion, $folio_pedido, $user_id)
+  {
+    Notificacion::create([
+      'user_id' => $user_id,
+      'folio_pedido' => $folio_pedido,
+      'mensaje' => $notificacion->getMensaje(),
+      'fecha_hora' => $notificacion->getFechaEnvio(),
+      'leida' => $notificacion->esLeida(),
+    ]);
+  }
 
   public function guardarPedido(DomainPedido $pedido): Pedido
   {
-    return Pedido::create([
+    $pedidoModel = Pedido::create([
       'paciente_id' => $pedido->getPacienteId(),
       'cadena_id' => $pedido->getSucursal()->getCadenaId(),
       'sucursal_id' => $pedido->getSucursal()->getSucursalId(),
       'cedula_profesional' => $pedido->getCedulaProfesional(),
+      'fecha_pedido' => $pedido->getFechaPedido(),
       'fecha_recoleccion' => $pedido->getFechaRecoleccion(),
       'estatus' => $pedido->getEstatus(),
       'costo_total' => $pedido->getCostoTotal(),
     ]);
+
+    return $pedidoModel;
   }
 
   public function guardarLineaPedido(DomainLineaPedido $ldp, $folio_pedido): LineaPedido
@@ -154,9 +193,9 @@ class BaseDatos
   {
     return DetalleLineaPedido::create([
       'folio_pedido' => $folio_pedido,
-      'id_linea_pedido' => $id_lineapedido,
       'cadena_id' => $dlp->getSucursal()->getCadenaId(),
       'sucursal_id' => $dlp->getSucursal()->getSucursalId(),
+      'medicamento_id' => $dlp->getMedicamentoId(),
       'precio_unitario' => $dlp->getPrecio(),
       'cantidad_surtida' => $dlp->getCantidadSurtida(),
     ]);
@@ -168,7 +207,7 @@ class BaseDatos
       'folio_pedido' => $data['folio_pedido'],
       'cadena_id' => $data['cadena_id'],
       'sucursal_id' => $data['sucursal_id'],
-      'orden_recoleccion' => $data['orden_recoleccion'],
+      'orden_recoleccion' => $data['orden'],
     ]);
   }
 
@@ -183,6 +222,7 @@ class BaseDatos
     return $pedidos;
   }
 
+<<<<<<< HEAD
   //Para el API
   public function getPedidoPorFolio($folio)
   {
@@ -197,4 +237,30 @@ class BaseDatos
       return DomainPedido::crear($pedido);
   }
 
+=======
+  public function getPedidoByFolio($folio)
+  {
+    $pedido = Pedido::where('folio_pedido', $folio)->with('lineasPedidos')->first();
+    if (!$pedido) {
+      return null;
+    }
+    $pedido->append('sucursal');
+
+    return DomainPedido::crear($pedido);
+  }
+
+  public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)
+  {
+    $pedidos = Pedido::where('cadena_id', $cadena_id)
+      ->where('sucursal_id', $sucursal_id)
+      ->with('lineasPedidos')
+      ->get();
+
+    $pedidos = $pedidos->map(function ($pedido) {
+      return DomainPedido::crear($pedido);
+    });
+
+    return $pedidos;
+  }
+>>>>>>> origin/arturo
 }

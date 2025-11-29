@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', __('prescription.pharmacy_map.title')); ?>
 
 <?php $__env->startPush('styles'); ?>
@@ -52,7 +50,7 @@
 
     <!-- Left Panel: Search, Filters, and List -->
     <aside
-      class="w-full lg:w-[420px] lg:min-w-[420px] flex flex-col bg-card-light dark:bg-card-dark lg:border-r border-border-light dark:border-border-dark p-4 sm:p-6 space-y-4 z-20 shadow-lg lg:shadow-none">
+      class="w-full lg:w-[420px] lg:min-w-[420px] flex flex-col bg-card-light dark:bg-card-dark lg:border-r border-border-light dark:border-border-dark p-4 sm:p-6 space-y-4 z-20 shadow-lg lg:shadow-none max-h-[90vh]">
 
       <!-- Page Heading -->
       <div>

@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Awobaz\Compoships\Compoships;
 
 class DetalleLineaPedido extends Model
 {
   use HasRelationships;
+  use Compoships;
   protected $table = 'detalle_lineas_pedidos';
   protected $primaryKey = ['folio_pedido', 'id_linea_pedido', 'cadena_id', 'sucursal_id'];
   public $incrementing = false;
