@@ -208,6 +208,9 @@ $serviceFee = 1.00; // tarifa de servicio fija
                                                             @php
                                                                 // 3. Sumar el total de estas líneas al subtotal global
                                                                 $subtotal += $lineTotal;
+                                                                if($montoPenalizacion){
+                                                                    $subtotal+=$montoPenalizacion;
+                                                                }
                                                             @endphp
                                                             <tr>
                                                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
@@ -246,7 +249,7 @@ $serviceFee = 1.00; // tarifa de servicio fija
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs">
                                     <span class="text-sm text-neutral-text dark:text-neutral-text-dark">Monto penalización </span>
-                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format(0, 2) }}</span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format($montoPenalizacion, 2) }}</span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
                                     <span class="text-lg font-bold text-body-text dark:text-body-text-dark">{{ __('prescription.upload_step2.estimated_total') }}</span>
