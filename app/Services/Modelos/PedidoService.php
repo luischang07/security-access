@@ -81,7 +81,7 @@ class PedidoService
         $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
         $paciente->aplicarPenalizacion($cantidad_penalizacion);
         $this->dataBase->actualizarPaciente($paciente);
-        $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de $${$cantidad_penalizacion} a su cuenta.";
+        $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidad_penalizacion} a su cuenta.";
         $notificacion = Notificacion::crear($mensaje, now());
         $paciente->agregarNotificacion($notificacion);
         $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
