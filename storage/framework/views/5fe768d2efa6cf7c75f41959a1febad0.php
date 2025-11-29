@@ -291,7 +291,29 @@
   </div>
 </body>
 
+<?php
+    $pedidoInicial = null;
+    if (isset($pedido)) {
+        $pedidoInicial = [
+            'cadena_id' => optional($pedido->getSucursal())->getCadenaId(),
+            'sucursal_id' => optional($pedido->getSucursal())->getSucursalId(),
+            'cedula_profesional' => $pedido->getCedulaProfesional(),
+            'medications' => [],
+        ];
+
+        $lineas = $pedido->getLineasPedidos() ?? collect();
+        foreach ($lineas as $linea) {
+            $pedidoInicial['medications'][] = [
+                'id' => $linea->getMedicamentoId(),
+                'name' => $linea->getMedicamento()->getNombre(),
+                'quantity' => (int) $linea->getCantidad(),
+            ];
+        }
+    }
+?>
+
 <script>
+    window.initialPrescription = <?php echo json_encode($pedidoInicial, 15, 512) ?>;
     window.prescriptionTranslations = <?php echo json_encode([
         'select_option' => __('prescription.upload_step1.select_option'), ], 512) ?>;
     window.routes = {

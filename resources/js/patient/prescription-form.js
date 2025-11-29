@@ -37,6 +37,24 @@ window.prescriptionForm = function () {
           this.pendingSucursalId = preSucursalId;
         }
       }
+
+      // Prefill from server-side pedido (cuando se regresa desde step2)
+      if (window.initialPrescription) {
+        const data = window.initialPrescription;
+        this.professionalLicense = data.cedula_profesional || '';
+        if (Array.isArray(data.medications)) {
+          this.medicationsItems = data.medications.map(m => ({
+            id: m.id ?? '',
+            name: m.name ?? '',
+            quantity: parseInt(m.quantity) || 1
+          }));
+        }
+        if (data.cadena_id) {
+          this.cadenaId = data.cadena_id;
+          this.pendingSucursalId = data.sucursal_id ?? null;
+          // Cuando cadenaId se asigna después de init, el watcher dispara loadSucursales
+        }
+      }
     },
 
     // --- Medication List Logic ---
