@@ -145,7 +145,7 @@ class GestionPedidoController extends Controller
         try {
             $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
             $folio = $pedido->getFolio();
-            return redirect("/patient/orders/{$folio}");
+            return redirect("/patient/orders/{$folio}")->with('order_success', true);
         } catch (\Throwable $e) {
             Session::put('pedido_temporal', serialize($pedido));
             return redirect()->back()->withErrors($e->getMessage());

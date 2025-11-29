@@ -103,6 +103,21 @@
                 </p>
               </div>
             </div>
+            @if($errors->any())
+              <div class="mx-4 rounded-lg border border-red-300/60 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/50 dark:bg-red-900/20 dark:text-red-100">
+                <div class="flex gap-3">
+                  <span class="material-symbols-outlined text-xl mt-0.5">error</span>
+                  <div class="flex flex-col gap-1">
+                    <p class="font-semibold">No pudimos confirmar el pedido. Intenta de nuevo.</p>
+                    <ul class="list-disc pl-5 space-y-1">
+                      @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                      @endforeach
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            @endif
             <!-- Prescription Form -->
             <form id="prescription-form" method="POST" @submit="validateForm"
               action="{{ route('prescription.upload.step1.store') }}">

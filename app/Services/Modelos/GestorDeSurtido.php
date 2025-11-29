@@ -117,14 +117,14 @@ class GestorDeSurtido
         $sucCercanas = $this->sucursalService->calculaSucCercanas($pedido->getSucursal()->getCadenaId(), $pedido->getSucursal()->getSucursalId());
         $this->calculaFaltantesWithUpdate($this->SinStock, $sucCercanas, $pedido);
       }
-      $pedido->removerLineasSinDetalles();
-      
-      
+
       if ($pedido->calcularPorcentajeSurtido() < 0.5) {
         $pedido->setFaltantes($this->SinStock);
         throw new \RuntimeException('No se pudo surtir al menos el 50% del pedido.');
       }
 
+
+      $pedido->removerLineasSinDetalles();
       $pedido->setEstatus();
       $pedido->calcularTotales();
 

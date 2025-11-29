@@ -122,6 +122,7 @@ class BaseDatos
   
   public function actualizarInventario($ldi)
   {
+    info("Actualizando inventario en BD para medicamento ID: " . $ldi->getMedicamentoId() . " en sucursal " . $ldi->getSucursalId() . " con nueva cantidad: " . $ldi->getStockDisponible());
     Inventario::where('cadena_id', $ldi->getCadenaId())
       ->where('sucursal_id', $ldi->getSucursalId())
       ->where('medicamento_id', $ldi->getMedicamentoId())
