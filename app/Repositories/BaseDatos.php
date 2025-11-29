@@ -26,6 +26,8 @@ use App\Domain\LineaPedido as DomainLineaPedido;
 
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
 
+use App\Models\Notificacion;
+
 use Illuminate\Support\Collection;
 class BaseDatos
 {
@@ -141,7 +143,8 @@ class BaseDatos
   {
     $paciente = Paciente::where('user_id', $paciente_id)->first();
     $user = User::where('id', $paciente->user_id)->first();
-    return new DomainPaciente($paciente, $user);
+    $notificaciones = Notificacion::where('user_id', $paciente_id)->get();
+    return new DomainPaciente($paciente, $user, $notificaciones);
   }
 
   public function actualizarPaciente($paciente)
@@ -150,6 +153,16 @@ class BaseDatos
       ->update(['penalizacion' => $paciente->getPenalizacion()]);
   }
 
+  public function guardarNotificacion($notificacion,$folio_pedido, $user_id)
+  {
+    Notificacion::create([
+      'user_id' => $user_id,
+      'folio_pedido' => $folio_pedido,
+      'mensaje' => $notificacion->getMensaje(),
+      'fecha_hora' => $notificacion->getFechaEnvio(),
+      'leida' => $notificacion->esLeida(),
+    ]);
+  }
 
   public function guardarPedido(DomainPedido $pedido): Pedido
   {
