@@ -4,6 +4,8 @@ namespace App\Services\Modelos;
 use App\Repositories\BaseDatos;
 use App\Domain\Pedido;
 use App\Domain\Sucursal;
+use App\Domain\Paciente;
+use App\Domain\Notificacion;
 
 class PedidoService
 {
@@ -55,6 +57,32 @@ class PedidoService
         return $pedido;
     }
 
+    public function cancelarPedido($pedido)
+    {
+        $pedido->cambiarEstatus('CANCELADO');
+        $dlp = $pedido->obtenerDetallesLineas();
+        foreach ($dlp as $detalle) {
+            $inventario = $this->dataBase->obtenerInventario(
+                $pedido->getSucursal()->getCadenaId(),
+                $pedido->getSucursal()->getSucursalId(),
+                $detalle->getMedicamentoId()
+            );
+            if ($inventario) {
+                $inventario->aumentarStock($detalle->getCantidadSurtida());
+                $this->dataBase->actualizarInventarioCancelacion($inventario);
+            }
+        }
+        $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
+        $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
+        $paciente->aplicarPenalizacion($cantidad_penalizacion);
+        $this->dataBase->actualizarPaciente($paciente);
+        $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de $${$cantidad_penalizacion} a su cuenta.";
+        $notificacion = Notificacion::crear($mensaje, now());
+        $paciente->agregarNotificacion($notificacion);
+        $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
+        return $pedido;
+    }
+
     public function obtenerSucursal($cadena_id, $sucursal_id)
     {
         $this->sucursal = $this->dataBase->obtenerSucursal($cadena_id, $sucursal_id);
@@ -84,6 +112,10 @@ class PedidoService
     {
         $pedidos = $this->dataBase->getPedidos($id);
     }
+    public function buscarPedidoPorId($pedido_id)
+    {
+        return $this->dataBase->obtenerPedidoPorId($pedido_id);
+    }
     public function setCedulaProfesional($cedula, $pedido)
     {
         $pedido->setCedulaProfesional($cedula);
@@ -103,5 +135,24 @@ class PedidoService
         $pedido->asignarFechaPedido();
         $pedido->asignarFechaRecoleccion();
         return $pedido;
+    }
+    //obtener pedidos por sucursal
+    public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)
+    {
+        //de la tabla user esta la tabla empleados que esta conectado con user_id, y en esa tabla esta cadena y sucursal id
+
+
+        return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
+    }
+
+    public function obtenerPedidosPorEmpleado()
+    {
+        $empleado = $this->dataBase->obtenerEmpleadoPorUserId(\auth()->user()->user_id);
+
+        if (!$empleado) {
+            return collect();
+        }
+
+        return $this->dataBase->obtenerPedidosPorSucursal($empleado['cadena_id'], $empleado['sucursal_id']);
     }
 }

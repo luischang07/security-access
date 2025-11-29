@@ -75,26 +75,9 @@
                             <h1 class="text-2xl font-bold text-body-text dark:text-body-text-dark mb-4">
                                 {{ __('pharmacy.orders.title') }}</h1>
 
-                            <!-- Search Bar -->
-                            <div class="relative mb-4">
-                                <span
-                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-text dark:text-neutral-text-dark">search</span>
-                                <input type="text" placeholder="{{ __('pharmacy.orders.search_placeholder') }}"
-                                    class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark placeholder:text-neutral-text dark:placeholder:text-neutral-text-dark focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
+                            <!-- Search bar removed -->
 
-                            <!-- Status Tabs -->
-                            <div class="flex gap-2 text-sm">
-                                <button
-                                    class="px-4 py-2 rounded-lg bg-primary text-white font-medium">{{ __('pharmacy.orders.status.new') }}
-                                    (4)</button>
-                                <button
-                                    class="px-4 py-2 rounded-lg text-neutral-text dark:text-neutral-text-dark hover:bg-background-light dark:hover:bg-background-dark">{{ __('pharmacy.orders.status.in_progress') }}
-                                    (2)</button>
-                                <button
-                                    class="px-4 py-2 rounded-lg text-neutral-text dark:text-neutral-text-dark hover:bg-background-light dark:hover:bg-background-dark">{{ __('pharmacy.orders.status.ready') }}
-                                    (3)</button>
-                            </div>
+                            <!-- Status Tabs removed per request -->
                         </div>
 
                         <!-- Order Cards List -->
@@ -166,11 +149,6 @@
                                 <div class="flex items-center justify-between mb-4">
                                     <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
                                         {{ __('pharmacy.orders.patient_info') }}</h2>
-                                    <div
-                                        class="flex items-center gap-2 rounded-full bg-danger/10 px-3 py-1 text-xs font-medium text-danger">
-                                        <span class="material-symbols-outlined text-base">warning</span>
-                                        {{ __('pharmacy.orders.allergy_warning') }}: Penicillin
-                                    </div>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                     <div>
@@ -199,17 +177,8 @@
                                 <div class="flex items-center justify-between mb-4">
                                     <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
                                         {{ __('pharmacy.orders.prescription_details') }}</h2>
-                                    <div class="flex gap-2">
-                                        <button
-                                            class="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark">
-                                            <span class="material-symbols-outlined text-lg">image</span>
-                                            {{ __('pharmacy.orders.view_scan') }}
-                                        </button>
-                                        <button
-                                            class="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark">
-                                            <span class="material-symbols-outlined text-lg">print</span>
-                                            {{ __('pharmacy.orders.print_label') }}
-                                        </button>
+                                    <div>
+                                        <!-- scan and print buttons removed per UI update -->
                                     </div>
                                 </div>
 
@@ -286,17 +255,7 @@
                                 </div>
                             </div>
 
-                            <div class="relative">
-                                <label for="patient-message"
-                                    class="sr-only">{{ __('pharmacy.orders.message_patient') }}</label>
-                                <input type="text" id="patient-message"
-                                    placeholder="{{ __('pharmacy.orders.message_placeholder') }}"
-                                    class="w-full h-12 pl-4 pr-28 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark placeholder:text-neutral-text dark:placeholder:text-neutral-text-dark focus:ring-2 focus:ring-primary focus:border-transparent">
-                                <button
-                                    class="absolute right-1.5 top-1.5 h-9 px-4 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary/90">
-                                    {{ __('pharmacy.orders.send') }}
-                                </button>
-                            </div>
+                            <!-- Message input removed per request -->
                         </div>
                     </div>
                 </div>

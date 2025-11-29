@@ -15,6 +15,8 @@ use App\Domain\Medicamento as med;
 use App\Models\Sucursal;
 use App\Domain\Sucursal as DomainSucursal;
 
+use App\Models\Paciente;
+use App\Domain\Paciente as DomainPaciente;
 
 use App\Models\Pedido;
 use App\Domain\Pedido as DomainPedido;
@@ -23,6 +25,8 @@ use App\Models\LineaPedido;
 use App\Domain\LineaPedido as DomainLineaPedido;
 
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
+
+use App\Models\Notificacion;
 
 use Illuminate\Support\Collection;
 class BaseDatos
@@ -127,6 +131,38 @@ class BaseDatos
     return true;
   }
 
+  public function actualizarInventarioCancelacion(LineaInventario $inventario)
+  {
+    Inventario::where('cadena_id', $inventario->getCadenaId())
+      ->where('sucursal_id', $inventario->getSucursalId())
+      ->where('medicamento_id', $inventario->getMedicamentoId())
+      ->update(['stock_disponible' => $inventario->getStockDisponible()]);
+  }
+
+  public function obtenerPaciente($paciente_id)
+  {
+    $paciente = Paciente::where('user_id', $paciente_id)->first();
+    $user = User::where('id', $paciente->user_id)->first();
+    $notificaciones = Notificacion::where('user_id', $paciente_id)->get();
+    return new DomainPaciente($paciente, $user, $notificaciones);
+  }
+
+  public function actualizarPaciente($paciente)
+  {
+    Paciente::where('user_id', $paciente->getUser()->getId())
+      ->update(['penalizacion' => $paciente->getPenalizacion()]);
+  }
+
+  public function guardarNotificacion($notificacion, $folio_pedido, $user_id)
+  {
+    Notificacion::create([
+      'user_id' => $user_id,
+      'folio_pedido' => $folio_pedido,
+      'mensaje' => $notificacion->getMensaje(),
+      'fecha_hora' => $notificacion->getFechaEnvio(),
+      'leida' => $notificacion->esLeida(),
+    ]);
+  }
 
   public function guardarPedido(DomainPedido $pedido): Pedido
   {
@@ -191,7 +227,35 @@ class BaseDatos
       return null;
     }
     $pedido->append('sucursal');
-    info("Buscando pedido por folio: $pedido");
+
     return DomainPedido::crear($pedido);
+  }
+
+  public function obtenerEmpleadoPorUserId($user_id)
+  {
+    $empleado = \App\Models\Empleado::where('user_id', $user_id)->first();
+
+    if (!$empleado) {
+      return null;
+    }
+
+    return [
+      'cadena_id' => $empleado->cadena_id,
+      'sucursal_id' => $empleado->sucursal_id,
+    ];
+  }
+
+  public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)
+  {
+    $pedidos = Pedido::where('cadena_id', $cadena_id)
+      ->where('sucursal_id', $sucursal_id)
+      ->with('lineasPedidos')
+      ->get();
+
+    $pedidos = $pedidos->map(function ($pedido) {
+      return DomainPedido::crear($pedido);
+    });
+
+    return $pedidos;
   }
 }
