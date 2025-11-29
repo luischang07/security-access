@@ -25,11 +25,11 @@ class PedidoService
     }
 
 
-    public function asociarSucursalAPedido($sucursal, $pedido)
+    public function asociarSucursalAPedido($sucursal, Pedido $pedido)
     {
 
         $pedido->asociarSucursalAPedido($sucursal);
-
+        info("pedidoooo", [$pedido->getSucursal()->getNombre()]);
         return $pedido;
     }
 
