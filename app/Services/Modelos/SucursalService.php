@@ -40,5 +40,10 @@ class SucursalService
         return $this->dataBase->actualizarInventario($ldi);
     }
 
+    public function obtenerInventarioWithUpdate($cantidadSurtida, $medid, $sucursal)
+    {
+        $ldi = $this->dataBase->obtenerInventarioWithUpdate($cantidadSurtida, $medid, $sucursal);
+        return $ldi;
+    }
 
 }

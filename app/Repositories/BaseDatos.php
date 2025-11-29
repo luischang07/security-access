@@ -124,7 +124,8 @@ class BaseDatos
 
     return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
   }
-  public function actualizarInventario($ldi){
+  public function actualizarInventario($ldi)
+  {
     Inventario::where('cadena_id', $ldi->getCadenaId())
       ->where('sucursal_id', $ldi->getSucursalId())
       ->where('medicamento_id', $ldi->getMedicamentoId())
@@ -142,7 +143,7 @@ class BaseDatos
   public function obtenerPaciente($paciente_id)
   {
     $paciente = Paciente::where('user_id', $paciente_id)->first();
-    $user = User::where('id', $paciente->user_id)->first();
+    $user = User::where('user_id', $paciente->user_id)->first();
     $notificaciones = Notificacion::where('user_id', $paciente_id)->get();
     return new DomainPaciente($paciente, $user, $notificaciones);
   }
@@ -246,15 +247,18 @@ class BaseDatos
 
     return $pedidos;
   }
-  public function iniciarTransaccion(){
+  public function iniciarTransaccion()
+  {
     DB::beginTransaction();
   }
 
-  public function commitTransaccion(){
+  public function commitTransaccion()
+  {
     DB::commit();
   }
 
-  public function cancelarTransaccion(){
+  public function cancelarTransaccion()
+  {
     DB::rollBack();
   }
 }
