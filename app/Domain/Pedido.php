@@ -217,6 +217,11 @@ class Pedido
         $this->estatus = "confirmado";
     }
 
+    public function cambiarEstatus($nuevoEstatus)
+    {
+        $this->estatus = $nuevoEstatus;
+    }
+
     public function getCostoTotal()
     {
         return $this->costo_Total;
