@@ -175,7 +175,7 @@ class DatabaseSeeder extends Seeder
 
     // Create Pedidos
     // Create Pedidos
-    $pedido1 = 'PED001';
+    $pedido1 = 1;
     DB::table('pedidos')->insert([
       'folio_pedido' => $pedido1,
       'cadena_id' => $cadena1,
@@ -183,12 +183,11 @@ class DatabaseSeeder extends Seeder
       'paciente_id' => $pacienteUser1->user_id,
       'cedula_profesional' => '12345678',
       'fecha_pedido' => now()->subDays(5),
-      'fecha_entrega' => now()->subDays(2),
       'estatus' => 'completado',
       'costo_total' => 250.50,
     ]);
 
-    $pedido2 = 'PED002';
+    $pedido2 = 2;
     DB::table('pedidos')->insert([
       'folio_pedido' => $pedido2,
       'cadena_id' => $cadena2,
@@ -196,23 +195,22 @@ class DatabaseSeeder extends Seeder
       'paciente_id' => $pacienteUser2->user_id,
       'cedula_profesional' => '12345678',
       'fecha_pedido' => now()->subDay(),
-      'fecha_entrega' => null,
       'estatus' => 'en_proceso',
       'costo_total' => 180.00,
     ]);
 
     // Create Lineas Pedidos
     DB::table('lineas_pedidos')->insert([
-      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 1, 'medicamento_id' => 1, 'cantidad' => 50],
-      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 2, 'medicamento_id' => 2, 'cantidad' => 75],
-      ['folio_pedido' => $pedido2, 'id_linea_pedido' => 1, 'medicamento_id' => 3, 'cantidad' => 180],
+      ['folio_pedido' => $pedido1, 'medicamento_id' => 1, 'cantidad' => 50],
+      ['folio_pedido' => $pedido1, 'medicamento_id' => 2, 'cantidad' => 75],
+      ['folio_pedido' => $pedido2, 'medicamento_id' => 3, 'cantidad' => 180],
     ]);
 
     // Create Detalle Lineas Pedidos
     DB::table('detalle_lineas_pedidos')->insert([
-      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 1, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 2, 'precio_unitario' => 50.00],
-      ['folio_pedido' => $pedido1, 'id_linea_pedido' => 2, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 3, 'precio_unitario' => 75.00],
-      ['folio_pedido' => $pedido2, 'id_linea_pedido' => 1, 'cadena_id' => $cadena2, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 0, 'precio_unitario' => 180.00],
+      ['folio_pedido' => $pedido1, 'medicamento_id' => 1, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 2, 'precio_unitario' => 50.00],
+      ['folio_pedido' => $pedido1, 'medicamento_id' => 2, 'cadena_id' => $cadena1, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 3, 'precio_unitario' => 75.00],
+      ['folio_pedido' => $pedido2, 'medicamento_id' => 3, 'cadena_id' => $cadena2, 'sucursal_id' => 'SUC001', 'cantidad_surtida' => 0, 'precio_unitario' => 180.00],
     ]);
 
     // Create Ruta Recoleccion
@@ -223,10 +221,10 @@ class DatabaseSeeder extends Seeder
 
     // Create Notificaciones
     DB::table('notificaciones')->insert([
-      ['user_id' => $pacienteUser1->user_id, 'mensaje' => 'Su pedido ha sido completado', 'fecha_hora' => now()->subDays(2), 'leida' => true],
-      ['user_id' => $pacienteUser2->user_id, 'mensaje' => 'Tiene una penalización pendiente de $50.00', 'fecha_hora' => now()->subDay(), 'leida' => false],
-      ['user_id' => $pacienteUser2->user_id, 'mensaje' => 'Su pedido está en proceso', 'fecha_hora' => now()->subDay(), 'leida' => false],
-      ['user_id' => $adminUser->user_id, 'mensaje' => 'Nuevo pedido registrado en el sistema', 'fecha_hora' => now()->subDay(), 'leida' => true],
+      ['folio_pedido' => $pedido1, 'user_id' => $pacienteUser1->user_id, 'mensaje' => 'Su pedido ha sido completado', 'fecha_hora' => now()->subDays(2), 'leida' => true],
+      ['folio_pedido' => $pedido2, 'user_id' => $pacienteUser2->user_id, 'mensaje' => 'Tiene una penalización pendiente de $50.00', 'fecha_hora' => now()->subDay(), 'leida' => false],
+      ['folio_pedido' => $pedido2, 'user_id' => $pacienteUser2->user_id, 'mensaje' => 'Su pedido está en proceso', 'fecha_hora' => now()->subDay(), 'leida' => false],
+      ['folio_pedido' => $pedido1, 'user_id' => $adminUser->user_id, 'mensaje' => 'Nuevo pedido registrado en el sistema', 'fecha_hora' => now()->subDay(), 'leida' => true],
     ]);
 
     // Run Penalty Seeder after patients are created
