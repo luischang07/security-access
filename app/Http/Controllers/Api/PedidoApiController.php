@@ -1,49 +1,42 @@
 <?php
-namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Services\Modelos\PedidoService;
+namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
+use App\Models\Pedido;
 
 class PedidoApiController extends Controller
 {
-    private PedidoService $pedidoService;
-
-    public function __construct(PedidoService $pedidoService)
+    // Buscar un pedido por su folio
+    public function mostrar($folio)
     {
-        $this->pedidoService = $pedidoService;
-    }
-
-    /**
-     * ✔ API: Obtener TODOS los pedidos de un paciente
-     */
-    public function pedidosPorPaciente($paciente_id)
-    {
-        $pedidos = $this->pedidoService->obtenerPedidosPorPacienteId($paciente_id);
-
-        return response()->json([
-            'ok' => true,
-            'pedidos' => $pedidos
-        ]);
-    }
-
-    /**
-     * ✔ API: Obtener un pedido con detalle
-     */
-    public function pedidoPorFolio($folio)
-    {
-        $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
+        $pedido = Pedido::where('folio_pedido', $folio)->first();
 
         if (!$pedido) {
             return response()->json([
-                'ok' => false,
+                'success' => false,
                 'message' => 'Pedido no encontrado'
             ], 404);
         }
 
         return response()->json([
-            'ok' => true,
-            'pedido' => $pedido
+            'success' => true,
+            'folio' => $pedido->folio_pedido,
+            'estatus' => $pedido->estatus,
+            'fecha_pedido' => $pedido->fecha_pedido,
+            'fecha_recoleccion' => $pedido->fecha_recoleccion,
+            'costo_total' => $pedido->costo_total
+        ]);
+    }
+
+    // Buscar pedidos por ID del paciente
+    public function porPaciente($id)
+    {
+        $pedidos = Pedido::where('paciente_id', $id)->get();
+
+        return response()->json([
+            'success' => true,
+            'pedidos' => $pedidos
         ]);
     }
 }
