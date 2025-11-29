@@ -138,11 +138,7 @@ class BaseDatos
   public function obtenerPaciente($paciente_id)
   {
     $paciente = Paciente::where('user_id', $paciente_id)->first();
-<<<<<<< HEAD
     $user = User::where('id', $paciente->user_id)->first();
-=======
-    $user = User::where('user_id', $paciente->user_id)->first();
->>>>>>> arturo
     $notificaciones = Notificacion::where('user_id', $paciente_id)->get();
     return new DomainPaciente($paciente, $user, $notificaciones);
   }
