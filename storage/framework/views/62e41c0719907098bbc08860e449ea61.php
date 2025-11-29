@@ -190,7 +190,7 @@
 
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-bold text-primary">
-                                            <?php echo e('$' . number_format($totalGeneral, 2)); ?>
+                                            <?php echo e('$' . number_format($pedido->getCostoTotal(), 2)); ?>
 
                                         </td>
                                     </tr>
