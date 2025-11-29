@@ -3,7 +3,7 @@
 namespace App\Domain;
 use Illuminate\Support\Collection;
 use App\Models\User as UserModel;
-use App\Models\User as PacienteModel;
+use App\Models\Paciente as PacienteModel;
 use App\Domain\User\UserEntity;
 class Paciente
 {
@@ -13,7 +13,7 @@ class Paciente
     public function __construct(PacienteModel $paciente, UserModel $user)
     {
         $this->user = new UserEntity($user); 
-        $this->monto_penalizacion = $paciente->getMontoPenalizacion();
+        $this->monto_penalizacion = $paciente->monto_penalizacion;
     }
 
     public function getUser()
