@@ -112,7 +112,7 @@
                                             {{ __('prescription.upload_step2.selected_pharmacy') }}
                                         </h3>
                                         <p class="text-base font-bold text-body-text dark:text-body-text-dark">
-                                            {{ $pedido->getSucursal()->getNombre()||"" }}
+                                            {{ $pedido->getSucursal()->getNombre() }}
                                         </p>
                                         <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
                                             {{ $pedido->getSucursal()->getDireccion() }}

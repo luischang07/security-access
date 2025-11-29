@@ -15,7 +15,6 @@ use App\Domain\Medicamento as med;
 use App\Models\Sucursal;
 use App\Domain\Sucursal as DomainSucursal;
 
-use App\Models\User;
 use App\Models\Paciente;
 use App\Domain\Paciente as DomainPaciente;
 
@@ -26,6 +25,7 @@ use App\Models\LineaPedido;
 use App\Domain\LineaPedido as DomainLineaPedido;
 
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
+
 use Illuminate\Support\Collection;
 class BaseDatos
 {
@@ -140,8 +140,7 @@ class BaseDatos
   public function obtenerPaciente($paciente_id)
   {
     $paciente = Paciente::where('user_id', $paciente_id)->first();
-    $user = User::where('user_id', $paciente->user_id)->first();
-     info("paciente", [$paciente,$user]);
+    $user = User::where('id', $paciente->user_id)->first();
     return new DomainPaciente($paciente, $user);
   }
 
