@@ -33,6 +33,7 @@ class GestorDeSurtido
 
   public function surtir(Pedido $pedido)
   {
+    $this->SinStock = collect();
 
     $sucsel = $pedido->getSucursal();
 
@@ -41,8 +42,12 @@ class GestorDeSurtido
     foreach ($ldp as $lineaPedido) {
       $cantidadSurtida = 0;
       $ldi = $this->sucursalService->getLineaInventario($sucsel->getCadenaId(), $sucsel->getSucursalId(), $lineaPedido->getMedicamentoId());
-      if ($ldi->getStockDisponible() > 0) {
-        $cantidadSurtida = $lineaPedido->getCantidad() - $ldi->getStockDisponible() <= 0 ? $lineaPedido->getCantidad() : $ldi->getStockDisponible();
+      if (!$ldi) {
+        $this->SinStock->push($lineaPedido);
+        continue;
+      }
+      if ($ldi->hayStockDisponible()) {
+        $cantidadSurtida = $ldi->cantidadPuedeSurtir($lineaPedido->getCantidad());
 
         $lineaPedido->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucsel, $lineaPedido->getMedicamentoId());
       }
@@ -55,6 +60,7 @@ class GestorDeSurtido
       $sucCercanas = $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
       $this->CalculaFaltantes($this->SinStock, $sucCercanas);
     }
+    $pedido->setFaltantes($this->SinStock);
     return $pedido;
   }
 
@@ -66,8 +72,11 @@ class GestorDeSurtido
         $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
         $cantFaltante = $ldp->getCantidadFaltante();
         $cantidadSurtida = 0;
-        if ($ldi->getStockDisponible() > 0 && $cantFaltante > 0) {
-          $cantidadSurtida = $cantFaltante - $ldi->getStockDisponible() <= 0 ? $cantFaltante : $ldi->getStockDisponible();
+        if ($ldi == null) {
+          continue;
+        }
+        if ($ldi->hayStockDisponible() && $cantFaltante > 0) {
+          $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
 
           $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $suc, $ldp->getMedicamentoId());
 
@@ -90,10 +99,10 @@ class GestorDeSurtido
       foreach ($detalles as $dlp) {
         $this->dataBase->iniciarTransaccion();
         $ldi = $this->sucursalService->obtenerInventarioWithUpdate($dlp->getCantidadSurtida(), $linea->getMedicamentoId(), $dlp->getSucursal());
-        if ($ldi->getStockDisponible()>=$dlp->getCantidadSurtida()) {
+        if ($ldi->getStockDisponible() >= $dlp->getCantidadSurtida()) {
           $ldi->disminuirStock($dlp->getCantidadSurtida());
           $this->sucursalService->actualizarInventario($ldi);
-          $this->dataBase->commitTransaccion();   
+          $this->dataBase->commitTransaccion();
           $pedido->añadirARuta($dlp->getSucursal());
         } else {
           $this->dataBase->cancelarTransaccion();
@@ -137,7 +146,7 @@ class GestorDeSurtido
               return $item === $ldp;
             });
           }
-        }else{
+        } else {
           $this->dataBase->cancelarTransaccion();
         }
       }
