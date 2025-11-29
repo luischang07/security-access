@@ -26,6 +26,9 @@ use App\Models\LineaPedido;
 use App\Domain\LineaPedido as DomainLineaPedido;
 
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
+
+use App\Models\Notificacion;
+
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -142,9 +145,9 @@ class BaseDatos
   public function obtenerPaciente($paciente_id)
   {
     $paciente = Paciente::where('user_id', $paciente_id)->first();
-    $user = User::where('user_id', $paciente->user_id)->first();
-     info("paciente", [$paciente,$user]);
-    return new DomainPaciente($paciente, $user);
+    $user = User::where('id', $paciente->user_id)->first();
+    $notificaciones = Notificacion::where('user_id', $paciente_id)->get();
+    return new DomainPaciente($paciente, $user, $notificaciones);
   }
 
   public function actualizarPaciente($paciente)
@@ -153,10 +156,20 @@ class BaseDatos
       ->update(['penalizacion' => $paciente->getPenalizacion()]);
   }
 
+  public function guardarNotificacion($notificacion, $folio_pedido, $user_id)
+  {
+    Notificacion::create([
+      'user_id' => $user_id,
+      'folio_pedido' => $folio_pedido,
+      'mensaje' => $notificacion->getMensaje(),
+      'fecha_hora' => $notificacion->getFechaEnvio(),
+      'leida' => $notificacion->esLeida(),
+    ]);
+  }
 
   public function guardarPedido(DomainPedido $pedido): Pedido
   {
-    return Pedido::create([
+    $pedidoModel = Pedido::create([
       'paciente_id' => $pedido->getPacienteId(),
       'cadena_id' => $pedido->getSucursal()->getCadenaId(),
       'sucursal_id' => $pedido->getSucursal()->getSucursalId(),
@@ -166,6 +179,8 @@ class BaseDatos
       'estatus' => $pedido->getEstatus(),
       'costo_total' => $pedido->getCostoTotal(),
     ]);
+
+    return $pedidoModel;
   }
 
   public function guardarLineaPedido(DomainLineaPedido $ldp, $folio_pedido): LineaPedido
@@ -209,15 +224,30 @@ class BaseDatos
 
     return $pedidos;
   }
-  public function obtenerPedidoPorId($pedido_id)
-  {
-    $pedidoModel = Pedido::where('folio_pedido', $pedido_id)->with("lineasPedidos")->first();
 
-    if (!$pedidoModel) {
+  public function getPedidoByFolio($folio)
+  {
+    $pedido = Pedido::where('folio_pedido', $folio)->with('lineasPedidos')->first();
+    if (!$pedido) {
       return null;
     }
+    $pedido->append('sucursal');
 
-    return DomainPedido::crear($pedidoModel);
+    return DomainPedido::crear($pedido);
+  }
+
+  public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)
+  {
+    $pedidos = Pedido::where('cadena_id', $cadena_id)
+      ->where('sucursal_id', $sucursal_id)
+      ->with('lineasPedidos')
+      ->get();
+
+    $pedidos = $pedidos->map(function ($pedido) {
+      return DomainPedido::crear($pedido);
+    });
+
+    return $pedidos;
   }
   public function iniciarTransaccion(){
     DB::beginTransaction();

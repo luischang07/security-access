@@ -3,10 +3,11 @@
 
 namespace App\Domain;
 use Illuminate\Support\Collection;
-use App\Domain\Sucursales;
+use App\Domain\Sucursal;
 use App\Domain\LineaPedido;
 use App\Domain\Medicamento;
 use Carbon\Carbon;
+
 class Pedido
 {
     private $folio;
@@ -61,10 +62,12 @@ class Pedido
     public function añadirARuta($sucursal)
     {
         //Si ya existe la sucursal dentro de la ruta, no agregarla de nuevo
-        if (!$this->ruta->contains(function ($suc) use ($sucursal) {
-            return $suc->getCadenaId() === $sucursal->getCadenaId() &&
-                $suc->getSucursalId() === $sucursal->getSucursalId();
-        })) {
+        if (
+            !$this->ruta->contains(function ($suc) use ($sucursal) {
+                return $suc->getCadenaId() === $sucursal->getCadenaId() &&
+                    $suc->getSucursalId() === $sucursal->getSucursalId();
+            })
+        ) {
             $this->ruta->push($sucursal);
         }
     }
@@ -233,6 +236,11 @@ class Pedido
         return $this->folio;
     }
 
+    public function asignarFolio($folio)
+    {
+        $this->folio = $folio;
+    }
+
     public function getPacienteId()
     {
         return $this->paciente_id;
@@ -257,11 +265,20 @@ class Pedido
         $pedido->estatus = $pedidoModel->estatus;
         $pedido->costo_Total = $pedidoModel->costo_total;
 
+        //crear sucursal
+        $sucursal = Sucursal::crear($pedidoModel->sucursal);
+        $pedido->asociarSucursalAPedido($sucursal);
+
         $lineasPedidoCollection = collect();
         foreach ($pedidoModel->lineasPedidos as $lineaModel) {
             $medicamento = new Medicamento($lineaModel->medicamento->medicamento_id, $lineaModel->medicamento->nombre, $lineaModel->medicamento->descripcion, $lineaModel->medicamento->unidad_medida, $lineaModel->medicamento->unidades);
             $lineaPedido = $lineaPedido = new LineaPedido($lineaModel->medicamento_id, $lineaModel->cantidad, $medicamento);
             $lineasPedidoCollection->push($lineaPedido);
+            //Crear crearDetalleLineaPedido
+            foreach ($lineaModel->detalles as $detalleModel) {
+                $sucursalDetalle = Sucursal::crear($detalleModel->sucursal);
+                $lineaPedido->crearDetalleLineaPedido($detalleModel->precio_unitario, $detalleModel->cantidad_surtida, $sucursalDetalle, $detalleModel->medicamento_id);
+            }
         }
         $pedido->lineas_pedido = $lineasPedidoCollection;
 

@@ -5,15 +5,23 @@ use Illuminate\Support\Collection;
 use App\Models\User as UserModel;
 use App\Models\Paciente as PacienteModel;
 use App\Domain\User\UserEntity;
+use App\Domain\Notificacion;
 class Paciente
 {
     private $user;
-    private $monto_penalizacion = 0 ;
+    private $monto_penalizacion=0;
+    private $notificaciones;
 
-    public function __construct(PacienteModel $paciente, UserModel $user)
+    public function __construct(PacienteModel $paciente, UserModel $user, $notificaciones = null)
     {
-        $this->user = new UserEntity($user); 
+        $this->user = new UserEntity($user);
         $this->monto_penalizacion = $paciente->monto_penalizacion;
+        $this->notificaciones = collect();
+        if ($notificaciones) {
+            foreach ($notificaciones as $notificacion) {
+              $this->notificaciones->push( new Notificacion ($notificacion) );
+            }
+        }
     }
 
     public function getUser()
@@ -34,5 +42,14 @@ class Paciente
         if ($this->monto_penalizacion < 0) {
             $this->monto_penalizacion = 0;
         }
+    }
+    public function agregarNotificacion($notificacion)
+    {
+        $this->notificaciones->push($notificacion);
+    }
+
+    public function getNotificaciones()
+    {
+        return $this->notificaciones;
     }
 }

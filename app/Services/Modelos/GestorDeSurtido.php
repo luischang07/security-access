@@ -52,8 +52,6 @@ class GestorDeSurtido
       $sucCercanas = $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
       $this->CalculaFaltantes($this->SinStock, $sucCercanas, $pedido);
     }
-    //info("pedido", [$pedido->getLineasPedido()->getDetalleLineaPedido()->getSucursal()->getSucursalId()]);
-    //info("sucursales", [$sucCercanas]);
     return $pedido;
   }
 
@@ -87,7 +85,6 @@ class GestorDeSurtido
     foreach ($ldp as $linea) {
       $detalles = $linea->getDetalles();
       foreach ($detalles as $dlp) {
-        info("detalles");
         $existencia = $this->sucursalService->actualizarInventario($dlp->getCantidadSurtida(), $linea->getMedicamentoId(), $dlp->getSucursal());
         if ($existencia) {
           $this->SinStock->push($linea);
@@ -140,8 +137,10 @@ class GestorDeSurtido
       $pedidoBD = $this->dataBase->guardarPedido($pedido);
 
       $folioPedido = $pedidoBD->folio_pedido;
-      foreach ($pedido->getLineasPedido() as $lineaPedido) {
-        info("Guardando linea de pedido", [$lineaPedido]);
+
+      $pedido->asignarFolio($folioPedido);
+
+      foreach ($pedido->getLineasPedidos() as $lineaPedido) {
         $lineaBD = $this->dataBase->guardarLineaPedido($lineaPedido, $folioPedido);
 
         $idLinea = $lineaBD->id_linea_pedido;

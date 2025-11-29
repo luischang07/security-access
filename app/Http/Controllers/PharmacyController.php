@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\InventarioRepository;
 use App\Repositories\PedidoRepository;
+use App\Services\Modelos\PedidoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,6 +16,7 @@ class PharmacyController extends Controller
   private const BRANCH_INFO_NOT_FOUND = 'No se encontró información de la sucursal del empleado.';
 
   public function __construct(
+    private readonly PedidoService $pedidoService,
     private readonly PedidoRepository $pedidoRepository,
     private readonly InventarioRepository $inventarioRepository
   ) {
@@ -59,19 +61,11 @@ class PharmacyController extends Controller
    */
   public function orders()
   {
-    // ✅ SEGURIDAD: Solo pedidos de la sucursal del empleado
-    /** @var \App\Models\User $user */
+
     $user = Auth::user();
     $branchIds = $user->getBranchIds();
 
-    if (!$branchIds) {
-      abort(403, self::BRANCH_INFO_NOT_FOUND);
-    }
-
-    $pedidos = $this->pedidoRepository->getPaginatedOrdersForBranch(
-      $branchIds['cadena_id'],
-      $branchIds['sucursal_id']
-    );
+    $pedidos = $this->pedidoService->obtenerPedidosSucursal($branchIds['cadena_id'], $branchIds['sucursal_id']);
 
     return view('pharmacy.orders', compact('pedidos'));
   }

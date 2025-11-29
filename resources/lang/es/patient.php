@@ -138,6 +138,28 @@ return [
     ],
   ],
 
+  // Order Detail view translations
+  'order_detail' => [
+    'title' => 'Detalle del Pedido',
+    'back_to_orders' => 'Volver a Mis Pedidos',
+    'order' => 'Pedido',
+    'order_date' => 'Fecha del Pedido',
+    'pickup_date' => 'Fecha de Recolección',
+    'pharmacy' => 'Farmacia',
+    'medications' => 'Medicamentos',
+    'medication' => 'Medicamento',
+    'quantity' => 'Cantidad',
+    'unit_price' => 'Precio Unitario',
+    'subtotal' => 'Subtotal',
+    'no_medications' => 'No hay medicamentos en este pedido.',
+    'cost_summary' => 'Resumen de Costos',
+    'subtotal_label' => 'Subtotal',
+    'service_fee' => 'Tarifa de Servicio',
+    'total' => 'Total',
+    'back_to_list' => 'Volver a la Lista',
+    'reorder' => 'Pedir de Nuevo',
+  ],
+
   // Patient Profile
   'profile' => [
     'title' => 'Mi Perfil',
