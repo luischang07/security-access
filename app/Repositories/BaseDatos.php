@@ -166,7 +166,7 @@ class BaseDatos
 
   public function guardarPedido(DomainPedido $pedido): Pedido
   {
-    return Pedido::create([
+    $pedidoModel = Pedido::create([
       'paciente_id' => $pedido->getPacienteId(),
       'cadena_id' => $pedido->getSucursal()->getCadenaId(),
       'sucursal_id' => $pedido->getSucursal()->getSucursalId(),
@@ -176,6 +176,8 @@ class BaseDatos
       'estatus' => $pedido->getEstatus(),
       'costo_total' => $pedido->getCostoTotal(),
     ]);
+
+    return $pedidoModel;
   }
 
   public function guardarLineaPedido(DomainLineaPedido $ldp, $folio_pedido): LineaPedido
@@ -229,20 +231,6 @@ class BaseDatos
     $pedido->append('sucursal');
 
     return DomainPedido::crear($pedido);
-  }
-
-  public function obtenerEmpleadoPorUserId($user_id)
-  {
-    $empleado = \App\Models\Empleado::where('user_id', $user_id)->first();
-
-    if (!$empleado) {
-      return null;
-    }
-
-    return [
-      'cadena_id' => $empleado->cadena_id,
-      'sucursal_id' => $empleado->sucursal_id,
-    ];
   }
 
   public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)

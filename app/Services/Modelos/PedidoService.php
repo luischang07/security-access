@@ -136,23 +136,9 @@ class PedidoService
         $pedido->asignarFechaRecoleccion();
         return $pedido;
     }
-    //obtener pedidos por sucursal
-    public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)
+
+    public function obtenerPedidosSucursal($cadena_id, $sucursal_id)
     {
-        //de la tabla user esta la tabla empleados que esta conectado con user_id, y en esa tabla esta cadena y sucursal id
-
-
         return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
-    }
-
-    public function obtenerPedidosPorEmpleado()
-    {
-        $empleado = $this->dataBase->obtenerEmpleadoPorUserId(\auth()->user()->user_id);
-
-        if (!$empleado) {
-            return collect();
-        }
-
-        return $this->dataBase->obtenerPedidosPorSucursal($empleado['cadena_id'], $empleado['sucursal_id']);
     }
 }

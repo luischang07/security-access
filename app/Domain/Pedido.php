@@ -235,6 +235,11 @@ class Pedido
         return $this->folio;
     }
 
+    public function asignarFolio($folio)
+    {
+        $this->folio = $folio;
+    }
+
     public function getPacienteId()
     {
         return $this->paciente_id;

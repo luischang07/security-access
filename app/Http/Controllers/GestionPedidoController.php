@@ -130,8 +130,13 @@ class GestionPedidoController extends Controller
     public function confirmarPedido()
     {
         $pedido = unserialize(Session::get('pedido_temporal'));
-        info("Confirmando pedido...");
+        Session::forget('pedido_temporal');
+
         $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
+
+        $folio = $pedido->getFolio();
+
+        return redirect("/patient/orders/{$folio}");
     }
 
 
@@ -155,10 +160,10 @@ class GestionPedidoController extends Controller
         return view('patient.orders', compact('pedidos'));
     }
 
-    public function getPedido($id)
+    public function getPedido($folio)
     {
-        // $id is the folio_pedido of the Pedido
-        $pedido = $this->pedidoService->obtenerPedidoPorFolio($id);
+        // $folio is the folio_pedido of the Pedido
+        $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
 
         if (!$pedido) {
             abort(404);
