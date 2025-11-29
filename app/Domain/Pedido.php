@@ -300,4 +300,21 @@ class Pedido
 
         return $pedido;
     }
+
+    public function calcularPorcentajeSurtido()
+    {
+        $totalSolicitado = 0;
+        $totalSurtido = 0;
+
+        foreach ($this->lineas_pedido as $linea) {
+            $totalSolicitado += $linea->getCantidad();
+            $totalSurtido += $linea->calcularCantidadSurtida();
+        }
+
+        if ($totalSolicitado === 0) {
+            return 0;
+        }
+
+        return ($totalSurtido / $totalSolicitado) * 100;
+    }
 }

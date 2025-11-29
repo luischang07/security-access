@@ -95,4 +95,13 @@ class LineaPedido
         }
         return $subtotal;
     }
+
+    public function calcularCantidadSurtida()
+    {
+        $cantidadSurtida = 0;
+        foreach ($this->detalleLineaPedido as $detalle) {
+            $cantidadSurtida += $detalle->getCantidadSurtida();
+        }
+        return $cantidadSurtida;
+    }
 }
