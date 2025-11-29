@@ -48,6 +48,10 @@ class BaseDatos
   {
     $data = Inventario::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->where('medicamento_id', $medId)->first();
 
+    if (!$data) {
+      return null;
+    }
+
     return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
   }
   public function obtenerCadenas()

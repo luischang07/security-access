@@ -43,4 +43,12 @@ class LineaInventario {
     public function aumentarStock($cantidad){
         $this->stock_disponible += $cantidad;
     }
+
+    public function hayStockDisponible(){
+        return $this->stock_disponible > 0  ? true : false;
+    }
+
+    public function cantidadPuedeSurtir($cantidadSolicitada){
+        return $this->stock_disponible >= $cantidadSolicitada ? $cantidadSolicitada : $this->stock_disponible;
+    }
 }

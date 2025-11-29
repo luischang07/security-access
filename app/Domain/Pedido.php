@@ -18,12 +18,14 @@ class Pedido
     private $paciente_id;
     private $sucursal;
     private $costo_Total;
+    private $faltantes;
 
     private $ruta;
 
     private function __construct()
     {
         $this->createColeccionLineas();
+        $this->faltantes = collect();
         $this->ruta = collect();
     }
 
@@ -168,6 +170,21 @@ class Pedido
             $acumulado += $linea->calcularSubtotal();
         }
         $this->costo_Total = $acumulado;
+    }
+
+    public function setFaltantes($faltantes)
+    {
+        $this->faltantes = $faltantes ?? collect();
+    }
+
+    public function getFaltantes()
+    {
+        return $this->faltantes ?? collect();
+    }
+
+    public function tieneFaltantes(): bool
+    {
+        return $this->getFaltantes()->count() > 0;
     }
 
     public function asignarFechaPedido()
