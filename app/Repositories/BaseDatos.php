@@ -57,6 +57,7 @@ class BaseDatos
 
     return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
   }
+  
   public function obtenerCadenas()
   {
     return CadenaFarmaceutica::select('cadena_id', 'nombre')->orderBy('nombre')->get();
@@ -118,12 +119,7 @@ class BaseDatos
       ->get(['id', 'nombre', 'unidad_medida', 'unidades']);
   }
 
-  public function obtenerInventarioWithUpdate($cantidad, $med_id, $sucursal)
-  {
-    $data = Inventario::where('cadena_id', $sucursal->getCadenaId())->where('sucursal_id', $sucursal->getSucursalId())->where('medicamento_id', $med_id)->lockForUpdate()->first();
-
-    return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
-  }
+  
   public function actualizarInventario($ldi)
   {
     Inventario::where('cadena_id', $ldi->getCadenaId())

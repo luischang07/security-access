@@ -78,7 +78,7 @@
 
                                 <?php endif; ?>
                             </span>
-                            <a href="<?php echo e(url('/patient/orders/' . ($pedido->getFolio() ?? '#'))); ?>" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark text-sm font-medium leading-normal hover:bg-border-light dark:hover:bg-border-dark transition">
+                            <a href="<?php echo e(route('patient.orders.show', $pedido->getFolio())); ?>" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark text-sm font-medium leading-normal hover:bg-border-light dark:hover:bg-border-dark transition">
                                 <span class="truncate"><?php echo e(__('patient.orders.view_details')); ?></span>
                             </a>
                         </div>

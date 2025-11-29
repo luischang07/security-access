@@ -135,15 +135,16 @@ class GestionPedidoController extends Controller
 
     public function confirmarPedido()
     {
-        $paciente_id = Auth::user()->user_id;
-
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
-        $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
-
-        $folio = $pedido->getFolio();
-
-        return redirect("/patient/orders/{$folio}");
+        try {
+            $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
+            $folio = $pedido->getFolio();
+            return redirect("/patient/orders/{$folio}");
+        } catch (\Throwable $e) {
+            Session::put('pedido_temporal', serialize($pedido));
+            return redirect()->back()->withErrors($e->getMessage());
+        }
     }
 
 
