@@ -4,6 +4,7 @@ namespace App\Services\Modelos;
 use App\Repositories\BaseDatos;
 use App\Domain\Pedido;
 use App\Domain\Sucursal;
+use App\Domain\Paciente;
 
 class PedidoService
 {
@@ -55,6 +56,28 @@ class PedidoService
         return $pedido;
     }
 
+    public function cancelarPedido($pedido)
+    {
+        $pedido->cambiarEstatus('CANCELADO');
+        $dlp = $pedido->obtenerDetallesLineas();
+        foreach ($dlp as $detalle) {
+            $inventario = $this->dataBase->obtenerInventario(
+                $pedido->getSucursal()->getCadenaId(),
+                $pedido->getSucursal()->getSucursalId(),
+                $detalle->getMedicamentoId()
+            );
+            if ($inventario) {
+                $inventario->aumentarStock($detalle->getCantidadSurtida());
+                $this->dataBase->actualizarInventarioCancelacion($inventario);
+            }
+        }
+        $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
+        $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
+        $paciente->aplicarPenalizacion($cantidad_penalizacion);
+        $this->dataBase->actualizarPaciente($paciente);
+
+    }
+
     public function obtenerSucursal($cadena_id, $sucursal_id)
     {
         $this->sucursal = $this->dataBase->obtenerSucursal($cadena_id, $sucursal_id);
@@ -83,6 +106,10 @@ class PedidoService
     public function obtenerPedid($id)
     {
         $pedidos = $this->dataBase->getPedidos($id);
+    }
+    public function buscarPedidoPorId($pedido_id)
+    {
+        return $this->dataBase->obtenerPedidoPorId($pedido_id);
     }
     public function setCedulaProfesional($cedula, $pedido)
     {
