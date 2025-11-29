@@ -27,6 +27,8 @@ use App\Domain\LineaPedido as DomainLineaPedido;
 
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
 class BaseDatos
 {
 
@@ -44,7 +46,7 @@ class BaseDatos
 
   public function obtenerInventario($cadena_id, $sucursal_id, $medId)
   {
-    $data = Inventario::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->where('medicamento_id', $medId)->first();
+    $data = Inventario::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->where('medicamento_id', $medId)->lockForUpdate()->first();
 
     return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
   }
@@ -216,5 +218,16 @@ class BaseDatos
     }
 
     return DomainPedido::crear($pedidoModel);
+  }
+  public function iniciarTransaccion(){
+    DB::beginTransaction();
+  }
+
+  public function commitTransaccion(){
+    DB::commit();
+  }
+
+  public function cancelarTransaccion(){
+    DB::rollBack();
   }
 }

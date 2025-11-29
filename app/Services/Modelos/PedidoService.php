@@ -61,6 +61,7 @@ class PedidoService
         $pedido->cambiarEstatus('CANCELADO');
         $dlp = $pedido->obtenerDetallesLineas();
         foreach ($dlp as $detalle) {
+            $this->dataBase->iniciarTransaccion();
             $inventario = $this->dataBase->obtenerInventario(
                 $pedido->getSucursal()->getCadenaId(),
                 $pedido->getSucursal()->getSucursalId(),
@@ -69,6 +70,10 @@ class PedidoService
             if ($inventario) {
                 $inventario->aumentarStock($detalle->getCantidadSurtida());
                 $this->dataBase->actualizarInventarioCancelacion($inventario);
+                $this->dataBase->commitTransaccion();
+            }
+            else{
+                $this->dataBase->cancelarTransaccion();
             }
         }
         $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
