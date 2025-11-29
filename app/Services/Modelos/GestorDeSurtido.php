@@ -6,6 +6,7 @@ use App\Domain\Sucursal;
 use App\Domain\DetalleLineaPedido;
 use App\Domain\LineaPedido;
 use App\Domain\LineaInventario;
+use App\Services\Modelos\PacienteService;
 use App\Services\Modelos\PedidoService;
 use App\Services\Modelos\SucursalService;
 use Illuminate\Support\Facades\Session;
@@ -18,18 +19,21 @@ class GestorDeSurtido
 {
   private SucursalService $sucursalService;
   private PedidoService $pedidoService;
+  private PacienteService $pacienteService;
   private $SinStock;
   private BaseDatos $dataBase;
-  public function __construct(SucursalService $sucursalService, PedidoService $pedidoService)
+  public function __construct(SucursalService $sucursalService, PedidoService $pedidoService, PacienteService $pacienteService)
   {
     $this->sucursalService = $sucursalService;
     $this->pedidoService = $pedidoService;
+    $this->pacienteService = $pacienteService;
     $this->SinStock = collect();
     $this->dataBase = new BaseDatos();
   }
 
   public function surtir(Pedido $pedido)
   {
+    $this->SinStock = collect();
 
     $sucsel = $pedido->getSucursal();
 
@@ -38,8 +42,12 @@ class GestorDeSurtido
     foreach ($ldp as $lineaPedido) {
       $cantidadSurtida = 0;
       $ldi = $this->sucursalService->getLineaInventario($sucsel->getCadenaId(), $sucsel->getSucursalId(), $lineaPedido->getMedicamentoId());
-      if ($ldi->getStockDisponible() > 0) {
-        $cantidadSurtida = $lineaPedido->getCantidad() - $ldi->getStockDisponible() <= 0 ? $lineaPedido->getCantidad() : $ldi->getStockDisponible();
+      if (!$ldi) {
+        $this->SinStock->push($lineaPedido);
+        continue;
+      }
+      if ($ldi->hayStockDisponible()) {
+        $cantidadSurtida = $ldi->cantidadPuedeSurtir($lineaPedido->getCantidad());
 
         $lineaPedido->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucsel, $lineaPedido->getMedicamentoId());
       }
@@ -50,8 +58,10 @@ class GestorDeSurtido
 
     if ($this->SinStock->count() > 0) {
       $sucCercanas = $this->sucursalService->calculaSucCercanas($sucsel->getCadenaId(), $sucsel->getSucursalId());
-      $this->CalculaFaltantes($this->SinStock, $sucCercanas, $pedido);
+      $this->CalculaFaltantes($this->SinStock, $sucCercanas);
     }
+    $pedido->setFaltantes($this->SinStock);
+    $pedido->removerLineasSinDetalles();
     return $pedido;
   }
 
@@ -63,8 +73,11 @@ class GestorDeSurtido
         $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
         $cantFaltante = $ldp->getCantidadFaltante();
         $cantidadSurtida = 0;
-        if ($ldi->getStockDisponible() > 0 && $cantFaltante > 0) {
-          $cantidadSurtida = $ldp->getCantidad() - $ldi->getStockDisponible() <= 0 ? $ldp->getCantidad() : $ldi->getStockDisponible();
+        if ($ldi == null) {
+          continue;
+        }
+        if ($ldi->hayStockDisponible() && $cantFaltante > 0) {
+          $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
 
           $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $suc, $ldp->getMedicamentoId());
 
@@ -80,30 +93,52 @@ class GestorDeSurtido
   public function confirmarPedido($pedido)
   {
     $this->SinStock = collect();
+    $this->dataBase->iniciarTransaccion();
     $ldp = $pedido->getLineasPedidos();
 
-    foreach ($ldp as $linea) {
-      $detalles = $linea->getDetalles();
-      foreach ($detalles as $dlp) {
-        $existencia = $this->sucursalService->actualizarInventario($dlp->getCantidadSurtida(), $linea->getMedicamentoId(), $dlp->getSucursal());
-        if ($existencia) {
-          $this->SinStock->push($linea);
-          $pedido->eliminarDetalle($dlp);
-        } else {
-          //Añadir sucursal a la ruta
-          $pedido->añadirARuta($dlp->getSucursal());
-
+    try {
+      // CONFIRMAR LINEAS PROMETIDAS POR EL INVENTARIO
+      foreach ($ldp as $linea) {
+        $detalles = $linea->getDetalles();
+        foreach ($detalles as $dlp) {
+          $ldi = $this->sucursalService->getLineaInventario($dlp->getSucursal()->getCadenaId(), $dlp->getSucursal()->getSucursalId(), $linea->getMedicamentoId());
+          if ($ldi && $ldi->getStockDisponible() >= $dlp->getCantidadSurtida()) {
+            $ldi->disminuirStock($dlp->getCantidadSurtida());
+            $this->sucursalService->actualizarInventario($ldi);
+            $pedido->añadirARuta($dlp->getSucursal());
+          } else {
+            $this->SinStock->push($linea);
+            $pedido->eliminarDetalle($dlp);
+          }
         }
       }
+      //CALCULAR FALTANTES DE LAS LINEAS NO SURTIDAS
+      if ($this->SinStock->count() > 0) {
+        $sucCercanas = $this->sucursalService->calculaSucCercanas($pedido->getSucursal()->getCadenaId(), $pedido->getSucursal()->getSucursalId());
+        $this->calculaFaltantesWithUpdate($this->SinStock, $sucCercanas, $pedido);
+      }
+      $pedido->removerLineasSinDetalles();
+      
+      
+      if ($pedido->calcularPorcentajeSurtido() < 0.5) {
+        $pedido->setFaltantes($this->SinStock);
+        throw new \RuntimeException('No se pudo surtir al menos el 50% del pedido.');
+      }
+
+      $pedido->setEstatus();
+      $pedido->calcularTotales();
+
+      $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($pedido->getPacienteId());
+      info("Monto penalización aplicada: $montoPenalizacion");
+      $pedido->setMontoPenalizacion((float) $montoPenalizacion);
+      $this->guardarPedido($pedido);
+      $this->dataBase->commitTransaccion();
+      $pedido->setFaltantes($this->SinStock);
+      return $pedido;
+    } catch (\Throwable $e) {
+      $this->dataBase->cancelarTransaccion();
+      throw $e;
     }
-    if ($this->SinStock->count() > 0) {
-      $sucCercanas = $this->sucursalService->calculaSucCercanas($pedido->getSucursal()->getCadenaId(), $pedido->getSucursal()->getSucursalId());
-      $this->calculaFaltantesWithUpdate($this->SinStock, $sucCercanas, $pedido);
-    }
-    $pedido->setEstatus();
-    $pedido->calcularTotales();
-    $this->guardarPedido($pedido);
-    return $pedido;
   }
 
   private function calculaFaltantesWithUpdate($SinStock, $sucCercanas, $pedido)
@@ -113,11 +148,12 @@ class GestorDeSurtido
         $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
         $cantFaltante = $ldp->getCantidadFaltante();
         $cantidadSurtida = 0;
-        if ($ldi->getStockDisponible() > 0 && $cantFaltante > 0) {
-          $cantidadSurtida = $ldp->getCantidad() - $ldi->getStockDisponible() <= 0 ? $ldp->getCantidad() : $ldi->getStockDisponible();
+        if ($ldi && $ldi->hayStockDisponible() && $cantFaltante > 0) {
+          $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
 
           $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $suc, $ldp->getMedicamentoId());
-          $this->sucursalService->actualizarInventario($cantidadSurtida, $ldp->getMedicamentoId(), $suc);
+          $ldi->disminuirStock($cantidadSurtida);
+          $this->sucursalService->actualizarInventario($ldi);
           $pedido->añadirARuta($suc);
           if ($cantidadSurtida == $cantFaltante) {
             $this->SinStock = $this->SinStock->reject(function ($item) use ($ldp) {
@@ -164,77 +200,6 @@ class GestorDeSurtido
         ]);
       }
     });
-  }
-
-
-
-
-  public function confirmarPedidoFake($pedido)
-  {
-    $this->SinStock = collect();
-    $lineas = $pedido->getLineasPedidos();
-    $stockComprometido = [];
-
-    foreach ($lineas as $linea) {
-      $detalles = $linea->getDetalles();
-      $faltante = $linea->getCantidad();
-      $detallesActualizados = collect();
-
-      foreach ($detalles as $detalle) {
-        $inv = $this->sucursalService->getLineaInventario(
-          $detalle->getSucursal()->getCadenaId(),
-          $detalle->getSucursal()->getSucursalId(),
-          $detalle->getMedicamentoId()
-        );
-
-        $disponible = $inv ? $inv->getStockDisponible() : 0;
-        $cantidadSurtible = min($disponible, $detalle->getCantidadSurtida());
-
-        if ($cantidadSurtible > 0) {
-          $detallesActualizados->push(
-            new DetalleLineaPedido($inv->getPrecioUnitario(), $cantidadSurtible, $detalle->getSucursal(), $detalle->getMedicamentoId())
-          );
-          $key = $detalle->getSucursal()->getCadenaId() . '-' . $detalle->getSucursal()->getSucursalId() . '-' . $detalle->getMedicamentoId();
-          $stockComprometido[$key] = ($stockComprometido[$key] ?? 0) + $cantidadSurtible;
-          $faltante -= $cantidadSurtible;
-        }
-      }
-
-      // Reemplazar detalles con las cantidades efectivamente disponibles
-      $detalles->splice(0);
-      foreach ($detallesActualizados as $detalleNuevo) {
-        $detalles->push($detalleNuevo);
-      }
-
-      //No se encontro completamente el medicamento
-      if ($faltante > 0) {
-        $this->SinStock->push($linea);
-      }
-    }
-
-    if ($this->SinStock->count() > 0) {
-      $sucursalBase = $pedido->getSucursal();
-      $sucursalesBusqueda = collect([$sucursalBase])
-        ->merge($this->sucursalService->calculaSucCercanas($sucursalBase->getCadenaId(), $sucursalBase->getSucursalId()));
-
-      $this->CalculaFaltantes($this->SinStock, $sucursalesBusqueda, $pedido, $stockComprometido);
-    }
-
-    if ($this->SinStock->count() > 0) {
-      return [
-        'ok' => false,
-        'faltantes' => $this->SinStock,
-        'pedido' => $pedido,
-      ];
-    }
-
-    $pedidoGuardado = $this->guardarPedido($pedido);
-
-    return [
-      'ok' => true,
-      'folio' => $pedidoGuardado->folio_pedido,
-      'pedido' => $pedidoGuardado,
-    ];
   }
 
 }

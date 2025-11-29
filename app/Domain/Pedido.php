@@ -12,18 +12,21 @@ class Pedido
 {
     private $folio;
     private $cedulaProfesional;
+
     private $fecha_pedido, $fecha_recoleccion;
     private $estatus;
     private $lineas_pedido;
     private $paciente_id;
     private $sucursal;
     private $costo_Total;
+    private $faltantes;
 
     private $ruta;
 
     private function __construct()
     {
         $this->createColeccionLineas();
+        $this->faltantes = collect();
         $this->ruta = collect();
     }
 
@@ -170,6 +173,21 @@ class Pedido
         $this->costo_Total = $acumulado;
     }
 
+    public function setFaltantes($faltantes)
+    {
+        $this->faltantes = $faltantes ?? collect();
+    }
+
+    public function getFaltantes()
+    {
+        return $this->faltantes ?? collect();
+    }
+
+    public function tieneFaltantes(): bool
+    {
+        return $this->getFaltantes()->count() > 0;
+    }
+
     public function asignarFechaPedido()
     {
         $this->fecha_pedido = Carbon::now();
@@ -203,6 +221,12 @@ class Pedido
     public function getCedulaProfesional()
     {
         return $this->cedulaProfesional;
+    }
+    public function setMontoPenalizacion($monto)
+    {
+        $this->costo_Total = $this->costo_Total + $monto;
+
+        info('monto final: ', [$this->costo_Total]);
     }
 
     public function getFechaRecoleccion()
@@ -282,5 +306,29 @@ class Pedido
         $pedido->lineas_pedido = $lineasPedidoCollection;
 
         return $pedido;
+    }
+
+    public function calcularPorcentajeSurtido()
+    {
+        $totalSolicitado = 0;
+        $totalSurtido = 0;
+
+        foreach ($this->lineas_pedido as $linea) {
+            $totalSolicitado += $linea->getCantidad();
+            $totalSurtido += $linea->calcularCantidadSurtida();
+        }
+
+        if ($totalSolicitado === 0) {
+            return 0;
+        }
+
+        return ($totalSurtido / $totalSolicitado) * 100;
+    }
+
+    public function removerLineasSinDetalles()
+    {
+        $this->lineas_pedido = $this->lineas_pedido->filter(function ($linea) {
+            return $linea->calcularCantidadSurtida() > 0;
+        })->values();
     }
 }

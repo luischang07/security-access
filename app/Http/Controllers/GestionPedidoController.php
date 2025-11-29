@@ -11,23 +11,27 @@ use App\Services\Modelos\GestorDeSurtido;
 use App\Services\Modelos\MedicamentoService;
 use App\Domain\Pedido;
 use Illuminate\Support\Facades\Session;
+use App\Services\Modelos\PacienteService;
 
 
 class GestionPedidoController extends Controller
 {
     private PedidoService $pedidoService;
+
+    private PacienteService $pacienteService;
     private SucursalService $sucursalService;
     private GestorDeSurtido $GestorDeSurtido;
     private CadenaService $cadenaService;
     private MedicamentoService $medicamentoService;
 
-    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService)
+    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService, PacienteService $pacienteService)
     {
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
         $this->GestorDeSurtido = $GestorDeSurtido;
         $this->cadenaService = $cadenaService;
         $this->medicamentoService = $medicamentoService;
+        $this->pacienteService = $pacienteService;
     }
 
 
@@ -120,23 +124,27 @@ class GestionPedidoController extends Controller
 
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
-        $pedido = $this->GestorDeSurtido->surtir($pedido);
         $pedido = $this->pedidoService->asignarFechaRecoleccion($pedido);
         $pedido = $this->pedidoService->setCedulaProfesional($cedulaProfesional, $pedido);
+        $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+        $pedido = $this->GestorDeSurtido->surtir($pedido);
+
         Session::put('pedido_temporal', serialize($pedido));
-        return view('prescription.upload-step2', compact('pedido'));
+        return view('prescription.upload-step2', compact('pedido', 'montoPenalizacion'));
     }
 
     public function confirmarPedido()
     {
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
-
-        $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
-
-        $folio = $pedido->getFolio();
-
-        return redirect("/patient/orders/{$folio}");
+        try {
+            $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
+            $folio = $pedido->getFolio();
+            return redirect("/patient/orders/{$folio}");
+        } catch (\Throwable $e) {
+            Session::put('pedido_temporal', serialize($pedido));
+            return redirect()->back()->withErrors($e->getMessage());
+        }
     }
 
 

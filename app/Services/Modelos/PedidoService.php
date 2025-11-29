@@ -26,11 +26,11 @@ class PedidoService
     }
 
 
-    public function asociarSucursalAPedido($sucursal, $pedido)
+    public function asociarSucursalAPedido($sucursal, Pedido $pedido)
     {
 
         $pedido->asociarSucursalAPedido($sucursal);
-
+        info("pedidoooo", [$pedido->getSucursal()->getNombre()]);
         return $pedido;
     }
 
@@ -62,6 +62,7 @@ class PedidoService
         $pedido->cambiarEstatus('CANCELADO');
         $dlp = $pedido->obtenerDetallesLineas();
         foreach ($dlp as $detalle) {
+            $this->dataBase->iniciarTransaccion();
             $inventario = $this->dataBase->obtenerInventario(
                 $pedido->getSucursal()->getCadenaId(),
                 $pedido->getSucursal()->getSucursalId(),
@@ -70,13 +71,17 @@ class PedidoService
             if ($inventario) {
                 $inventario->aumentarStock($detalle->getCantidadSurtida());
                 $this->dataBase->actualizarInventarioCancelacion($inventario);
+                $this->dataBase->commitTransaccion();
+            }
+            else{
+                $this->dataBase->cancelarTransaccion();
             }
         }
         $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
         $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
         $paciente->aplicarPenalizacion($cantidad_penalizacion);
         $this->dataBase->actualizarPaciente($paciente);
-        $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de $${$cantidad_penalizacion} a su cuenta.";
+        $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidad_penalizacion} a su cuenta.";
         $notificacion = Notificacion::crear($mensaje, now());
         $paciente->agregarNotificacion($notificacion);
         $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
@@ -116,7 +121,7 @@ class PedidoService
     {
         return $this->dataBase->obtenerPedidoPorId($pedido_id);
     }
-    public function setCedulaProfesional($cedula, $pedido)
+    public function setCedulaProfesional($cedula, Pedido $pedido)
     {
         $pedido->setCedulaProfesional($cedula);
         return $pedido;
@@ -149,5 +154,12 @@ class PedidoService
     {
         return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
     }
+<<<<<<< HEAD
 >>>>>>> origin/arturo
+=======
+    public function sumarMontoPenalizacion($monto, $pedido)
+    {
+        $pedido->setMontoPenalizacion($monto);
+    }
+>>>>>>> origin/franjmr1
 }

@@ -97,6 +97,24 @@
                                 {{ __('prescription.upload_step2.subtitle') }}
                             </p>
                         </div>
+                        @if(method_exists($pedido, 'tieneFaltantes') && $pedido->tieneFaltantes())
+                            <div class="mx-4 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning dark:border-warning/30 dark:bg-warning/15">
+                                <div class="flex gap-3">
+                                    <span class="material-symbols-outlined text-xl mt-0.5">warning</span>
+                                    <div class="flex flex-col gap-1">
+                                        <p class="font-semibold  ">Algunos medicamentos no están disponibles en sucursales cercanas.</p>
+                                        <ul class="list-disc pl-5 space-y-1 text-body-text dark:text-body-text-dark">
+                                            @foreach($pedido->getFaltantes() as $faltante)
+                                                <li>
+                                                    {{ $faltante->getMedicamento()->getNombre() }}
+                                                    — solicitaste {{ $faltante->getCantidad() }}, faltan {{ $faltante->getCantidadFaltante() }}.
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Order Summary Card -->
                         <div class="flex flex-col gap-8 p-4 md:p-6 bg-card-light dark:bg-card-dark rounded-xl">
@@ -175,28 +193,33 @@
                                                 </thead>
                                                 <tbody class="divide-y divide-border-light dark:divide-border-dark">
                                                     @php
-$lineas = $pedido->getLineasPedidos();
-$subtotal = 0;
-$serviceFee = 1.00; // tarifa de servicio fija
+                                                        $lineas = $pedido->getLineasPedidos();
+                                                        $lineasConDetalles = collect($lineas ?? [])->filter(function ($linea) {
+                                                            $detalles = method_exists($linea, 'getDetalleLineaPedido')
+                                                                ? $linea->getDetalleLineaPedido()
+                                                                : collect();
+                                                            return $detalles->count() > 0;
+                                                        });
+                                                        $subtotal = 0;
+                                                        $serviceFee = 1.00; // tarifa de servicio fija
                                                     @endphp
                                                          
-                                                    @if($lineas && count($lineas) > 0)
+                                                    @if($lineasConDetalles->count() > 0)
 
-                                                        @foreach($lineas as $linea)
+                                                        @foreach($lineasConDetalles as $linea)
                                                             @php
-                                                                // 1. Obtener la colección (Corregí el method_exists para que coincida con lo que llamas)
                                                                 $detalles = method_exists($linea, 'getDetalleLineaPedido')
                                                                     ? $linea->getDetalleLineaPedido()
                                                                     : collect();
 
                                                                 $lineTotal = 0;
+                                                                $cantidadTotalSurtida = 0;
                                                             @endphp
 
-                                                            {{-- 2. Iterar con Blade en lugar de PHP crudo --}}
                                                             @foreach($detalles as $detalle)
                                                                 @php
-                                                                    // Calcular el total de esta línea específica
                                                                     $lineTotal += $detalle->getPrecio() * $detalle->getCantidadSurtida();
+                                                                    $cantidadTotalSurtida += $detalle->getCantidadSurtida();
                                                                 @endphp
 
                                                                 <div class="font-medium text-body-text dark:text-body-text-dark">
@@ -218,7 +241,7 @@ $serviceFee = 1.00; // tarifa de servicio fija
                                                                         {{ __('prescription.upload_step2.capsules') }}</div>
                                                                 </td>
                                                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                                    {{ $linea->getCantidad() }}</td>
+                                                                    {{ $cantidadTotalSurtida }}</td>
                                                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
                                                                     {{ '$' . number_format($lineTotal, 2) }}</td>
                                                             </tr>
@@ -236,7 +259,7 @@ $serviceFee = 1.00; // tarifa de servicio fija
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <!-- Price Summary -->
                             <div
                                 class="flex flex-col items-end gap-2 border-t border-border-light dark:border-border-dark pt-6">
@@ -244,13 +267,18 @@ $serviceFee = 1.00; // tarifa de servicio fija
                                     <span class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ __('prescription.upload_step2.subtotal') }}</span>
                                     <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format($subtotal, 2) }}</span>
                                 </div>
+                                @php
+                                    if($montoPenalizacion){
+                                    $subtotal+=$montoPenalizacion;
+                                    }
+                                @endphp
                                 <div class="flex justify-between w-full max-w-xs">
                                     <span class="text-sm text-neutral-text dark:text-neutral-text-dark">Monto penalización </span>
-                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format(0, 2) }}</span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark">{{ '$' . number_format($montoPenalizacion, 2) }}</span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
                                     <span class="text-lg font-bold text-body-text dark:text-body-text-dark">{{ __('prescription.upload_step2.estimated_total') }}</span>
-                                    <span class="text-lg font-bold text-primary">{{ '$' . number_format($subtotal , 2) }}</span>
+                                    <span class="text-lg font-bold text-primary">{{ '$' . number_format($subtotal, 2) }}</span>
                                 </div>
                                 <p
                                     class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">
