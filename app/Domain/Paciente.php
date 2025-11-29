@@ -9,8 +9,13 @@ use App\Domain\Notificacion;
 class Paciente
 {
     private $user;
+<<<<<<< HEAD
     private $monto_penalizacion=0;
     private $notificaciones;
+=======
+    private $notificaciones;
+    private $monto_penalizacion = 0;
+>>>>>>> arturo
 
     public function __construct(PacienteModel $paciente, UserModel $user, $notificaciones = null)
     {
@@ -19,7 +24,7 @@ class Paciente
         $this->notificaciones = collect();
         if ($notificaciones) {
             foreach ($notificaciones as $notificacion) {
-              $this->notificaciones->push( new Notificacion ($notificacion) );
+                $this->notificaciones->push(new Notificacion($notificacion));
             }
         }
     }

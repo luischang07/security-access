@@ -172,7 +172,7 @@
                                             {{ __('patient.order_detail.total') }}
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-bold text-primary">
-                                            {{ '$' . number_format($totalGeneral, 2) }}
+                                            {{ '$' . number_format($pedido->getCostoTotal(), 2) }}
                                         </td>
                                     </tr>
                                 @else

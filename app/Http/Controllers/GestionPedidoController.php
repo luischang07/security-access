@@ -24,14 +24,14 @@ class GestionPedidoController extends Controller
     private CadenaService $cadenaService;
     private MedicamentoService $medicamentoService;
 
-    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService,PacienteService $pacienteService )
+    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService, PacienteService $pacienteService)
     {
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
         $this->GestorDeSurtido = $GestorDeSurtido;
         $this->cadenaService = $cadenaService;
         $this->medicamentoService = $medicamentoService;
-        $this->pacienteService=$pacienteService;
+        $this->pacienteService = $pacienteService;
     }
 
 
@@ -124,19 +124,21 @@ class GestionPedidoController extends Controller
 
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
-        $pedido = $this->GestorDeSurtido->surtir($pedido);
         $pedido = $this->pedidoService->asignarFechaRecoleccion($pedido);
         $pedido = $this->pedidoService->setCedulaProfesional($cedulaProfesional, $pedido);
         $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+        $pedido = $this->GestorDeSurtido->surtir($pedido);
+
         Session::put('pedido_temporal', serialize($pedido));
-        return view('prescription.upload-step2', compact('pedido','montoPenalizacion'));
+        return view('prescription.upload-step2', compact('pedido', 'montoPenalizacion'));
     }
 
     public function confirmarPedido()
     {
+        $paciente_id = Auth::user()->user_id;
+
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
-
         $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
 
         $folio = $pedido->getFolio();

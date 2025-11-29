@@ -146,4 +146,11 @@ class PedidoService
     {
         return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
     }
+<<<<<<< HEAD
+=======
+    public function sumarMontoPenalizacion($monto, $pedido)
+    {
+        $pedido->setMontoPenalizacion($monto);
+    }
+>>>>>>> arturo
 }
