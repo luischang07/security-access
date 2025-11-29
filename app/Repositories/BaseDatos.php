@@ -15,6 +15,7 @@ use App\Domain\Medicamento as med;
 use App\Models\Sucursal;
 use App\Domain\Sucursal as DomainSucursal;
 
+use App\Models\User;
 use App\Models\Paciente;
 use App\Domain\Paciente as DomainPaciente;
 

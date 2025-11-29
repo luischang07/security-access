@@ -9,17 +9,17 @@ use App\Domain\Notificacion;
 class Paciente
 {
     private $user;
-    private $monto_penalizacion;
     private $notificaciones;
+    private $monto_penalizacion = 0;
 
     public function __construct(PacienteModel $paciente, UserModel $user, $notificaciones = null)
     {
         $this->user = new UserEntity($user);
-        $this->monto_penalizacion = $paciente->$monto_penalizacion;
+        $this->monto_penalizacion = $paciente->monto_penalizacion;
         $this->notificaciones = collect();
         if ($notificaciones) {
             foreach ($notificaciones as $notificacion) {
-              $this->notificaciones->push( new Notificacion ($notificacion) );
+                $this->notificaciones->push(new Notificacion($notificacion));
             }
         }
     }
@@ -32,7 +32,7 @@ class Paciente
     {
         return $this->monto_penalizacion;
     }
-    public function aplicarPenalizacion($monto)
+    public function setMontoPenalizacion($monto)
     {
         $this->monto_penalizacion += $monto;
     }

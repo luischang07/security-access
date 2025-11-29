@@ -12,6 +12,7 @@ class Pedido
 {
     private $folio;
     private $cedulaProfesional;
+    
     private $fecha_pedido, $fecha_recoleccion;
     private $estatus;
     private $lineas_pedido;

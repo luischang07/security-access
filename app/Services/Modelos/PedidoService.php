@@ -116,7 +116,7 @@ class PedidoService
     {
         return $this->dataBase->obtenerPedidoPorId($pedido_id);
     }
-    public function setCedulaProfesional($cedula, $pedido)
+    public function setCedulaProfesional($cedula, Pedido $pedido)
     {
         $pedido->setCedulaProfesional($cedula);
         return $pedido;
