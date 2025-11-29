@@ -13,7 +13,7 @@ class PacienteService{
     }
 
     public function getMontoPenalizacion($paciente_id){
-        $this->paciente = $this->dataBase->obtenerPedidoPorId($paciente_id);
+        $this->paciente = $this->dataBase->obtenerPaciente($paciente_id);
         return $this->paciente->getMontoPenalizacion();
     }
     
