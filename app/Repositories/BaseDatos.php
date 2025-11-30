@@ -224,7 +224,6 @@ class BaseDatos
     return $pedidos;
   }
 
-<<<<<<< HEAD
   //Para el API
   public function getPedidoPorFolio($folio)
   {
@@ -239,7 +238,7 @@ class BaseDatos
       return DomainPedido::crear($pedido);
   }
 
-=======
+
   public function getPedidoByFolio($folio)
   {
     $pedido = Pedido::where('folio_pedido', $folio)->with('lineasPedidos')->first();
@@ -264,9 +263,7 @@ class BaseDatos
 
     return $pedidos;
   }
-<<<<<<< HEAD
->>>>>>> origin/arturo
-=======
+
   public function iniciarTransaccion()
   {
     DB::beginTransaction();
@@ -281,5 +278,5 @@ class BaseDatos
   {
     DB::rollBack();
   }
->>>>>>> origin/franjmr1
+
 }

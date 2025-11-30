@@ -179,4 +179,26 @@ class GestionPedidoController extends Controller
 
         return view('patient.order-detail', compact('pedido'));
     }
+
+    //Para el API
+     public function status($folio)
+    {
+        $pedido = Pedido::where('folio_pedido', $folio)->first();
+
+        if (!$pedido) {
+            return response()->json([
+                'found' => false,
+                'message' => 'Pedido no encontrado'
+            ], 404);
+        }
+
+        return response()->json([
+            'found'        => true,
+            'folio_pedido' => $pedido->folio_pedido,
+            'estatus'      => $pedido->estatus,
+            'fecha_pedido' => $pedido->fecha_pedido,
+            'fecha_entrega'=> $pedido->fecha_entrega,
+            'costo_total'  => $pedido->costo_total,
+        ], 200);
+    }
 }
