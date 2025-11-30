@@ -334,7 +334,7 @@ class Pedido
             return 0;
         }
 
-        return ($totalSurtido / $totalSolicitado) * 100;
+        return ($totalSurtido / $totalSolicitado);
     }
 
     public function removerLineasSinDetalles()
