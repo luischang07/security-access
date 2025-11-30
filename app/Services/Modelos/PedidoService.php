@@ -25,6 +25,12 @@ class PedidoService
         return $pedido;
     }
 
+    public function reiniciarParaCaptura(Pedido $pedido): Pedido
+    {
+        $pedido->reiniciarParaCaptura();
+        return $pedido;
+    }
+
 
     public function asociarSucursalAPedido($sucursal, Pedido $pedido)
     {

@@ -87,6 +87,11 @@ class LineaPedido
             ->values();
     }
 
+    public function limpiarDetalles(): void
+    {
+        $this->detalleLineaPedido = collect();
+    }
+
     public function calcularSubtotal()
     {
         $subtotal = 0;

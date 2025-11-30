@@ -35,7 +35,7 @@ class GestionPedidoController extends Controller
     }
 
 
-    public function nuevoPedido()
+    public function nuevoPedido(Request $request)
     {
         $paciente_id = Auth::user()->user_id;
 
@@ -47,12 +47,19 @@ class GestionPedidoController extends Controller
         }
 
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+        $pedido = Session::has('pedido_temporal') ? unserialize(Session::get('pedido_temporal')) : null;
+        if (!$pedido || $request->boolean('reset')) {
+            $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+        } else {
+            // Reutiliza lo que el paciente ya capturó pero limpia detalles/ruta para volver a surtir
+            $pedido = $this->pedidoService->reiniciarParaCaptura($pedido);
+        }
 
         Session::put('pedido_temporal', serialize($pedido));
 
         $cadenas = $this->cadenaService->obtenerTodasCadenas();
 
-        return view('prescription.upload-step1', compact('cadenas'));
+        return view('prescription.upload-step1', compact('cadenas', 'pedido'));
     }
 
 
@@ -141,15 +148,16 @@ class GestionPedidoController extends Controller
 
     public function confirmarPedido()
     {
-        $paciente_id = Auth::user()->user_id;
-
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
-        $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
-
-        $folio = $pedido->getFolio();
-
-        return redirect("/patient/orders/{$folio}");
+        try {
+            $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
+            $folio = $pedido->getFolio();
+            return redirect("/patient/orders/{$folio}")->with('order_success', true);
+        } catch (\Throwable $e) {
+            Session::put('pedido_temporal', serialize($pedido));
+            return redirect()->back()->withErrors($e->getMessage());
+        }
     }
 
 

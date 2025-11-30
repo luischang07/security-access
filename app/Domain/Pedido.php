@@ -186,6 +186,18 @@ class Pedido
         return $this->getFaltantes()->count() > 0;
     }
 
+    public function reiniciarParaCaptura(): void
+    {
+        foreach ($this->lineas_pedido as $linea) {
+            $linea->limpiarDetalles();
+        }
+        $this->ruta = collect();
+        $this->faltantes = collect();
+        $this->costo_Total = 0;
+        $this->estatus = null;
+        $this->fecha_recoleccion = null;
+    }
+
     public function asignarFechaPedido()
     {
         $this->fecha_pedido = Carbon::now();
@@ -320,7 +332,7 @@ class Pedido
             return 0;
         }
 
-        return ($totalSurtido / $totalSolicitado) * 100;
+        return ($totalSurtido / $totalSolicitado);
     }
 
     public function removerLineasSinDetalles()
