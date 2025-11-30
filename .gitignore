@@ -24,3 +24,6 @@ Homestead.yaml
 Thumbs.db
 
 .vercel
+
+/docker
+/temp_doc_extracted

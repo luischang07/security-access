@@ -30,7 +30,7 @@ class OrderManagementRepository
 
     // Status filter
     if (!empty($filters['status'])) {
-      $query->where('estado', $filters['status']);
+      $query->where('estatus', $filters['status']);
     }
 
     // Pharmacy filter (Chain ID)
@@ -66,14 +66,14 @@ class OrderManagementRepository
   public function getOrderStats(): array
   {
     $totalOrders = Pedido::count();
-    $pendingOrders = Pedido::where('estado', 'pendiente')->count();
-    $completedToday = Pedido::where('estado', 'entregado')
-      ->whereDate('fecha_entrega', now())
+    $pendingOrders = Pedido::where('estatus', 'pendiente')->count();
+    $completedToday = Pedido::where('estatus', 'entregado')
+      ->whereDate('fecha_recoleccion', now())
       ->count();
 
     // Calculate average fulfillment time in hours
-    $avgFulfillmentHours = Pedido::whereNotNull('fecha_entrega')
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_entrega)) as avg_hours')
+    $avgFulfillmentHours = Pedido::whereNotNull('fecha_recoleccion')
+      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
       ->value('avg_hours') ?? 0;
 
     return [

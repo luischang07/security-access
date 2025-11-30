@@ -35,4 +35,12 @@ class LineaInventario {
     public function getPrecioUnitario(){
         return $this->precio_unitario;
     }
+
+    public function setPrecioUnitario($precio_unitario){
+        $this->precio_unitario=$precio_unitario;
+    }
+
+    public function aumentarStock($cantidad){
+        $this->stock_disponible += $cantidad;
+    }
 }

@@ -14,6 +14,7 @@ class CadenaFarmaceutica extends Model
   public $timestamps = false;
 
   protected $fillable = [
+    'cadena_id',
     'razon_social',
     'nombre',
   ];
