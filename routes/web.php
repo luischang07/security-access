@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PrescriptionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GestionPedidoController;
+use App\Http\Controllers\CancelacionController;
 
 Route::view('/', 'landing')->name('landing');
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
@@ -67,7 +68,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   Route::prefix('pharmacy')->name('pharmacy.')->group(function () {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard'])->name('dashboard');
     Route::get('/orders', [PharmacyController::class, 'orders'])->name('orders');
-    Route::post('/orders', [CancelacionController::class, 'confirmarCancelacion'])->name('cancelarOrden');
+    Route::post('/orders/cancel/{folio}', [CancelacionController::class, 'cancelarPorFolio'])->name('cancelarOrdenPorFolio');
     Route::get('/inventory', [PharmacyController::class, 'inventory'])->name('inventory');
     Route::get('/reports', [PharmacyController::class, 'reports'])->name('reports');
   });

@@ -74,6 +74,6 @@ class LineaInventario
 
     public function getSucursalId()
     {
-        return $this->cadena_id;
+        return $this->sucursal_id;
     }
 }

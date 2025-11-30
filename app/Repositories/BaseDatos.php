@@ -151,7 +151,7 @@ class BaseDatos
   public function actualizarPaciente($paciente)
   {
     Paciente::where('user_id', $paciente->getUser()->getId())
-      ->update(['penalizacion' => $paciente->getPenalizacion()]);
+      ->update(['monto_penalizacion' => $paciente->getMontoPenalizacion()]);
   }
 
   public function guardarNotificacion($notificacion, $folio_pedido, $user_id)
