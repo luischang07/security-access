@@ -23,14 +23,14 @@ class CancelacionController extends Controller
     {
         $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
         if (!$pedido) {
-            return response()->json(['error' => 'Pedido no encontrado.'], 404);
+            return response()->json(['message' => 'Pedido no encontrado.'], 404);
         }
         try
         {
             $this->pedidoService->cancelarPedido($pedido);
-            return response()->json(['success' => true]);
+            return response()->json(['message' => 'Pedido cancelado correctamente.', 'success' => true], 200);
         }catch(\Throwable $e){
-            return redirect()->route('pharmacy.orders')->with('error', $e->getMessage());
+            return response()->json(['message' => $e->getMessage()], 400);
         }
        
     }
