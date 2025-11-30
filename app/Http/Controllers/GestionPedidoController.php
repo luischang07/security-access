@@ -39,6 +39,14 @@ class GestionPedidoController extends Controller
     {
         $paciente_id = Auth::user()->user_id;
 
+        $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+        $pedidos=$this->pacienteService->getPedidoPorPaciente($paciente_id);
+        $pedidosActivos=$this->pacienteService->getPedidosActivos($pedidos);
+        if ($montoPenalizacion > 0 && $pedidosActivos!=0) {
+            return redirect()->route('patient.dashboard')->with('error', 'No puedes realizar pedidos mientras tengas una penalización pendiente y un pedido activo');
+        }
+
+        $pedido = $this->pedidoService->nuevoPedido($paciente_id);
         $pedido = Session::has('pedido_temporal') ? unserialize(Session::get('pedido_temporal')) : null;
         if (!$pedido || $request->boolean('reset')) {
             $pedido = $this->pedidoService->nuevoPedido($paciente_id);
