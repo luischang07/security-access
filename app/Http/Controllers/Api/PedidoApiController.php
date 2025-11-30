@@ -13,14 +13,14 @@ class PedidoApiController extends Controller
     {
         $this->db = new BaseDatos();
     }
-    public function getPedidos($paciente_id)
+    public function getPedidos($folio_pedido)
     {
         try {
-            $pedidos = $this->db->getPedidos($paciente_id);
+            $pedidos = $this->db->getPedidos($folio_pedido);
 
             return response()->json([
                 'success' => true,
-                'data' => $pedidos
+                'data' => $pedido
             ], 200);
 
         } catch (\Exception $e) {
