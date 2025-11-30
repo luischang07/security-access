@@ -26,8 +26,11 @@ class Sucursal extends Model
     'numero_ext',
     'numero_int',
     'ciudad',
+    'colonia',
+    'contacto',
     'latitud',
     'longitud',
+    'location'
   ];
 
   protected $casts = [

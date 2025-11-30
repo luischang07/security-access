@@ -20,7 +20,9 @@ class Inventario extends Model
     'sucursal_id',
     'medicamento_id',
     'stock_disponible',
-    'precio_unitario'
+    'precio_unitario',
+    'minimo',
+    'maximo'
   ];
 
   protected $casts = [
