@@ -60,6 +60,7 @@ class PedidoService
     public function cancelarPedido($pedido)
     {
         $pedido->cambiarEstatus('CANCELADO');
+        $this->dataBase->cancelarPedido($pedido);
         $dlp = $pedido->obtenerDetallesLineas();
         foreach ($dlp as $detalle) {
             $this->dataBase->iniciarTransaccion();
