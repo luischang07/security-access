@@ -25,7 +25,13 @@ class CancelacionController extends Controller
         if (!$pedido) {
             return response()->json(['error' => 'Pedido no encontrado.'], 404);
         }
-        $this->pedidoService->cancelarPedido($pedido);
-        return response()->json(['success' => true]);
+        try
+        {
+            $this->pedidoService->cancelarPedido($pedido);
+            return response()->json(['success' => true]);
+        }catch(\Throwable $e){
+            return redirect()->route('pharmacy.orders')->with('error', $e->getMessage());
+        }
+       
     }
 }
