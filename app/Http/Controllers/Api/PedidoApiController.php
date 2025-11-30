@@ -1,6 +1,8 @@
 <?php
 
-use App\Http\Controllers\Controller\Api;
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
 use App\Repositories\BaseDatos;
 use Illuminate\Http\Request;
 use App\Models\Pedido;
@@ -13,10 +15,11 @@ class PedidoApiController extends Controller
     {
         $this->db = new BaseDatos();
     }
-    public function getPedidos($folio_pedido)
+
+    public function getPedido($folio_pedido)
     {
         try {
-            $pedidos = $this->db->getPedidos($folio_pedido);
+            $pedido = $this->db->getPedidoPorFolio($folio_pedido);
 
             return response()->json([
                 'success' => true,

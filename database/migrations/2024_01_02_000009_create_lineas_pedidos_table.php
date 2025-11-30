@@ -8,12 +8,15 @@ return new class extends Migration {
   public function up(): void
   {
     Schema::create('lineas_pedidos', function (Blueprint $table) {
+
       $table->unsignedBigInteger('folio_pedido');
       $table->unsignedBigInteger('medicamento_id');
-      $table->integer('cantidad');}
+      $table->integer('cantidad');
 
+      // Llave primaria compuesta
       $table->primary(['folio_pedido', 'medicamento_id']);
 
+      // Foreign keys
       $table->foreign('folio_pedido')
         ->references('folio_pedido')
         ->on('pedidos');

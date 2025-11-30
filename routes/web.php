@@ -10,6 +10,7 @@ use App\Http\Controllers\PrescriptionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GestionPedidoController;
 use App\Http\Controllers\CancelacionController;
+use App\Http\Controllers\Api\PedidoApiController;
 
 Route::view('/', 'landing')->name('landing');
 Route::get('lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
@@ -86,4 +87,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 
   // Settings route (common for all user types)
   Route::view('/settings', 'settings')->name('settings');
+
+  
+  Route::get('/pedido/{folio}', [PedidoApiController::class, 'getPedido']);
 });
