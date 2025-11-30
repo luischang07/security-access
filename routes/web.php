@@ -69,6 +69,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard'])->name('dashboard');
     Route::get('/orders', [PharmacyController::class, 'orders'])->name('orders');
     Route::post('/orders/cancel/{folio}', [CancelacionController::class, 'cancelarPorFolio'])->name('cancelarOrdenPorFolio');
+    Route::post('/orders/mark-surtido/{folio}', [PharmacyController::class, 'marcarComoSurtido'])->name('orders.markSurtido');
     Route::get('/inventory', [PharmacyController::class, 'inventory'])->name('inventory');
     Route::get('/reports', [PharmacyController::class, 'reports'])->name('reports');
   });

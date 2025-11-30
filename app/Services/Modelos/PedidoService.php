@@ -65,8 +65,8 @@ class PedidoService
 
     public function cancelarPedido($pedido)
     {
-        $pedido->cambiarEstatus('CANCELADO');
-        $this->dataBase->cancelarPedido($pedido);
+        $pedido->cambiarEstatus('Cancelado');
+        $this->dataBase->guardarCambioEstatusPedido($pedido);
         $dlp = $pedido->obtenerDetallesLineas();
         foreach ($dlp as $detalle) {
             $this->dataBase->iniciarTransaccion();
@@ -155,11 +155,24 @@ class PedidoService
 
     public function marcarPedidoComoSurtido(Pedido $pedido)
     {
-        if($pedido->getEstatus() !== 'Confirmado'){
+        if(strtolower($pedido->getEstatus()) !== 'confirmado'){
             throw new \RuntimeException('Solo se pueden marcar como surtidos los pedidos con estatus Confirmado.');
         }
-        $pedido->cambiarEstatus('Surtido');
-        
+        $this->dataBase->iniciarTransaccion();
+        try {
+            $pedido->cambiarEstatus('Surtido');
+            $this->dataBase->guardarCambioEstatusPedido($pedido);
+            $mensaje = "Su pedido {$pedido->getfolio()} está listo para ser recogido. Tienes 48 horas para recogerlo en la sucursal {$pedido->getSucursal()->getNombre()}.";
+            $notificacion = Notificacion::crear($mensaje, now());
+            $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
+            $paciente->agregarNotificacion($notificacion);
+            $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
+            $this->dataBase->commitTransaccion();
+        } catch (\Exception $e) {
+            $this->dataBase->cancelarTransaccion();
+            throw $e;
+        }
+
         return $pedido;
     }
 }

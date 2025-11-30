@@ -177,7 +177,7 @@ class BaseDatos
     return $pedidoModel;
   }
 
-  public function cancelarPedido(DomainPedido $pedido)
+  public function guardarCambioEstatusPedido(DomainPedido $pedido)
   {
     Pedido::where('folio_pedido',$pedido->getFolio())->update(['estatus'=>$pedido->getEstatus()]);
   }
