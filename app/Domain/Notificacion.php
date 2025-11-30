@@ -11,20 +11,22 @@ class Notificacion
     private $fecha_envio;
     private $leida;
 
-    private function __construct(NotificacionModel $noficacion)
+    public function __construct(NotificacionModel $noficacion)
     {
         $this->mensaje = $noficacion->mensaje;
-        $this->fecha_envio = $noficacion->fecha_envio;
+        $this->fecha_envio = $noficacion->fecha_hora;
         $this->leida = $noficacion->leida;
     }
 
-    public static function crear($mensaje, $fecha_envio, $leida = false)
+    public static function crear($mensaje, $fecha_hora, $leida = false)
     {
-        return new self(new NotificacionModel([
+        $notificacion = new NotificacionModel([
             'mensaje' => $mensaje,
-            'fecha_envio' => $fecha_envio,
+            'fecha_hora' => $fecha_hora,
             'leida' => $leida
-        ]));
+        ]);
+
+        return new self($notificacion);
     }
 
     public function marcarComoLeida()

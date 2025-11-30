@@ -78,14 +78,13 @@ class PedidoService
                 $inventario->aumentarStock($detalle->getCantidadSurtida());
                 $this->dataBase->actualizarInventarioCancelacion($inventario);
                 $this->dataBase->commitTransaccion();
-            }
-            else{
+            } else {
                 $this->dataBase->cancelarTransaccion();
             }
         }
         $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
         $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
-        $paciente->aplicarPenalizacion($cantidad_penalizacion);
+        $paciente->setMontoPenalizacion($cantidad_penalizacion);
         $this->dataBase->actualizarPaciente($paciente);
         $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidad_penalizacion} a su cuenta.";
         $notificacion = Notificacion::crear($mensaje, now());
@@ -122,10 +121,6 @@ class PedidoService
     public function obtenerPedid($id)
     {
         $pedidos = $this->dataBase->getPedidos($id);
-    }
-    public function buscarPedidoPorId($pedido_id)
-    {
-        return $this->dataBase->obtenerPedidoPorId($pedido_id);
     }
     public function setCedulaProfesional($cedula, Pedido $pedido)
     {
