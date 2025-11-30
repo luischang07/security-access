@@ -136,11 +136,9 @@ class Pedido
 
     public function obtenerDetallesLineas()
     {
-        $detalles = collect();
-        foreach ($this->lineas_pedido as $linea) {
-            $detalles->push($linea->getDetalleLineaPedido());
-        }
-        return $detalles;
+        return $this->lineas_pedido->flatMap(function ($linea) {
+            return $linea->getDetalles();
+        })->values();
     }
 
     public function crearDetalleLineaPedido($precio_unitario, $cantidadSurtida, $sucursal, $medicamento_id)

@@ -23,7 +23,7 @@ class DetalleLineaPedido
     {
         return $this->precio * $this->cantidadSurtida;
     }
-    
+
     public function getCantidadSurtida()
     {
         return $this->cantidadSurtida;

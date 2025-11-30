@@ -328,11 +328,6 @@
         async function cancelCurrentOrder() {
             const order = orders[currentOrderIndex];
             if (!order) {
-                alert('No hay pedido seleccionado.');
-                return;
-            }
-
-            if (!confirm(`¿Cancelar el pedido folio ${order.folio}? Esta acción no se puede deshacer.`)) {
                 return;
             }
 
@@ -340,14 +335,13 @@
             btn.disabled = true;
 
             try {
-                const res = await fetch('/pharmacy/orders/cancel', {
+                const res = await fetch(`/pharmacy/orders/cancel/${order.folio}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ folio: order.folio })
+                    }
                 });
 
                 if (!res.ok) {
@@ -355,10 +349,8 @@
                     throw new Error(err?.message || 'Error al cancelar el pedido');
                 }
 
-                alert('Pedido cancelado correctamente.');
                 location.reload();
             } catch (e) {
-                alert('No se pudo cancelar el pedido: ' + e.message);
                 btn.disabled = false;
             }
         }
