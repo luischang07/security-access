@@ -21,6 +21,17 @@ class PacienteService{
         $paciente->setMontoPenalizacion($monto);
     }
 
-
-
+    public function getPedidoPorPaciente($user_id){
+        $pedidos=$this->dataBase->getPedidos($user_id);
+        return $pedidos;
+    }
+    public function getPedidosActivos($pedidos){
+        $contador=0;
+        foreach($pedidos as $pedido){
+            if($pedido->getEstatus()=="confirmado"){
+                $contador++;
+            }
+        }
+        return $contador;
+    }
 }

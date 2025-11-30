@@ -130,26 +130,39 @@
                         </div>
 
                         <!-- Footer Actions -->
-                        <div
-                            class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 space-y-4">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-medium text-body-text dark:text-body-text-dark">
-                                    <?php echo e(__('pharmacy.orders.update_status')); ?></p>
-                                <div class="flex items-center gap-2">
-                                    <button
-                                        class="px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark">
-                                        <?php echo e(__('pharmacy.orders.acknowledge')); ?>
+                        <div class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                            <div class="flex flex-col gap-4">
+                                <!-- Price Summary -->
+                                <div id="price-summary" class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                    <div class="flex justify-between items-center">
+                                        <span>Subtotal:</span>
+                                        <span id="subtotal" class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>Tarifa de servicio:</span>
+                                        <span id="serviceFee" class="font-medium text-body-text dark:text-body-text-dark">$1.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
+                                        <span class="font-bold">Total estimado:</span>
+                                        <span id="estimatedTotal" class="font-bold text-primary text-lg">$0.00</span>
+                                    </div>
+                                </div>
 
+                                <!-- Actions -->
+                                <div class="flex items-center gap-2 w-full">
+                                    <button
+                                        id="cancelOrderBtn"
+                                        class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
+                                        Cancelar
                                     </button>
                                     <button
-                                        class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">
+                                        id="startPreparingBtn"
+                                        class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
                                         <?php echo e(__('pharmacy.orders.start_preparing')); ?>
 
                                     </button>
                                 </div>
                             </div>
-
-                        <!-- Message input removed per request -->
                         </div>
                     </div>
                 </div>
@@ -187,8 +200,9 @@
     <script>
         // Data de los pedidos
         const orders = <?php echo json_encode($ordersData, 15, 512) ?>;
-
+        const csrfToken = '<?php echo e(csrf_token()); ?>';
         let currentOrderIndex = 0;
+        const serviceFeeFixed = 1.00;
 
         function selectOrder(element, index) {
             // Remover selección anterior
@@ -215,7 +229,7 @@
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
                             Información del Pedido</h2>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Folio del Pedido</p>
                             <p class="font-medium text-body-text dark:text-body-text-dark">${order.folio}</p>
@@ -223,10 +237,6 @@
                         <div>
                             <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Fecha del Pedido</p>
                             <p class="font-medium text-body-text dark:text-body-text-dark">${order.fecha_pedido}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Estado</p>
-                            <p class="font-medium text-body-text dark:text-body-text-dark">${order.estatus}</p>
                         </div>
                     </div>
                 </div>
@@ -255,10 +265,13 @@
                             <tbody class="divide-y divide-border-light dark:divide-border-dark">
             `;
 
+            let subtotal = 0;
             if (order.lineas && order.lineas.length > 0) {
                 order.lineas.forEach(linea => {
                     if (linea.detalles && linea.detalles.length > 0) {
                         linea.detalles.forEach(detalle => {
+                            const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.cantidad) || 0);
+                            subtotal += lineTotal;
                             html += `
                                 <tr>
                                     <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
@@ -291,15 +304,74 @@
             `;
 
             container.innerHTML = html;
+
+            // Actualizar resumen de precios
+            updatePriceSummary(subtotal);
+        }
+
+        function updatePriceSummary(subtotal) {
+            const subtotalEl = document.getElementById('subtotal');
+            const serviceFeeEl = document.getElementById('serviceFee');
+            const estimatedEl = document.getElementById('estimatedTotal');
+            const priceSummary = document.getElementById('price-summary');
+            
+            if (subtotalEl && serviceFeeEl && estimatedEl) {
+                const total = subtotal + serviceFeeFixed;
+                subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+                serviceFeeEl.textContent = `$${serviceFeeFixed.toFixed(2)}`;
+                estimatedEl.textContent = `$${total.toFixed(2)}`;
+                
+                // Mostrar resumen si hay líneas
+                if (priceSummary) {
+                    priceSummary.classList.toggle('hidden', subtotal === 0);
+                }
+            }
+        }
+
+        async function cancelCurrentOrder() {
+            const order = orders[currentOrderIndex];
+            if (!order) {
+                return;
+            }
+
+            const btn = document.getElementById('cancelOrderBtn');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/pharmacy/orders/cancel/${order.folio}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.message || 'Error al cancelar el pedido');
+                }
+
+                location.reload();
+            } catch (e) {
+                btn.disabled = false;
+            }
         }
 
         // Inicializar con el primer pedido
         document.addEventListener('DOMContentLoaded', function() {
             renderOrderDetails();
+            
             // Marcar el primer pedido como seleccionado
             const firstCard = document.querySelector('.order-card');
             if (firstCard) {
                 firstCard.classList.add('bg-background-light', 'dark:bg-background-dark');
+            }
+
+            // Agregar evento al botón cancelar
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', cancelCurrentOrder);
             }
         });
     </script>

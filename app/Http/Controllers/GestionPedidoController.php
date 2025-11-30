@@ -16,172 +16,173 @@ use App\Services\Modelos\PacienteService;
 
 class GestionPedidoController extends Controller
 {
-    private PedidoService $pedidoService;
+  private PedidoService $pedidoService;
 
-    private PacienteService $pacienteService;
-    private SucursalService $sucursalService;
-    private GestorDeSurtido $GestorDeSurtido;
-    private CadenaService $cadenaService;
-    private MedicamentoService $medicamentoService;
+  private PacienteService $pacienteService;
+  private SucursalService $sucursalService;
+  private GestorDeSurtido $GestorDeSurtido;
+  private CadenaService $cadenaService;
+  private MedicamentoService $medicamentoService;
 
-    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService, PacienteService $pacienteService)
-    {
-        $this->pedidoService = $pedidoService;
-        $this->sucursalService = $sucursalService;
-        $this->GestorDeSurtido = $GestorDeSurtido;
-        $this->cadenaService = $cadenaService;
-        $this->medicamentoService = $medicamentoService;
-        $this->pacienteService = $pacienteService;
+  public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService, PacienteService $pacienteService)
+  {
+    $this->pedidoService = $pedidoService;
+    $this->sucursalService = $sucursalService;
+    $this->GestorDeSurtido = $GestorDeSurtido;
+    $this->cadenaService = $cadenaService;
+    $this->medicamentoService = $medicamentoService;
+    $this->pacienteService = $pacienteService;
+  }
+
+
+  public function nuevoPedido(Request $request)
+  {
+    $paciente_id = Auth::user()->user_id;
+
+    $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+    $pedidos = $this->pacienteService->getPedidoPorPaciente($paciente_id);
+    $pedidosActivos = $this->pacienteService->getPedidosActivos($pedidos);
+    if ($montoPenalizacion > 0 && $pedidosActivos != 0) {
+      return redirect()->route('patient.dashboard')->with('error', 'No puedes realizar pedidos mientras tengas una penalización pendiente y un pedido activo');
     }
 
+    $pedido = $this->pedidoService->nuevoPedido($paciente_id);
 
-    public function nuevoPedido(Request $request)
-    {
-        $paciente_id = Auth::user()->user_id;
+    Session::put('pedido_temporal', serialize($pedido));
 
-        $pedido = Session::has('pedido_temporal') ? unserialize(Session::get('pedido_temporal')) : null;
-        if (!$pedido || $request->boolean('reset')) {
-            $pedido = $this->pedidoService->nuevoPedido($paciente_id);
-        } else {
-            // Reutiliza lo que el paciente ya capturó pero limpia detalles/ruta para volver a surtir
-            $pedido = $this->pedidoService->reiniciarParaCaptura($pedido);
-        }
+    $cadenas = $this->cadenaService->obtenerTodasCadenas();
 
-        Session::put('pedido_temporal', serialize($pedido));
+    return view('prescription.upload-step1', compact('cadenas', 'pedido'));
+  }
 
-        $cadenas = $this->cadenaService->obtenerTodasCadenas();
 
-        return view('prescription.upload-step1', compact('cadenas', 'pedido'));
+  public function seleccionarSucursal(Request $request)
+  {
+
+    $sucursal_id = $request->input('sucursal_id');
+    $cadena_id = $request->input('cadena_id');
+    $sucursal = $this->sucursalService->obtenerSucursal($cadena_id, $sucursal_id);
+    $pedido = unserialize(Session::get('pedido_temporal'));
+    Session::forget('pedido_temporal');
+    $pedido = $this->pedidoService->asociarSucursalAPedido($sucursal, $pedido);
+
+    Session::put('pedido_temporal', serialize($pedido));
+    return response()->json(['ok' => true]);
+  }
+
+
+  public function agregarMedicamento(Request $request)
+  {
+    $medId = (int) $request->input('medId');
+    $cantidad = (int) $request->input('cantidad');
+
+    if ($medId <= 0 || $cantidad < 1) {
+      return response()->json(['ok' => false, 'message' => 'Datos de medicamento inválidos'], 422);
     }
 
+    $pedido = unserialize(Session::get('pedido_temporal'));
+    Session::forget('pedido_temporal');
 
-    public function seleccionarSucursal(Request $request)
-    {
+    try {
+      $pedido = $this->pedidoService->agregarMedicamento($medId, $cantidad, $pedido);
 
-        $sucursal_id = $request->input('sucursal_id');
-        $cadena_id = $request->input('cadena_id');
-        $sucursal = $this->sucursalService->obtenerSucursal($cadena_id, $sucursal_id);
-        $pedido = unserialize(Session::get('pedido_temporal'));
-        Session::forget('pedido_temporal');
-        $pedido = $this->pedidoService->asociarSucursalAPedido($sucursal, $pedido);
-
-        Session::put('pedido_temporal', serialize($pedido));
-        return response()->json(['ok' => true]);
+      Session::put('pedido_temporal', serialize($pedido));
+      return response()->json([
+        'ok' => true,
+        'medications' => $this->pedidoService->obtenerLineasPedidoActuales($pedido)
+      ]);
+    } catch (\Throwable $e) {
+      return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
     }
 
+  }
 
-    public function agregarMedicamento(Request $request)
-    {
-        $medId = (int) $request->input('medId');
-        $cantidad = (int) $request->input('cantidad');
+  public function eliminarMedicamento(Request $request)
+  {
+    $medId = (int) $request->input('medId');
 
-        if ($medId <= 0 || $cantidad < 1) {
-            return response()->json(['ok' => false, 'message' => 'Datos de medicamento inválidos'], 422);
-        }
+    if ($medId <= 0) {
+      return response()->json(['ok' => false, 'message' => 'ID de medicamento inválido'], 422);
+    }
+    $pedido = unserialize(Session::get('pedido_temporal'));
 
-        $pedido = unserialize(Session::get('pedido_temporal'));
-        Session::forget('pedido_temporal');
+    Session::forget('pedido_temporal');
+    try {
+      $pedido = $this->pedidoService->eliminarMedicamento($medId, $pedido);
 
-        try {
-            $pedido = $this->pedidoService->agregarMedicamento($medId, $cantidad, $pedido);
+      Session::put('pedido_temporal', serialize($pedido));
 
-            Session::put('pedido_temporal', serialize($pedido));
-            return response()->json([
-                'ok' => true,
-                'medications' => $this->pedidoService->obtenerLineasPedidoActuales($pedido)
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
-        }
-
+    } catch (\Throwable $e) {
+      return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
     }
 
-    public function eliminarMedicamento(Request $request)
-    {
-        $medId = (int) $request->input('medId');
+    return response()->json([
+      'ok' => true,
+      'medications' => $this->pedidoService->obtenerLineasPedidoActuales($pedido)
+    ]);
+  }
 
-        if ($medId <= 0) {
-            return response()->json(['ok' => false, 'message' => 'ID de medicamento inválido'], 422);
-        }
-        $pedido = unserialize(Session::get('pedido_temporal'));
+  public function confirmarCaptura(Request $request)
+  {
+    $cedulaProfesional = $request->input("cedula_profesional");
 
-        Session::forget('pedido_temporal');
-        try {
-            $pedido = $this->pedidoService->eliminarMedicamento($medId, $pedido);
+    $paciente_id = Auth::user()->user_id;
 
-            Session::put('pedido_temporal', serialize($pedido));
+    $pedido = unserialize(Session::get('pedido_temporal'));
+    Session::forget('pedido_temporal');
+    $pedido = $this->pedidoService->asignarFechaRecoleccion($pedido);
+    $pedido = $this->pedidoService->setCedulaProfesional($cedulaProfesional, $pedido);
+    $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+    $pedido = $this->GestorDeSurtido->surtir($pedido);
 
-        } catch (\Throwable $e) {
-            return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
-        }
+    Session::put('pedido_temporal', serialize($pedido));
+    return view('prescription.upload-step2', compact('pedido', 'montoPenalizacion'));
+  }
 
-        return response()->json([
-            'ok' => true,
-            'medications' => $this->pedidoService->obtenerLineasPedidoActuales($pedido)
-        ]);
+  public function confirmarPedido()
+  {
+    $pedido = unserialize(Session::get('pedido_temporal'));
+    Session::forget('pedido_temporal');
+    try {
+      $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
+      $folio = $pedido->getFolio();
+      return redirect("/patient/orders/{$folio}")->with('order_success', true);
+    } catch (\Throwable $e) {
+      Session::put('pedido_temporal', serialize($pedido));
+      return redirect()->back()->withErrors($e->getMessage());
+    }
+  }
+
+
+  public function buscarMedicamentos(Request $request)
+  {
+    $query = $request->input('q', '');
+
+    if (strlen($query) < 2) {
+      return response()->json([]);
     }
 
-    public function confirmarCaptura(Request $request)
-    {
-        $cedulaProfesional = $request->input("cedula_profesional");
+    $medicamentos = $this->medicamentoService->obtenerMedicamentosPorNombre($query);
 
-        $paciente_id = Auth::user()->user_id;
+    return response()->json($medicamentos);
+  }
 
-        $pedido = unserialize(Session::get('pedido_temporal'));
-        Session::forget('pedido_temporal');
-        $pedido = $this->pedidoService->asignarFechaRecoleccion($pedido);
-        $pedido = $this->pedidoService->setCedulaProfesional($cedulaProfesional, $pedido);
-        $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
-        $pedido = $this->GestorDeSurtido->surtir($pedido);
+  public function getPedidos()
+  {
+    $pedidos = $this->pedidoService->obtenerPedidosPorPacienteId(Auth::user()->user_id);
 
-        Session::put('pedido_temporal', serialize($pedido));
-        return view('prescription.upload-step2', compact('pedido', 'montoPenalizacion'));
+    return view('patient.orders', compact('pedidos'));
+  }
+
+  public function getPedido($folio)
+  {
+    // $folio is the folio_pedido of the Pedido
+    $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
+
+    if (!$pedido) {
+      abort(404);
     }
 
-    public function confirmarPedido()
-    {
-        $pedido = unserialize(Session::get('pedido_temporal'));
-        Session::forget('pedido_temporal');
-        try {
-            $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
-            $folio = $pedido->getFolio();
-            return redirect("/patient/orders/{$folio}")->with('order_success', true);
-        } catch (\Throwable $e) {
-            Session::put('pedido_temporal', serialize($pedido));
-            return redirect()->back()->withErrors($e->getMessage());
-        }
-    }
-
-
-    public function buscarMedicamentos(Request $request)
-    {
-        $query = $request->input('q', '');
-
-        if (strlen($query) < 2) {
-            return response()->json([]);
-        }
-
-        $medicamentos = $this->medicamentoService->obtenerMedicamentosPorNombre($query);
-
-        return response()->json($medicamentos);
-    }
-
-    public function getPedidos()
-    {
-        $pedidos = $this->pedidoService->obtenerPedidosPorPacienteId(Auth::user()->user_id);
-
-        return view('patient.orders', compact('pedidos'));
-    }
-
-    public function getPedido($folio)
-    {
-        // $folio is the folio_pedido of the Pedido
-        $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
-
-        if (!$pedido) {
-            abort(404);
-        }
-
-        return view('patient.order-detail', compact('pedido'));
-    }
+    return view('patient.order-detail', compact('pedido'));
+  }
 }

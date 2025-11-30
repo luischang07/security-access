@@ -81,35 +81,85 @@
                         </div>
 
                         <!-- Order Cards List -->
-                        <div class="flex-1 overflow-y-auto p-4 space-y-2">
-                            @forelse ($pedidos as $index => $pedido)
-                                <div
-                                    onclick="selectOrder(this, {{ $index }})"
-                                    class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors {{ $index === 0 ? 'bg-background-light dark:bg-background-dark' : '' }}"
-                                    data-order-index="{{ $index }}"
-                                    data-folio="{{ $pedido->getFolio() }}">
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <h3 class="font-bold text-body-text dark:text-body-text-dark">
-                                                Folio: {{ $pedido->getFolio() }}</h3>
-                                            <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                {{ __('pharmacy.orders.order_number') }} #{{ $pedido->getFolio() }}</p>
-                                        </div>
-                                        <span
-                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
-                                    </div>
-                                    <div class="mt-3 flex items-center justify-between">
-                                        <span
-                                            class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white">{{ $pedido->getEstatus() }}</span>
-                                        <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                            {{ $pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A' }}</p>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                            @php
+                                $pedidosConfirmados = collect($pedidos)->filter(fn($p) => strtolower($p->getEstatus()) === 'confirmado');
+                                $pedidosCancelados = collect($pedidos)->filter(fn($p) => strtolower($p->getEstatus()) === 'cancelado');
+                            @endphp
+
+                            <!-- Confirmados -->
+                            @if($pedidosConfirmados->count() > 0)
+                                <div>
+                                    <h3 class="text-xs font-bold uppercase text-neutral-text dark:text-neutral-text-dark mb-2">Confirmados</h3>
+                                    <div class="space-y-2">
+                                        @foreach ($pedidosConfirmados as $index => $pedido)
+                                            <div
+                                                onclick="selectOrder(this, {{ $index }})"
+                                                class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors {{ $index === 0 ? 'bg-background-light dark:bg-background-dark' : '' }}"
+                                                data-order-index="{{ $index }}"
+                                                data-folio="{{ $pedido->getFolio() }}"
+                                                data-estatus="{{ strtolower($pedido->getEstatus()) }}">
+                                                <div class="flex items-start justify-between">
+                                                    <div>
+                                                        <h3 class="font-bold text-body-text dark:text-body-text-dark">
+                                                            Folio: {{ $pedido->getFolio() }}</h3>
+                                                        <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                                                            {{ __('pharmacy.orders.order_number') }} #{{ $pedido->getFolio() }}</p>
+                                                    </div>
+                                                    <span
+                                                        class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
+                                                </div>
+                                                <div class="mt-3 flex items-center justify-between">
+                                                    <span
+                                                        class="inline-flex items-center rounded-full bg-success px-2.5 py-0.5 text-xs font-medium text-white">{{ $pedido->getEstatus() }}</span>
+                                                    <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                                                        {{ $pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A' }}</p>
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                            @empty
+                            @endif
+
+                            <!-- Cancelados -->
+                            @if($pedidosCancelados->count() > 0)
+                                <div>
+                                    <h3 class="text-xs font-bold uppercase text-neutral-text dark:text-neutral-text-dark mb-2">Cancelados</h3>
+                                    <div class="space-y-2">
+                                        @foreach ($pedidosCancelados as $index => $pedido)
+                                            <div
+                                                onclick="selectOrder(this, {{ $index }})"
+                                                class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors opacity-60"
+                                                data-order-index="{{ $index }}"
+                                                data-folio="{{ $pedido->getFolio() }}"
+                                                data-estatus="{{ strtolower($pedido->getEstatus()) }}">
+                                                <div class="flex items-start justify-between">
+                                                    <div>
+                                                        <h3 class="font-bold text-body-text dark:text-body-text-dark">
+                                                            Folio: {{ $pedido->getFolio() }}</h3>
+                                                        <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                                                            {{ __('pharmacy.orders.order_number') }} #{{ $pedido->getFolio() }}</p>
+                                                    </div>
+                                                    <span
+                                                        class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
+                                                </div>
+                                                <div class="mt-3 flex items-center justify-between">
+                                                    <span
+                                                        class="inline-flex items-center rounded-full bg-danger px-2.5 py-0.5 text-xs font-medium text-white">{{ $pedido->getEstatus() }}</span>
+                                                    <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                                                        {{ $pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A' }}</p>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($pedidosConfirmados->count() === 0 && $pedidosCancelados->count() === 0)
                                 <div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">
                                     {{ __('pharmacy.orders.no_orders') }}
                                 </div>
-                            @endforelse
+                            @endif
                         </div>
                     </div>
 
@@ -315,6 +365,9 @@
             const serviceFeeEl = document.getElementById('serviceFee');
             const estimatedEl = document.getElementById('estimatedTotal');
             const priceSummary = document.getElementById('price-summary');
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            const startBtn = document.getElementById('startPreparingBtn');
+            const order = orders[currentOrderIndex];
             
             if (subtotalEl && serviceFeeEl && estimatedEl) {
                 const total = subtotal + serviceFeeFixed;
@@ -327,16 +380,28 @@
                     priceSummary.classList.toggle('hidden', subtotal === 0);
                 }
             }
+
+            // Deshabilitar botones si el pedido está cancelado
+            const isDisabled = order && order.estatus && strtolower(order.estatus) === 'cancelado';
+            if (cancelBtn) {
+                cancelBtn.disabled = isDisabled;
+                cancelBtn.classList.toggle('opacity-50', isDisabled);
+                cancelBtn.classList.toggle('cursor-not-allowed', isDisabled);
+            }
+            if (startBtn) {
+                startBtn.disabled = isDisabled;
+                startBtn.classList.toggle('opacity-50', isDisabled);
+                startBtn.classList.toggle('cursor-not-allowed', isDisabled);
+            }
+        }
+
+        function strtolower(str) {
+            return typeof str === 'string' ? str.toLowerCase() : '';
         }
 
         async function cancelCurrentOrder() {
             const order = orders[currentOrderIndex];
             if (!order) {
-                alert('No hay pedido seleccionado.');
-                return;
-            }
-
-            if (!confirm(`¿Cancelar el pedido folio ${order.folio}? Esta acción no se puede deshacer.`)) {
                 return;
             }
 
@@ -344,14 +409,13 @@
             btn.disabled = true;
 
             try {
-                const res = await fetch('/pharmacy/orders/cancel', {
+                const res = await fetch(`/pharmacy/orders/cancel/${order.folio}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ folio: order.folio })
+                    }
                 });
 
                 if (!res.ok) {
@@ -359,10 +423,8 @@
                     throw new Error(err?.message || 'Error al cancelar el pedido');
                 }
 
-                alert('Pedido cancelado correctamente.');
                 location.reload();
             } catch (e) {
-                alert('No se pudo cancelar el pedido: ' + e.message);
                 btn.disabled = false;
             }
         }

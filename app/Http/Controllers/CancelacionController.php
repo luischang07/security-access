@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 use App\Services\Modelos\PedidoService;
+use App\Services\Modelos\SucursalService;
+use App\Services\Modelos\GestorDeSurtido;
+use App\Services\Modelos\CadenaService;
+use App\Services\Modelos\MedicamentoService;
 use App\Domain\Pedido;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
@@ -15,14 +19,13 @@ class CancelacionController extends Controller
         $this->pedidoService = $pedidoService;
     }
 
-    public function confirmarCancelacion(Request $request)
+    public function cancelarPorFolio($folio)
     {
-        $pedido_id = $request->input('pedido_id');
-        $pedido = $this->pedidoService->buscarPedidoPorId($pedido_id);
+        $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
         if (!$pedido) {
             return response()->json(['error' => 'Pedido no encontrado.'], 404);
         }
         $this->pedidoService->cancelarPedido($pedido);
-
+        return response()->json(['success' => true]);
     }
 }
