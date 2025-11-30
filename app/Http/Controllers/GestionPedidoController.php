@@ -11,38 +11,47 @@ use App\Services\Modelos\GestorDeSurtido;
 use App\Services\Modelos\MedicamentoService;
 use App\Domain\Pedido;
 use Illuminate\Support\Facades\Session;
+use App\Services\Modelos\PacienteService;
 
 
 class GestionPedidoController extends Controller
 {
     private PedidoService $pedidoService;
+
+    private PacienteService $pacienteService;
     private SucursalService $sucursalService;
     private GestorDeSurtido $GestorDeSurtido;
     private CadenaService $cadenaService;
     private MedicamentoService $medicamentoService;
 
-    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService)
+    public function __construct(PedidoService $pedidoService, SucursalService $sucursalService, GestorDeSurtido $GestorDeSurtido, CadenaService $cadenaService, MedicamentoService $medicamentoService, PacienteService $pacienteService)
     {
         $this->pedidoService = $pedidoService;
         $this->sucursalService = $sucursalService;
         $this->GestorDeSurtido = $GestorDeSurtido;
         $this->cadenaService = $cadenaService;
         $this->medicamentoService = $medicamentoService;
+        $this->pacienteService = $pacienteService;
     }
 
 
-    public function nuevoPedido()
+    public function nuevoPedido(Request $request)
     {
         $paciente_id = Auth::user()->user_id;
 
-
-        $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+        $pedido = Session::has('pedido_temporal') ? unserialize(Session::get('pedido_temporal')) : null;
+        if (!$pedido || $request->boolean('reset')) {
+            $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+        } else {
+            // Reutiliza lo que el paciente ya capturó pero limpia detalles/ruta para volver a surtir
+            $pedido = $this->pedidoService->reiniciarParaCaptura($pedido);
+        }
 
         Session::put('pedido_temporal', serialize($pedido));
 
         $cadenas = $this->cadenaService->obtenerTodasCadenas();
 
-        return view('prescription.upload-step1', compact('cadenas'));
+        return view('prescription.upload-step1', compact('cadenas', 'pedido'));
     }
 
 
@@ -120,18 +129,27 @@ class GestionPedidoController extends Controller
 
         $pedido = unserialize(Session::get('pedido_temporal'));
         Session::forget('pedido_temporal');
-        $pedido = $this->GestorDeSurtido->surtir($pedido);
         $pedido = $this->pedidoService->asignarFechaRecoleccion($pedido);
         $pedido = $this->pedidoService->setCedulaProfesional($cedulaProfesional, $pedido);
+        $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+        $pedido = $this->GestorDeSurtido->surtir($pedido);
+
         Session::put('pedido_temporal', serialize($pedido));
-        return view('prescription.upload-step2', compact('pedido'));
+        return view('prescription.upload-step2', compact('pedido', 'montoPenalizacion'));
     }
 
     public function confirmarPedido()
     {
         $pedido = unserialize(Session::get('pedido_temporal'));
-        info("Confirmando pedido...");
-        $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
+        Session::forget('pedido_temporal');
+        try {
+            $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
+            $folio = $pedido->getFolio();
+            return redirect("/patient/orders/{$folio}")->with('order_success', true);
+        } catch (\Throwable $e) {
+            Session::put('pedido_temporal', serialize($pedido));
+            return redirect()->back()->withErrors($e->getMessage());
+        }
     }
 
 
@@ -153,5 +171,17 @@ class GestionPedidoController extends Controller
         $pedidos = $this->pedidoService->obtenerPedidosPorPacienteId(Auth::user()->user_id);
 
         return view('patient.orders', compact('pedidos'));
+    }
+
+    public function getPedido($folio)
+    {
+        // $folio is the folio_pedido of the Pedido
+        $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
+
+        if (!$pedido) {
+            abort(404);
+        }
+
+        return view('patient.order-detail', compact('pedido'));
     }
 }

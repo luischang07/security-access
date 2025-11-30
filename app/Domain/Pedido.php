@@ -3,26 +3,30 @@
 
 namespace App\Domain;
 use Illuminate\Support\Collection;
-use App\Domain\Sucursales;
+use App\Domain\Sucursal;
 use App\Domain\LineaPedido;
 use App\Domain\Medicamento;
 use Carbon\Carbon;
+
 class Pedido
 {
     private $folio;
     private $cedulaProfesional;
+
     private $fecha_pedido, $fecha_recoleccion;
     private $estatus;
     private $lineas_pedido;
     private $paciente_id;
     private $sucursal;
     private $costo_Total;
+    private $faltantes;
 
     private $ruta;
 
     private function __construct()
     {
         $this->createColeccionLineas();
+        $this->faltantes = collect();
         $this->ruta = collect();
     }
 
@@ -60,10 +64,12 @@ class Pedido
     public function añadirARuta($sucursal)
     {
         //Si ya existe la sucursal dentro de la ruta, no agregarla de nuevo
-        if (!$this->ruta->contains(function ($suc) use ($sucursal) {
-            return $suc->getCadenaId() === $sucursal->getCadenaId() &&
-                $suc->getSucursalId() === $sucursal->getSucursalId();
-        })) {
+        if (
+            !$this->ruta->contains(function ($suc) use ($sucursal) {
+                return $suc->getCadenaId() === $sucursal->getCadenaId() &&
+                    $suc->getSucursalId() === $sucursal->getSucursalId();
+            })
+        ) {
             $this->ruta->push($sucursal);
         }
     }
@@ -167,6 +173,33 @@ class Pedido
         $this->costo_Total = $acumulado;
     }
 
+    public function setFaltantes($faltantes)
+    {
+        $this->faltantes = $faltantes ?? collect();
+    }
+
+    public function getFaltantes()
+    {
+        return $this->faltantes ?? collect();
+    }
+
+    public function tieneFaltantes(): bool
+    {
+        return $this->getFaltantes()->count() > 0;
+    }
+
+    public function reiniciarParaCaptura(): void
+    {
+        foreach ($this->lineas_pedido as $linea) {
+            $linea->limpiarDetalles();
+        }
+        $this->ruta = collect();
+        $this->faltantes = collect();
+        $this->costo_Total = 0;
+        $this->estatus = null;
+        $this->fecha_recoleccion = null;
+    }
+
     public function asignarFechaPedido()
     {
         $this->fecha_pedido = Carbon::now();
@@ -201,6 +234,12 @@ class Pedido
     {
         return $this->cedulaProfesional;
     }
+    public function setMontoPenalizacion($monto)
+    {
+        $this->costo_Total = $this->costo_Total + $monto;
+
+        info('monto final: ', [$this->costo_Total]);
+    }
 
     public function getFechaRecoleccion()
     {
@@ -232,6 +271,11 @@ class Pedido
         return $this->folio;
     }
 
+    public function asignarFolio($folio)
+    {
+        $this->folio = $folio;
+    }
+
     public function getPacienteId()
     {
         return $this->paciente_id;
@@ -256,14 +300,47 @@ class Pedido
         $pedido->estatus = $pedidoModel->estatus;
         $pedido->costo_Total = $pedidoModel->costo_total;
 
+        //crear sucursal
+        $sucursal = Sucursal::crear($pedidoModel->sucursal);
+        $pedido->asociarSucursalAPedido($sucursal);
+
         $lineasPedidoCollection = collect();
         foreach ($pedidoModel->lineasPedidos as $lineaModel) {
             $medicamento = new Medicamento($lineaModel->medicamento->medicamento_id, $lineaModel->medicamento->nombre, $lineaModel->medicamento->descripcion, $lineaModel->medicamento->unidad_medida, $lineaModel->medicamento->unidades);
             $lineaPedido = $lineaPedido = new LineaPedido($lineaModel->medicamento_id, $lineaModel->cantidad, $medicamento);
             $lineasPedidoCollection->push($lineaPedido);
+            //Crear crearDetalleLineaPedido
+            foreach ($lineaModel->detalles as $detalleModel) {
+                $sucursalDetalle = Sucursal::crear($detalleModel->sucursal);
+                $lineaPedido->crearDetalleLineaPedido($detalleModel->precio_unitario, $detalleModel->cantidad_surtida, $sucursalDetalle, $detalleModel->medicamento_id);
+            }
         }
         $pedido->lineas_pedido = $lineasPedidoCollection;
 
         return $pedido;
+    }
+
+    public function calcularPorcentajeSurtido()
+    {
+        $totalSolicitado = 0;
+        $totalSurtido = 0;
+
+        foreach ($this->lineas_pedido as $linea) {
+            $totalSolicitado += $linea->getCantidad();
+            $totalSurtido += $linea->calcularCantidadSurtida();
+        }
+
+        if ($totalSolicitado === 0) {
+            return 0;
+        }
+
+        return ($totalSurtido / $totalSolicitado);
+    }
+
+    public function removerLineasSinDetalles()
+    {
+        $this->lineas_pedido = $this->lineas_pedido->filter(function ($linea) {
+            return $linea->calcularCantidadSurtida() > 0;
+        })->values();
     }
 }

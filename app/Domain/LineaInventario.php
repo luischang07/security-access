@@ -3,44 +3,77 @@
 
 namespace App\Domain;
 
-class LineaInventario {
-    private $cadena_id,$sucursal_id;
+class LineaInventario
+{
+    private $cadena_id, $sucursal_id;
     private $medicamento_id;
     private $stock_disponible;
     private $precio_unitario;
 
-    public function __construct($cadena_id,$sucursal_id,$medicamento_id,$stock_disponible,$precio_unitario){
-        $this->cadena_id=$cadena_id;
-        $this->sucursal_id=$sucursal_id;
-        $this->medicamento_id=$medicamento_id;
-        $this->stock_disponible=$stock_disponible;
-        $this->precio_unitario=$precio_unitario;
+    public function __construct($cadena_id, $sucursal_id, $medicamento_id, $stock_disponible, $precio_unitario)
+    {
+        $this->cadena_id = $cadena_id;
+        $this->sucursal_id = $sucursal_id;
+        $this->medicamento_id = $medicamento_id;
+        $this->stock_disponible = $stock_disponible;
+        $this->precio_unitario = $precio_unitario;
     }
 
-    public function getMedicamentoId(){
-    return $this->medicamento_id;
+    public function getMedicamentoId()
+    {
+        return $this->medicamento_id;
     }
-    public function getStockDisponible(){
-    return $this->stock_disponible;
+    public function getStockDisponible()
+    {
+        return $this->stock_disponible;
     }
-    public function setCantidad($cantidad){
-    $this->cantidad=$cantidad;
+    public function setCantidad($cantidad)
+    {
+        $this->cantidad = $cantidad;
     }
-    public function setMedicamentoId($medicamentoId){
-    $this->medicamentoId=$medicamentoId;
+    public function setMedicamentoId($medicamentoId)
+    {
+        $this->medicamentoId = $medicamentoId;
     }
-    public function setStockDisponible($stock_disponible){
-    $this->stock_disponible=$stock_disponible;
+    public function setStockDisponible($stock_disponible)
+    {
+        $this->stock_disponible = $stock_disponible;
     }
-    public function getPrecioUnitario(){
+    public function getPrecioUnitario()
+    {
         return $this->precio_unitario;
     }
 
-    public function setPrecioUnitario($precio_unitario){
-        $this->precio_unitario=$precio_unitario;
+    public function setPrecioUnitario($precio_unitario)
+    {
+        $this->precio_unitario = $precio_unitario;
+    }
+    public function disminuirStock($cantidad)
+    {
+        $this->stock_disponible -= $cantidad;
+    }
+    public function aumentarStock($cantidad)
+    {
+        $this->stock_disponible += $cantidad;
     }
 
-    public function aumentarStock($cantidad){
-        $this->stock_disponible += $cantidad;
+    public function hayStockDisponible()
+    {
+        return $this->stock_disponible > 0 ? true : false;
+    }
+
+    public function cantidadPuedeSurtir($cantidadSolicitada)
+    {
+        return $this->stock_disponible >= $cantidadSolicitada ? $cantidadSolicitada : $this->stock_disponible;
+    }
+
+    public function getCadenaId()
+    {
+        return $this->cadena_id;
+    }
+
+    public function getSucursalId()
+    {
+        return $this->sucursal_id;
     }
 }

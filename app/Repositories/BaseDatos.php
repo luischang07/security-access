@@ -15,6 +15,7 @@ use App\Domain\Medicamento as med;
 use App\Models\Sucursal;
 use App\Domain\Sucursal as DomainSucursal;
 
+use App\Models\User;
 use App\Models\Paciente;
 use App\Domain\Paciente as DomainPaciente;
 
@@ -26,7 +27,11 @@ use App\Domain\LineaPedido as DomainLineaPedido;
 
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
 
+use App\Models\Notificacion;
+
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
 class BaseDatos
 {
 
@@ -44,10 +49,15 @@ class BaseDatos
 
   public function obtenerInventario($cadena_id, $sucursal_id, $medId)
   {
-    $data = Inventario::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->where('medicamento_id', $medId)->first();
+    $data = Inventario::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->where('medicamento_id', $medId)->lockForUpdate()->first();
+
+    if (!$data) {
+      return null;
+    }
 
     return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
   }
+  
   public function obtenerCadenas()
   {
     return CadenaFarmaceutica::select('cadena_id', 'nombre')->orderBy('nombre')->get();
@@ -109,24 +119,13 @@ class BaseDatos
       ->get(['id', 'nombre', 'unidad_medida', 'unidades']);
   }
 
-  public function actualizarInventario($cantidad, $med_id, $sucursal)
+  
+  public function actualizarInventario($ldi)
   {
-    $query = Inventario::where('cadena_id', $sucursal->getCadenaId())
-      ->where('sucursal_id', $sucursal->getSucursalId())
-      ->where('medicamento_id', $med_id);
-
-    $stockActual = $query->value('stock_disponible');
-
-    if (!is_null($stockActual) && $stockActual >= $cantidad) {
-
-      $query->decrement('stock_disponible', $cantidad);
-
-      info("Inventario descontado. Sucursal: {$sucursal->getSucursalId()}, Med: $med_id, Cant: $cantidad");
-
-      return false;
-    }
-
-    return true;
+    Inventario::where('cadena_id', $ldi->getCadenaId())
+      ->where('sucursal_id', $ldi->getSucursalId())
+      ->where('medicamento_id', $ldi->getMedicamentoId())
+      ->update(['stock_disponible' => $ldi->getStockDisponible()]);
   }
 
   public function actualizarInventarioCancelacion(LineaInventario $inventario)
@@ -140,8 +139,9 @@ class BaseDatos
   public function obtenerPaciente($paciente_id)
   {
     $paciente = Paciente::where('user_id', $paciente_id)->first();
-    $user = User::where('id', $paciente->user_id)->first();
-    return new DomainPaciente($paciente, $user);
+    $user = User::where('user_id', $paciente->user_id)->first();
+    $notificaciones = Notificacion::where('user_id', $paciente_id)->get();
+    return new DomainPaciente($paciente, $user, $notificaciones);
   }
 
   public function actualizarPaciente($paciente)
@@ -150,10 +150,20 @@ class BaseDatos
       ->update(['penalizacion' => $paciente->getPenalizacion()]);
   }
 
+  public function guardarNotificacion($notificacion, $folio_pedido, $user_id)
+  {
+    Notificacion::create([
+      'user_id' => $user_id,
+      'folio_pedido' => $folio_pedido,
+      'mensaje' => $notificacion->getMensaje(),
+      'fecha_hora' => $notificacion->getFechaEnvio(),
+      'leida' => $notificacion->esLeida(),
+    ]);
+  }
 
   public function guardarPedido(DomainPedido $pedido): Pedido
   {
-    return Pedido::create([
+    $pedidoModel = Pedido::create([
       'paciente_id' => $pedido->getPacienteId(),
       'cadena_id' => $pedido->getSucursal()->getCadenaId(),
       'sucursal_id' => $pedido->getSucursal()->getSucursalId(),
@@ -163,6 +173,8 @@ class BaseDatos
       'estatus' => $pedido->getEstatus(),
       'costo_total' => $pedido->getCostoTotal(),
     ]);
+
+    return $pedidoModel;
   }
 
   public function guardarLineaPedido(DomainLineaPedido $ldp, $folio_pedido): LineaPedido
@@ -206,14 +218,43 @@ class BaseDatos
 
     return $pedidos;
   }
-  public function obtenerPedidoPorId($pedido_id)
-  {
-    $pedidoModel = Pedido::where('folio_pedido', $pedido_id)->with("lineasPedidos")->first();
 
-    if (!$pedidoModel) {
+  public function getPedidoByFolio($folio)
+  {
+    $pedido = Pedido::where('folio_pedido', $folio)->with('lineasPedidos')->first();
+    if (!$pedido) {
       return null;
     }
+    $pedido->append('sucursal');
 
-    return DomainPedido::crear($pedidoModel);
+    return DomainPedido::crear($pedido);
+  }
+
+  public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)
+  {
+    $pedidos = Pedido::where('cadena_id', $cadena_id)
+      ->where('sucursal_id', $sucursal_id)
+      ->with('lineasPedidos')
+      ->get();
+
+    $pedidos = $pedidos->map(function ($pedido) {
+      return DomainPedido::crear($pedido);
+    });
+
+    return $pedidos;
+  }
+  public function iniciarTransaccion()
+  {
+    DB::beginTransaction();
+  }
+
+  public function commitTransaccion()
+  {
+    DB::commit();
+  }
+
+  public function cancelarTransaccion()
+  {
+    DB::rollBack();
   }
 }

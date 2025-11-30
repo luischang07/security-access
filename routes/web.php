@@ -33,6 +33,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   Route::prefix('patient')->name('patient.')->group(function () {
     Route::get('/dashboard', [PatientController::class, 'dashboard'])->name('dashboard');
     Route::get('/orders', [GestionPedidoController::class, 'getPedidos'])->name('orders');
+    Route::get('/orders/{folio}', [GestionPedidoController::class, 'getPedido'])->name('orders.show');
     Route::get('/orders/history', [PatientController::class, 'orderHistory'])->name('orders.history');
     Route::get('/profile', [PatientController::class, 'profile'])->name('profile');
     Route::put('/profile', [PatientController::class, 'updateProfile'])->name('profile.update');
@@ -66,6 +67,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   Route::prefix('pharmacy')->name('pharmacy.')->group(function () {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard'])->name('dashboard');
     Route::get('/orders', [PharmacyController::class, 'orders'])->name('orders');
+    Route::post('/orders', [CancelacionController::class, 'confirmarCancelacion'])->name('cancelarOrden');
     Route::get('/inventory', [PharmacyController::class, 'inventory'])->name('inventory');
     Route::get('/reports', [PharmacyController::class, 'reports'])->name('reports');
   });

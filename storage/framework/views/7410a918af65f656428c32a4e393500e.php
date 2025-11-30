@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html class="light" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html class="light" lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('pharmacy.orders.title') }} - Te Acerco Salud</title>
+    <title><?php echo e(__('pharmacy.orders.title')); ?> - Te Acerco Salud</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
@@ -58,14 +58,14 @@
     <div class="relative flex h-screen w-full flex-col overflow-hidden">
         <div class="layout-container flex h-full grow flex-col">
 
-            @include('components.topbar', ['user' => auth()->user(), 'type' => 'pharmacy'])
+            <?php echo $__env->make('components.topbar', ['user' => auth()->user(), 'type' => 'pharmacy'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <div class="flex flex-1 overflow-hidden">
-                @include('components.sidebar', [
+                <?php echo $__env->make('components.sidebar', [
                     'user' => auth()->user(),
                     'type' => 'pharmacy',
                     'currentRoute' => 'pharmacy.orders',
-                ])
+                ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
                 <div class="flex flex-1">
                     <!-- Order List Panel -->
@@ -73,7 +73,7 @@
                         class="w-full md:w-96 lg:w-[28rem] flex flex-col border-r border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark overflow-hidden">
                         <div class="p-6 border-b border-border-light dark:border-border-dark">
                             <h1 class="text-2xl font-bold text-body-text dark:text-body-text-dark mb-4">
-                                {{ __('pharmacy.orders.title') }}</h1>
+                                <?php echo e(__('pharmacy.orders.title')); ?></h1>
 
                             <!-- Search bar removed -->
 
@@ -82,84 +82,74 @@
 
                         <!-- Order Cards List -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-2">
-                            @forelse ($pedidos as $index => $pedido)
+                            <?php $__empty_1 = true; $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                 <div
-                                    onclick="selectOrder(this, {{ $index }})"
-                                    class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors {{ $index === 0 ? 'bg-background-light dark:bg-background-dark' : '' }}"
-                                    data-order-index="{{ $index }}"
-                                    data-folio="{{ $pedido->getFolio() }}">
+                                    onclick="selectOrder(this, <?php echo e($index); ?>)"
+                                    class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors <?php echo e($index === 0 ? 'bg-background-light dark:bg-background-dark' : ''); ?>"
+                                    data-order-index="<?php echo e($index); ?>"
+                                    data-folio="<?php echo e($pedido->getFolio()); ?>">
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <h3 class="font-bold text-body-text dark:text-body-text-dark">
-                                                Folio: {{ $pedido->getFolio() }}</h3>
+                                                Folio: <?php echo e($pedido->getFolio()); ?></h3>
                                             <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                {{ __('pharmacy.orders.order_number') }} #{{ $pedido->getFolio() }}</p>
+                                                <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
                                         </div>
                                         <span
                                             class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
                                     </div>
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
-                                            class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white">{{ $pedido->getEstatus() }}</span>
+                                            class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white"><?php echo e($pedido->getEstatus()); ?></span>
                                         <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                            {{ $pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A' }}</p>
+                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
                                     </div>
                                 </div>
-                            @empty
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">
-                                    {{ __('pharmacy.orders.no_orders') }}
+                                    <?php echo e(__('pharmacy.orders.no_orders')); ?>
+
                                 </div>
-                            @endforelse
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <!-- Order Detail Panel -->
                     <div class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
                         <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                            @if ($pedidos->isNotEmpty())
+                            <?php if($pedidos->isNotEmpty()): ?>
                                 <div id="order-details-container">
                                     <!-- Detalles del pedido se mostrarán aquí con JavaScript -->
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
-                                    {{ __('pharmacy.orders.no_orders') }}
+                                    <?php echo e(__('pharmacy.orders.no_orders')); ?>
+
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <!-- Footer Actions -->
-                        <div class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
-                            <div class="flex flex-col gap-4">
-                                <!-- Price Summary -->
-                                <div id="price-summary" class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                    <div class="flex justify-between items-center">
-                                        <span>Subtotal:</span>
-                                        <span id="subtotal" class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <span>Tarifa de servicio:</span>
-                                        <span id="serviceFee" class="font-medium text-body-text dark:text-body-text-dark">$1.00</span>
-                                    </div>
-                                    <div class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
-                                        <span class="font-bold">Total estimado:</span>
-                                        <span id="estimatedTotal" class="font-bold text-primary text-lg">$0.00</span>
-                                    </div>
-                                </div>
-
-                                <!-- Actions -->
-                                <div class="flex items-center gap-2 w-full">
+                        <div
+                            class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-body-text dark:text-body-text-dark">
+                                    <?php echo e(__('pharmacy.orders.update_status')); ?></p>
+                                <div class="flex items-center gap-2">
                                     <button
-                                        id="cancelOrderBtn"
-                                        class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
-                                        Cancelar
+                                        class="px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark">
+                                        <?php echo e(__('pharmacy.orders.acknowledge')); ?>
+
                                     </button>
                                     <button
-                                        id="startPreparingBtn"
-                                        class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
-                                        {{ __('pharmacy.orders.start_preparing') }}
+                                        class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">
+                                        <?php echo e(__('pharmacy.orders.start_preparing')); ?>
+
                                     </button>
                                 </div>
                             </div>
+
+                        <!-- Message input removed per request -->
                         </div>
                     </div>
                 </div>
@@ -167,7 +157,7 @@
         </div>
     </div>
 
-    @php
+    <?php
         $ordersData = [];
         foreach ($pedidos as $p) {
             $lineas_array = [];
@@ -192,14 +182,13 @@
                 'lineas' => $lineas_array,
             ];
         }
-    @endphp
+    ?>
 
     <script>
         // Data de los pedidos
-        const orders = @json($ordersData);
-        const csrfToken = '{{ csrf_token() }}';
+        const orders = <?php echo json_encode($ordersData, 15, 512) ?>;
+
         let currentOrderIndex = 0;
-        const serviceFeeFixed = 1.00;
 
         function selectOrder(element, index) {
             // Remover selección anterior
@@ -226,7 +215,7 @@
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
                             Información del Pedido</h2>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
                             <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Folio del Pedido</p>
                             <p class="font-medium text-body-text dark:text-body-text-dark">${order.folio}</p>
@@ -234,6 +223,10 @@
                         <div>
                             <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Fecha del Pedido</p>
                             <p class="font-medium text-body-text dark:text-body-text-dark">${order.fecha_pedido}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Estado</p>
+                            <p class="font-medium text-body-text dark:text-body-text-dark">${order.estatus}</p>
                         </div>
                     </div>
                 </div>
@@ -262,13 +255,10 @@
                             <tbody class="divide-y divide-border-light dark:divide-border-dark">
             `;
 
-            let subtotal = 0;
             if (order.lineas && order.lineas.length > 0) {
                 order.lineas.forEach(linea => {
                     if (linea.detalles && linea.detalles.length > 0) {
                         linea.detalles.forEach(detalle => {
-                            const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.cantidad) || 0);
-                            subtotal += lineTotal;
                             html += `
                                 <tr>
                                     <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
@@ -301,85 +291,19 @@
             `;
 
             container.innerHTML = html;
-
-            // Actualizar resumen de precios
-            updatePriceSummary(subtotal);
-        }
-
-        function updatePriceSummary(subtotal) {
-            const subtotalEl = document.getElementById('subtotal');
-            const serviceFeeEl = document.getElementById('serviceFee');
-            const estimatedEl = document.getElementById('estimatedTotal');
-            const priceSummary = document.getElementById('price-summary');
-            
-            if (subtotalEl && serviceFeeEl && estimatedEl) {
-                const total = subtotal + serviceFeeFixed;
-                subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-                serviceFeeEl.textContent = `$${serviceFeeFixed.toFixed(2)}`;
-                estimatedEl.textContent = `$${total.toFixed(2)}`;
-                
-                // Mostrar resumen si hay líneas
-                if (priceSummary) {
-                    priceSummary.classList.toggle('hidden', subtotal === 0);
-                }
-            }
-        }
-
-        async function cancelCurrentOrder() {
-            const order = orders[currentOrderIndex];
-            if (!order) {
-                alert('No hay pedido seleccionado.');
-                return;
-            }
-
-            if (!confirm(`¿Cancelar el pedido folio ${order.folio}? Esta acción no se puede deshacer.`)) {
-                return;
-            }
-
-            const btn = document.getElementById('cancelOrderBtn');
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/pharmacy/orders/cancel', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ folio: order.folio })
-                });
-
-                if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    throw new Error(err?.message || 'Error al cancelar el pedido');
-                }
-
-                alert('Pedido cancelado correctamente.');
-                location.reload();
-            } catch (e) {
-                alert('No se pudo cancelar el pedido: ' + e.message);
-                btn.disabled = false;
-            }
         }
 
         // Inicializar con el primer pedido
         document.addEventListener('DOMContentLoaded', function() {
             renderOrderDetails();
-            
             // Marcar el primer pedido como seleccionado
             const firstCard = document.querySelector('.order-card');
             if (firstCard) {
                 firstCard.classList.add('bg-background-light', 'dark:bg-background-dark');
-            }
-
-            // Agregar evento al botón cancelar
-            const cancelBtn = document.getElementById('cancelOrderBtn');
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', cancelCurrentOrder);
             }
         });
     </script>
 </body>
 
 </html>
+<?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/pharmacy/orders.blade.php ENDPATH**/ ?>

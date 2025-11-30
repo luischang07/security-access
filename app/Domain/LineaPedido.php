@@ -85,8 +85,11 @@ class LineaPedido
                 return $detalle !== $dlp;
             })
             ->values();
+    }
 
-        info("detallaaaaaaa", [$this->detalleLineaPedido->toArray()]);
+    public function limpiarDetalles(): void
+    {
+        $this->detalleLineaPedido = collect();
     }
 
     public function calcularSubtotal()
@@ -96,5 +99,14 @@ class LineaPedido
             $subtotal += $detalle->calcularSubtotalDetalle();
         }
         return $subtotal;
+    }
+
+    public function calcularCantidadSurtida()
+    {
+        $cantidadSurtida = 0;
+        foreach ($this->detalleLineaPedido as $detalle) {
+            $cantidadSurtida += $detalle->getCantidadSurtida();
+        }
+        return $cantidadSurtida;
     }
 }
