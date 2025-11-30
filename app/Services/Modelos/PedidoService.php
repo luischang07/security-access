@@ -131,6 +131,7 @@ class PedidoService
         return $this->dataBase->getPedidos($paciente_id);
     }
 
+     //Para el API
     public function obtenerPedidoPorFolio($folio)
     {
         return $this->dataBase->getPedidoByFolio($folio);
@@ -142,24 +143,14 @@ class PedidoService
         return $pedido;
     }
 
-<<<<<<< HEAD
     //Para el API
-    public function obtenerPedidoPorFolio($folio_pedido)
-    {
-        return $this->dataBase->getPedidoPorFolio($folio_pedido);
-    }
-
-=======
-    public function obtenerPedidosSucursal($cadena_id, $sucursal_id)
+   public function obtenerPedidosSucursal($cadena_id, $sucursal_id)
     {
         return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
     }
-<<<<<<< HEAD
->>>>>>> origin/arturo
-=======
+
     public function sumarMontoPenalizacion($monto, $pedido)
     {
         $pedido->setMontoPenalizacion($monto);
     }
->>>>>>> origin/franjmr1
 }
