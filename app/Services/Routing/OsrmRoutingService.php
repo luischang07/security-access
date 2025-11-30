@@ -14,19 +14,23 @@ class OsrmRoutingService implements RoutingServiceInterface
     $this->baseUrl = config('services.osrm.url', 'http://router.project-osrm.org/route/v1/driving');
   }
 
-  public function getTravelTime(float $originLat, float $originLng, float $destLat, float $destLng): ?int
+  public function getRouteDetails(float $originLat, float $originLng, float $destLat, float $destLng): ?array
   {
     try {
       // OSRM expects {longitude},{latitude}
       $coordinates = "{$originLng},{$originLat};{$destLng},{$destLat}";
-      $url = "{$this->baseUrl}/{$coordinates}";
+      // Request full overview to get the geometry
+      $url = "{$this->baseUrl}/{$coordinates}?overview=full";
 
       $response = Http::get($url);
 
       if ($response->successful()) {
         $data = $response->json();
-        if (isset($data['routes'][0]['duration'])) {
-          return (int) $data['routes'][0]['duration'];
+        if (isset($data['routes'][0])) {
+          return [
+            'duration' => (int) $data['routes'][0]['duration'],
+            'geometry' => $data['routes'][0]['geometry'] // Encoded polyline
+          ];
         }
       }
     } catch (\Exception $e) {

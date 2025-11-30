@@ -26,6 +26,7 @@ class Pedido extends Model
     'fecha_recoleccion',
     'estatus',
     'costo_total',
+    'route_geometry',
   ];
 
   protected $casts = [

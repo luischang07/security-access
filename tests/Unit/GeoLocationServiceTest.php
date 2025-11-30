@@ -59,9 +59,9 @@ class GeoLocationServiceTest extends TestCase
 
     // Mock RoutingService
     $mockRouting = $this->mock(\App\Services\Routing\RoutingServiceInterface::class);
-    $mockRouting->shouldReceive('getTravelTime')->andReturn(
-      500, // Branch 1 (closer time)
-      1000 // Branch 2 (further time)
+    $mockRouting->shouldReceive('getRouteDetails')->andReturn(
+      ['duration' => 500, 'geometry' => 'encoded_polyline_1'], // Branch 1
+      ['duration' => 1000, 'geometry' => 'encoded_polyline_2'] // Branch 2
     );
 
     // Mock DB query builder chain... this is complex to mock fully with Eloquent/QueryBuilder.
@@ -88,5 +88,6 @@ class GeoLocationServiceTest extends TestCase
 
     $this->assertEquals(1, $sorted->first()->id); // Branch 1 should be first (500s vs 1000s)
     $this->assertEquals(500, $sorted->first()->travel_time);
+    $this->assertEquals('encoded_polyline_1', $sorted->first()->route_geometry);
   }
 }

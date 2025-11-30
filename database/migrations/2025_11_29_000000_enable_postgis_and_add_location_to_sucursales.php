@@ -82,6 +82,7 @@ return new class extends Migration {
     DB::statement('UPDATE sucursales SET location = ST_GeomFromText(CONCAT("POINT(", longitud, " ", latitud, ")"), 4326) WHERE latitud IS NOT NULL AND longitud IS NOT NULL;');
 
     // Triggers to keep location in sync
+    DB::unprepared('DROP TRIGGER IF EXISTS sucursales_location_insert');
     DB::unprepared('
         CREATE TRIGGER sucursales_location_insert BEFORE INSERT ON sucursales FOR EACH ROW
         BEGIN
@@ -91,6 +92,7 @@ return new class extends Migration {
         END
       ');
 
+    DB::unprepared('DROP TRIGGER IF EXISTS sucursales_location_update');
     DB::unprepared('
         CREATE TRIGGER sucursales_location_update BEFORE UPDATE ON sucursales FOR EACH ROW
         BEGIN

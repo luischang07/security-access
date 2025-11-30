@@ -5,13 +5,13 @@ namespace App\Services\Routing;
 interface RoutingServiceInterface
 {
   /**
-   * Get the travel time between two points in seconds.
+   * Get the travel details between two points.
    *
    * @param float $originLat
    * @param float $originLng
    * @param float $destLat
    * @param float $destLng
-   * @return int|null Duration in seconds, or null if route not found.
+   * @return array|null Array with 'duration' (seconds) and 'geometry' (string), or null.
    */
-  public function getTravelTime(float $originLat, float $originLng, float $destLat, float $destLng): ?int;
+  public function getRouteDetails(float $originLat, float $originLng, float $destLat, float $destLng): ?array;
 }

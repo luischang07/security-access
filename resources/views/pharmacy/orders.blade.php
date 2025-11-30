@@ -225,6 +225,10 @@
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
                             Información del Pedido</h2>
+                        <a href="/pharmacy/orders/${order.folio}/route" class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-base">map</span>
+                            View Route
+                        </a>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>

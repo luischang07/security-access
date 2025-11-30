@@ -92,18 +92,23 @@ class GeoLocationService
     $candidates = $this->findNearestBranchesWithStock($medicamentoIds, $userLat, $userLng, $excludeBranchId, 10);
 
     $candidates->transform(function ($branch) use ($userLat, $userLng) {
-      $time = $this->routingService->getTravelTime($userLat, $userLng, $branch->latitud, $branch->longitud);
+      $details = $this->routingService->getRouteDetails($userLat, $userLng, $branch->latitud, $branch->longitud);
 
       // If OSRM fails or returns null, fallback to spatial distance (assuming 1m/s for sorting)
       // or just keep it at the end of the list.
-      // Here we store 'travel_time' in seconds.
-      $branch->travel_time = $time;
+      if ($details) {
+        $branch->travel_time = $details['duration'];
+        $branch->route_geometry = $details['geometry'];
+      } else {
+        $branch->travel_time = 999999;
+        $branch->route_geometry = null;
+      }
 
       return $branch;
     });
 
     $sorted = $candidates->sortBy(function ($branch) {
-      return $branch->travel_time ?? 999999;
+      return $branch->travel_time;
     });
 
     return $sorted->values();

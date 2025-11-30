@@ -156,6 +156,7 @@ class PedidoRepository
         'fecha_pedido' => now(),
         'estatus' => 'pendiente',
         'costo_total' => 0,
+        'route_geometry' => $data['route_geometry'] ?? null,
       ]);
 
       // Crear líneas de pedido

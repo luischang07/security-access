@@ -99,4 +99,23 @@ class PharmacyController extends Controller
   {
     return view('pharmacy.reports');
   }
+  /**
+   * Show the route for a specific order
+   */
+  public function showOrderRoute($folio)
+  {
+    $user = Auth::user();
+    $branchIds = $user->getBranchIds();
+
+    if (!$branchIds) {
+      abort(403, self::BRANCH_INFO_NOT_FOUND);
+    }
+
+    $pedido = \App\Models\Pedido::where('folio_pedido', $folio)
+      ->where('cadena_id', $branchIds['cadena_id'])
+      ->where('sucursal_id', $branchIds['sucursal_id'])
+      ->firstOrFail();
+
+    return view('pharmacy.order-route', compact('pedido'));
+  }
 }
