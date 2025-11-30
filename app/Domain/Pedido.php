@@ -251,7 +251,7 @@ class Pedido
 
     public function setEstatus()
     {
-        $this->estatus = "confirmado";
+        $this->estatus = "Confirmado";
     }
 
     public function cambiarEstatus($nuevoEstatus)

@@ -151,4 +151,14 @@ class PedidoService
     {
         $pedido->setMontoPenalizacion($monto);
     }
+
+    public function marcarPedidoComoSurtido(Pedido $pedido)
+    {
+        if($pedido->getEstatus() !== 'Confirmado'){
+            throw new \RuntimeException('Solo se pueden marcar como surtidos los pedidos con estatus Confirmado.');
+        }
+        $pedido->cambiarEstatus('Surtido');
+        
+        return $pedido;
+    }
 }

@@ -99,4 +99,17 @@ class PharmacyController extends Controller
   {
     return view('pharmacy.reports');
   }
+
+
+  public function marcarComoSurtido($pedidoId)
+  {
+    $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
+    if (!$pedido) {
+        return response()->json(['error' => 'Pedido no encontrado.'], 404);
+    }
+
+    $this->pedidoService->marcarPedidoComoSurtido($pedido);
+
+    return response()->json(['success' => true]);
+  }
 }
