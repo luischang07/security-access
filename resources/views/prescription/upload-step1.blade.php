@@ -103,6 +103,33 @@
                 </p>
               </div>
             </div>
+
+            {{-- Session Messages (Success/Error) --}}
+            @if(session('error'))
+              <div
+                class="mx-4 rounded-lg border border-red-400 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-500 dark:bg-red-900/30 dark:text-red-200">
+                <div class="flex gap-3">
+                  <span class="material-symbols-outlined text-xl mt-0.5">error</span>
+                  <div>
+                    <p class="font-semibold">{{ session('error') }}</p>
+                  </div>
+                </div>
+              </div>
+            @endif
+
+            @if(session('success'))
+              <div
+                class="mx-4 rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success dark:border-success/30 dark:bg-success/15">
+                <div class="flex gap-3">
+                  <span class="material-symbols-outlined text-xl mt-0.5">check_circle</span>
+                  <div>
+                    <p class="font-semibold">{{ session('success') }}</p>
+                  </div>
+                </div>
+              </div>
+            @endif
+
+            {{-- Form Validation Errors --}}
             @if($errors->any())
               <div
                 class="mx-4 rounded-lg border border-red-300/60 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/50 dark:bg-red-900/20 dark:text-red-100">
@@ -318,6 +345,49 @@
     medicationsRemove: "{{ route('prescription.medications.remove') }}"
   };
   window.initialMedications = @json(old('medications', []));
+
+  // Restore form data from session if available
+  window.formData = @json($formData ?? []);
+
+  // Wait for Alpine.js and DOM to be ready
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.formData && Object.keys(window.formData).length > 0) {
+      // Restore cadena selection
+      if (window.formData.cadena_id) {
+        const cadenaSelect = document.getElementById('cadena_id');
+        if (cadenaSelect) {
+          cadenaSelect.value = window.formData.cadena_id;
+          // Trigger Alpine.js update
+          cadenaSelect.dispatchEvent(new Event('change'));
+        }
+      }
+
+      // Restore sucursal selection after cadena is loaded
+      if (window.formData.sucursal_id) {
+        setTimeout(() => {
+          const sucursalSelect = document.getElementById('sucursal_id');
+          if (sucursalSelect) {
+            sucursalSelect.value = window.formData.sucursal_id;
+            sucursalSelect.dispatchEvent(new Event('change'));
+          }
+        }, 500);
+      }
+
+      // Restore cedula profesional
+      if (window.formData.cedula_profesional) {
+        const cedulaInput = document.getElementById('cedula_profesional');
+        if (cedulaInput) {
+          cedulaInput.value = window.formData.cedula_profesional;
+        }
+      }
+
+      // Restore medications list
+      if (window.formData.medications && window.formData.medications.length > 0) {
+        // The medications are already in the pedido, they'll be loaded by the existing JS
+        console.log('Medications restored from session:', window.formData.medications.length);
+      }
+    }
+  });
 </script>
 @vite(['resources/js/patient/prescription-upload.js'])
 

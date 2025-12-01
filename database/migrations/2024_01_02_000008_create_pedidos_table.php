@@ -17,8 +17,8 @@ return new class extends Migration {
       $table->string('sucursal_id', 50);
       $table->unsignedBigInteger('paciente_id');
       $table->string('cedula_profesional', 50);
-      $table->date('fecha_pedido');
-      $table->date('fecha_recoleccion')->nullable();
+      $table->dateTime('fecha_pedido');
+      $table->dateTime('fecha_recoleccion')->nullable();
       $table->string('estatus', 50)->check("estatus IN ('confirmado', 'surtido', 'completado', 'cancelado')");
       $table->decimal('costo_total', 10, 2);
 

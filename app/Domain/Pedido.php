@@ -26,7 +26,7 @@ class Pedido
 
   private Collection $ruta;
   private $routeGeometry = null;
-  private float $montoPenalizacion;
+  private float $montoPenalizacion = 0;
 
 
   private function __construct()
@@ -327,7 +327,7 @@ class Pedido
         $lineaModel->medicamento->nombre,
         $lineaModel->medicamento->descripcion,
         $lineaModel->medicamento->unidad_medida,
-        (int) $lineaModel->medicamento->unidades
+        $lineaModel->medicamento->unidades
       );
       $lineaPedido = new LineaPedido($lineaModel->medicamento_id, $lineaModel->cantidad, $medicamento);
       $lineasPedidoCollection->push($lineaPedido);
@@ -343,6 +343,9 @@ class Pedido
       }
     }
     $pedido->lineasPedido = $lineasPedidoCollection;
+    if ($pedidoModel->penalizacion) {
+      $pedido->montoPenalizacion = $pedidoModel->penalizacion->monto;
+    }
 
     return $pedido;
   }

@@ -90,8 +90,8 @@ class PedidoService
       foreach ($dlp as $detalle) {
         /** @var DetalleLineaPedido $detalle */
         $inventario = $this->dataBase->getInventario(
-          $pedido->getSucursal()->getCadenaId(),
-          $pedido->getSucursal()->getSucursalId(),
+          $detalle->getSucursal()->getCadenaId(),
+          $detalle->getSucursal()->getSucursalId(),
           $detalle->getMedicamentoId()
         );
 
@@ -201,6 +201,25 @@ class PedidoService
       $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
       $paciente->agregarNotificacion($notificacion);
       $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getfolio());
+      $this->dataBase->commitTransaccion();
+    } catch (\Exception $e) {
+      $this->dataBase->cancelarTransaccion();
+      throw $e;
+    }
+
+    return $pedido;
+  }
+
+  public function deshacerSurtido(Pedido $pedido)
+  {
+    if (strtolower($pedido->getEstatus()) !== ModelsPedido::ESTATUS_SURTIDO) {
+      throw new \RuntimeException('Solo se puede deshacer el estado de pedidos que están surtidos.');
+    }
+
+    $this->dataBase->iniciarTransaccion();
+    try {
+      $pedido->cambiarEstatus(ModelsPedido::ESTATUS_CONFIRMADO);
+      $this->dataBase->guardarCambioEstatusPedido($pedido);
       $this->dataBase->commitTransaccion();
     } catch (\Exception $e) {
       $this->dataBase->cancelarTransaccion();

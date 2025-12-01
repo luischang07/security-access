@@ -316,8 +316,18 @@
                                 <span class="material-symbols-outlined">arrow_back</span>
                                 <span><?php echo e(__('prescription.upload_step2.edit_prescription')); ?></span>
                             </a>
+                            <?php
+                                $lineasConDetalles = collect($pedido->getLineasPedidos() ?? [])->filter(function ($linea) {
+                                    $detalles = method_exists($linea, 'getDetalleLineaPedido')
+                                        ? $linea->getDetalleLineaPedido()
+                                        : collect();
+                                    return $detalles->count() > 0;
+                                });
+                                $hasMedications = $lineasConDetalles->count() > 0;
+                            ?>
                             <button type="submit"
-                                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
+                                <?php if(!$hasMedications): ?> disabled <?php endif; ?>
+                                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition <?php echo e(!$hasMedications ? 'opacity-50 cursor-not-allowed' : ''); ?>">
                                 <span><?php echo e(__('prescription.upload_step2.confirm_order')); ?></span>
                                 <span class="material-symbols-outlined">check_circle</span>
                             </button>

@@ -61,19 +61,19 @@
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark">
-    <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    <div class="flex h-screen w-full flex-col overflow-hidden">
         <div class="layout-container flex h-full grow flex-col">
 
             <?php echo $__env->make('components.topbar', ['user' => auth()->user(), 'type' => 'pharmacy'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-            <div class="flex flex-1">
+            <div class="flex flex-1 overflow-hidden">
                 <?php echo $__env->make('components.sidebar', [
                     'user' => auth()->user(),
                     'type' => 'pharmacy',
                     'currentRoute' => 'pharmacy.dashboard',
                 ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-                <main class="flex-1 p-4 sm:p-6 lg:p-10">
+                <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 bg-background-light dark:bg-background-dark">
                     <div class="mx-auto max-w-7xl space-y-8">
 
                         <!-- Page Header -->

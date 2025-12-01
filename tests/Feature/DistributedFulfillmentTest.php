@@ -122,7 +122,7 @@ class DistributedFulfillmentTest extends TestCase
 
       // 2. Test GeoLocationService directly
       $service = new GeoLocationService();
-      $nearest = $service->findNearestBranchesWithStock(
+      $nearest = $service->buscarSucursalesCercanasConStock(
         [$med->id],
         0,
         0, // User location (Branch A)

@@ -51,7 +51,7 @@ class GeoLocationService
    * @param float $maxRadiusKm Maximum search radius in kilometers (default: 50km).
    * @return Collection<Sucursal>
    */
-  public function findNearestBranchesWithStock(
+  public function buscarSucursalesCercanasConStock(
     array $medicamentoIds,
     float $userLat,
     float $userLng,
@@ -84,9 +84,9 @@ class GeoLocationService
         'sucursales.*',
         DB::raw("$distanceSql as distancia")
       )
-      ->having('distancia', '<=', $maxDistanceMeters) // Filter by radius
+      ->having('distancia', '<=', $maxDistanceMeters)
       ->orderBy('distancia', 'ASC')
-      ->distinct() // MySQL distinct
+      ->distinct()
       ->setBindings([$userLng, $userLat], 'select')
       ->get();
 
@@ -98,7 +98,7 @@ class GeoLocationService
   /**
    * Find nearest branches using the Hybrid Algorithm (Prioritize Travel Time).
    * 
-   * 1. Filter candidates by spatial distance radius (e.g. 50km) to limit API calls.
+   * 1. Filter candidates by spatial distance radius (e.g. 10km) to limit API calls.
    * 2. Calculate actual travel time using OSRM.
    * 3. Sort by travel time.
    * 
@@ -107,12 +107,12 @@ class GeoLocationService
    * @param float $userLng User's longitude (or primary branch longitude).
    * @param string|null $excludeCadenaId Cadena ID of the branch to exclude (the primary branch).
    * @param string|null $excludeSucursalId Sucursal ID of the branch to exclude (the primary branch).
-   * @param float $maxRadiusKm Maximum search radius in kilometers (default: 50km).
+   * @param float $maxRadiusKm Maximum search radius in kilometers (default: 10km).
    * @return Collection<array{sucursal: Sucursal, travel_time: float, route_geometry: ?string}>
    */
-  public function findNearestBranchesHybrid(array $medicamentoIds, float $userLat, float $userLng, ?string $excludeCadenaId = null, ?string $excludeSucursalId = null, float $maxRadiusKm = 10.0): Collection
+  public function buscarSucursalesPorTiempoDeViaje(array $medicamentoIds, float $userLat, float $userLng, ?string $excludeCadenaId = null, ?string $excludeSucursalId = null, float $maxRadiusKm = 10.0): Collection
   {
-    $candidates = $this->findNearestBranchesWithStock($medicamentoIds, $userLat, $userLng, $excludeCadenaId, $excludeSucursalId, $maxRadiusKm);
+    $candidates = $this->buscarSucursalesCercanasConStock($medicamentoIds, $userLat, $userLng, $excludeCadenaId, $excludeSucursalId, $maxRadiusKm);
 
     $enrichedCandidates = $candidates->map(function (Sucursal $sucursal) use ($userLat, $userLng) {
       $details = $this->routingService->getRouteDetails($userLat, $userLng, $sucursal->getLatitud(), $sucursal->getLongitud());

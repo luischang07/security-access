@@ -55,6 +55,13 @@
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark">
+
+    <?php
+        $empleado = auth()->user()->empleado;
+        $currentCadenaId = $empleado->cadena_id;
+        $currentSucursalId = $empleado->sucursal_id;
+    ?>
+
     <div class="relative flex h-screen w-full flex-col overflow-hidden">
         <div class="layout-container flex h-full grow flex-col">
 
@@ -68,7 +75,6 @@
                 ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
                 <div class="flex flex-1">
-                    <!-- Order List Panel -->
                     <div
                         class="w-full md:w-96 lg:w-[28rem] flex flex-col border-r border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark overflow-hidden">
                         <div class="p-6 border-b border-border-light dark:border-border-dark">
@@ -76,22 +82,28 @@
                                 <?php echo e(__('pharmacy.orders.title')); ?></h1>
 
                             <div class="space-y-2">
-                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark" for="statusFilter">Filtrar por estatus</label>
-                                <select id="statusFilter" class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
-                                    <option value="all">Todos</option>
-                                    <option value="confirmado">Confirmados</option>
-                                    <option value="surtido">Surtidos</option>
-                                    <option value="cancelado">Cancelados</option>
+                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark"
+                                    for="statusFilter"><?php echo e(__('pharmacy.orders.filter_by_status')); ?></label>
+                                <select id="statusFilter"
+                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
+                                    <option value="all"><?php echo e(__('pharmacy.orders.all_orders')); ?></option>
+                                    <option value="confirmado"><?php echo e(__('pharmacy.orders.status.confirmed')); ?></option>
+                                    <option value="surtido"><?php echo e(__('pharmacy.orders.status.ready')); ?></option>
+                                    <option value="cancelado"><?php echo e(__('pharmacy.orders.status.cancelled')); ?></option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Order Cards List -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-4" id="orders-list">
                             <?php $__empty_1 = true; $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <?php $estatusLower = strtolower($pedido->getEstatus()); ?>
-                                <div
-                                    onclick="selectOrder(this, <?php echo e($index); ?>)"
+                                <?php
+                                    $estatusLower = strtolower($pedido->getEstatus());
+                                    $sucursalPedido = $pedido->getSucursal();
+                                    $esHostVisual =
+                                        $sucursalPedido->getCadenaId() == $currentCadenaId &&
+                                        $sucursalPedido->getSucursalId() == $currentSucursalId;
+                                ?>
+                                <div onclick="selectOrder(this, <?php echo e($index); ?>)"
                                     class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors <?php echo e($index === 0 ? 'bg-background-light dark:bg-background-dark' : ''); ?>"
                                     data-order-index="<?php echo e($index); ?>"
                                     data-folio="<?php echo e($pedido->getFolio()); ?>"
@@ -103,8 +115,20 @@
                                             <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
                                                 <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
                                         </div>
-                                        <span
-                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
+
+                                        <?php if($esHostVisual): ?>
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                <?php echo e(__('pharmacy.orders.host_branch')); ?>
+
+                                            </span>
+                                        <?php else: ?>
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
+                                                <?php echo e(__('pharmacy.orders.participant_branch')); ?>
+
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
@@ -117,7 +141,9 @@
 
                                         </span>
                                         <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
+                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?>
+
+                                        </p>
                                     </div>
                                 </div>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
@@ -129,53 +155,84 @@
                         </div>
                     </div>
 
-                    <!-- Order Detail Panel -->
                     <div class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
                         <div class="flex-1 overflow-y-auto p-6 space-y-6">
                             <?php if($pedidos->isNotEmpty()): ?>
                                 <div id="order-details-container">
-                                    <!-- Detalles del pedido se mostrarán aquí con JavaScript -->
                                 </div>
                             <?php else: ?>
-                                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
+                                <div
+                                    class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
                                     <?php echo e(__('pharmacy.orders.no_orders')); ?>
 
                                 </div>
                             <?php endif; ?>
                         </div>
 
-                        <!-- Footer Actions -->
-                        <div class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                        <div
+                            class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                             <div class="flex flex-col gap-4">
-                                <!-- Price Summary -->
-                                <div id="price-summary" class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                <div id="price-summary"
+                                    class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
                                     <div class="flex justify-between items-center">
-                                        <span>Subtotal:</span>
-                                        <span id="subtotal" class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
+                                        <span><?php echo e(__('pharmacy.orders.subtotal')); ?>:</span>
+                                        <span id="subtotal"
+                                            class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span>Tarifa de servicio:</span>
-                                        <span id="serviceFee" class="font-medium text-body-text dark:text-body-text-dark">$1.00</span>
+                                    <div id="penalty-row" class="flex justify-between items-center hidden">
+                                        <span><?php echo e(__('pharmacy.orders.penalty')); ?></span>
+                                        <span id="serviceFee" class="font-medium text-danger">$0.00</span>
                                     </div>
-                                    <div class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
-                                        <span class="font-bold">Total estimado:</span>
+                                    <div
+                                        class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
+                                        <span class="font-bold"><?php echo e(__('pharmacy.orders.estimated_total')); ?>:</span>
                                         <span id="estimatedTotal" class="font-bold text-primary text-lg">$0.00</span>
                                     </div>
                                 </div>
 
-                                <!-- Actions -->
-                                <div class="flex items-center gap-2 w-full">
-                                    <button
-                                        id="cancelOrderBtn"
-                                        class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        id="startPreparingBtn"
-                                        class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
-                                        Marcar como surtido
-                                    </button>
-                                </div>
+                                <?php
+                                    $empleado = auth()->user()->empleado;
+                                    $currentCadenaId = $empleado->cadena_id;
+                                    $currentSucursalId = $empleado->sucursal_id;
+                                    // Check if current user is from host branch (for the currently displayed order)
+                                    $esHost = false;
+                                    if ($pedidos->isNotEmpty()) {
+                                        $primerPedido = $pedidos->first();
+                                        $sucursalPedido = $primerPedido->getSucursal();
+                                        $esHost = $sucursalPedido->getCadenaId() == $currentCadenaId && 
+                                                  $sucursalPedido->getSucursalId() == $currentSucursalId;
+                                    }
+                                ?>
+                                <?php if($esHost): ?>
+                                    <div id="order-actions-container" class="flex items-center gap-2 w-full">
+                                        <button id="cancelOrderBtn"
+                                            class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
+                                            <?php echo e(__('pharmacy.orders.cancel_button')); ?>
+
+                                        </button>
+                                        <button id="startPreparingBtn"
+                                            class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
+                                            <?php echo e(__('pharmacy.orders.mark_as_ready')); ?>
+
+                                        </button>
+                                    </div>
+                                <?php else: ?>
+                                    <div id="order-actions-container" class="hidden flex items-center gap-2 w-full">
+                                        <button id="cancelOrderBtn"
+                                            class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
+                                            <?php echo e(__('pharmacy.orders.cancel_button')); ?>
+
+                                        </button>
+                                        <button id="startPreparingBtn"
+                                            class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
+                                            <?php echo e(__('pharmacy.orders.mark_as_ready')); ?>
+
+                                        </button>
+                                    </div>
+                                    <div id="participant-message" class="text-center text-sm text-neutral-text dark:text-neutral-text-dark">
+                                        <p class="italic"><?php echo e(__('pharmacy.orders.participant_message')); ?></p>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -184,55 +241,170 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmación de Cancelación -->
+    <div id="cancelOrderModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" aria-hidden="true"></div>
+
+        <!-- Modal Container -->
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative transform overflow-hidden rounded-2xl bg-card-light dark:bg-card-dark shadow-2xl transition-all w-full max-w-md">
+                <!-- Modal Header -->
+                <div class="bg-danger/10 dark:bg-danger/20 px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-danger/20">
+                            <span class="material-symbols-outlined text-danger text-2xl">warning</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark" id="modal-title">
+                                <?php echo e(__('pharmacy.orders.cancel_modal.title')); ?>
+
+                            </h3>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
+                                <?php echo e(__('pharmacy.orders.cancel_modal.subtitle')); ?>
+
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-4">
+                    <p class="text-sm text-neutral-text dark:text-neutral-text-dark mb-3">
+                        <?php echo e(__('pharmacy.orders.cancel_modal.question')); ?> <span id="modalOrderFolio" class="font-bold text-body-text dark:text-body-text-dark"></span>?
+                    </p>
+                    <div class="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning dark:border-warning/30 dark:bg-warning/15">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-base mt-0.5 flex-shrink-0">info</span>
+                            <div>
+                                <p class="font-semibold"><?php echo e(__('pharmacy.orders.cancel_modal.important')); ?>:</p>
+                                <ul class="text-xs mt-1 space-y-1 list-disc list-inside">
+                                    <li><?php echo e(__('pharmacy.orders.cancel_modal.inventory_return')); ?></li>
+                                    <li><?php echo e(__('pharmacy.orders.cancel_modal.penalty_applied')); ?></li>
+                                    <li><?php echo e(__('pharmacy.orders.cancel_modal.patient_notified')); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="bg-background-light dark:bg-background-dark px-6 py-4 flex gap-3 justify-end">
+                    <button id="cancelModalBtn" type="button"
+                        class="px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-neutral-text dark:text-neutral-text-dark text-sm font-medium hover:bg-card-light dark:hover:bg-card-dark transition">
+                        <?php echo e(__('pharmacy.orders.cancel_modal.cancel_btn')); ?>
+
+                    </button>
+                    <button id="confirmCancelBtn" type="button"
+                        class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">cancel</span>
+                        <?php echo e(__('pharmacy.orders.cancel_modal.confirm_btn')); ?>
+
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php
         $ordersData = [];
+
         foreach ($pedidos as $p) {
+            $sucursalPedido = $p->getSucursal();
+            $esHost =
+                $sucursalPedido->getCadenaId() == $currentCadenaId &&
+                $sucursalPedido->getSucursalId() == $currentSucursalId;
+
             $lineas_array = [];
             foreach ($p->getLineasPedidos() as $linea) {
                 $detalles_array = [];
                 foreach ($linea->getDetalles() as $detalle) {
-                    $detalles_array[] = [
-                        'cantidad' => $detalle->getCantidadSurtida(),
-                        'precio' => $detalle->getPrecio(),
-                        'sucursal' => $detalle->getSucursal()->getNombre(),
+                    if ($esHost) {
+                        $detalles_array[] = [
+                            'cantidad' => $detalle->getCantidadSurtida(),
+                            'precio' => $detalle->getPrecio(),
+                            'sucursal' => $detalle->getSucursal()->getNombre(),
+                            'sucursal_id' => $detalle->getSucursal()->getSucursalId(),
+                        ];
+                        continue;
+                    }
+
+                    $sucursalDetalle = $detalle->getSucursal();
+                    if (
+                        $sucursalDetalle->getCadenaId() == $currentCadenaId &&
+                        $sucursalDetalle->getSucursalId() == $currentSucursalId
+                    ) {
+                        $detalles_array[] = [
+                            'cantidad' => $detalle->getCantidadSurtida(),
+                            'precio' => $detalle->getPrecio(),
+                            'sucursal' => $sucursalDetalle->getNombre(),
+                            'sucursal_id' => $sucursalDetalle->getSucursalId(),
+                        ];
+                    }
+                }
+
+                if (!empty($detalles_array)) {
+                    $lineas_array[] = [
+                        'medicamento' => $linea->getMedicamento()->getNombre(),
+                        'detalles' => $detalles_array,
                     ];
                 }
-                $lineas_array[] = [
-                    'medicamento' => $linea->getMedicamento()->getNombre(),
-                    'detalles' => $detalles_array,
-                ];
             }
+
             $ordersData[] = [
                 'folio' => $p->getFolio(),
+                'sucursal_host_id' => $sucursalPedido->getSucursalId(),
                 'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
                 'estatus' => $p->getEstatus(),
                 'lineas' => $lineas_array,
+                'penalizacion' => $p->getMontoPenalizacion() ? (float) $p->getMontoPenalizacion() : 0,
+                'es_host' => $esHost,
             ];
         }
     ?>
 
     <script>
-        // Data de los pedidos
+        const translations = {
+            success: "<?php echo e(__('common.success')); ?>",
+            error_canceling: "Error al cancelar",
+            order_info: "<?php echo e(__('pharmacy.orders.order_info')); ?>",
+            view_route: "<?php echo e(__('pharmacy.orders.view_route')); ?>",
+            order_folio: "<?php echo e(__('pharmacy.orders.order_folio')); ?>",
+            order_date: "<?php echo e(__('pharmacy.orders.order_date')); ?>",
+            prescription_details: "<?php echo e(__('pharmacy.orders.prescription_details')); ?>",
+            medication: "<?php echo e(__('pharmacy.orders.medication')); ?>",
+            quantity: "<?php echo e(__('pharmacy.orders.quantity')); ?>",
+            unit_price: "<?php echo e(__('pharmacy.orders.unit_price')); ?>",
+            from_branch: "<?php echo e(__('pharmacy.orders.from_branch')); ?>",
+            no_medications: "<?php echo e(__('pharmacy.orders.no_medications')); ?>",
+            canceling: "<?php echo e(__('pharmacy.orders.canceling')); ?>",
+            cancel_button: "<?php echo e(__('pharmacy.orders.cancel_button')); ?>",
+            mark_as_ready: "<?php echo e(__('pharmacy.orders.mark_as_ready')); ?>",
+            marked_as_ready: "<?php echo e(__('pharmacy.orders.marked_as_ready')); ?>",
+            undo: "<?php echo e(__('pharmacy.orders.undo')); ?>",
+            undo_success: "<?php echo e(__('pharmacy.orders.undo_success')); ?>"
+        };
+
         const orders = <?php echo json_encode($ordersData, 15, 512) ?>;
         const csrfToken = '<?php echo e(csrf_token()); ?>';
+        const currentSucursalId = "<?php echo e($currentSucursalId); ?>";
         let currentOrderIndex = 0;
-        const serviceFeeFixed = 1.00;
-        let errorMessage = null; // Variable para almacenar mensaje de error
-        let successMessage = null; // Variable para almacenar mensaje de éxito
+        let errorMessage = null; 
+        let successMessage = null;
+        let undoTimer = null;
+        let undoTimeRemaining = 0; 
 
         function selectOrder(element, index) {
-            // Remover selección anterior
             document.querySelectorAll('.order-card').forEach(card => {
                 card.classList.remove('bg-background-light', 'dark:bg-background-dark');
                 card.classList.add('border-transparent');
             });
 
-            // Marcar el nuevo seleccionado
             element.classList.add('bg-background-light', 'dark:bg-background-dark');
-            
+
             currentOrderIndex = index;
-            errorMessage = null; // Limpiar error anterior
-            successMessage = null; // Limpiar mensaje de éxito anterior
+            errorMessage = null; 
+            successMessage = null; 
             renderOrderDetails();
         }
 
@@ -244,14 +416,24 @@
 
             // Mostrar alert de éxito si existe
             if (successMessage) {
+                const showUndoButton = undoTimeRemaining > 0;
                 html += `
                     <div class="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success dark:border-success/30 dark:bg-success/15 mb-4">
-                        <div class="flex gap-3">
-                            <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">check_circle</span>
-                            <div>
-                                <p class="font-semibold">Éxito</p>
-                                <p class="text-xs mt-1">${successMessage}</p>
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex gap-3 flex-1">
+                                <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">check_circle</span>
+                                <div>
+                                    <p class="font-semibold">${translations.success}</p>
+                                    <p class="text-xs mt-1">${successMessage}</p>
+                                </div>
                             </div>
+                            ${showUndoButton ? `
+                                <button id="undoButton" 
+                                    class="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-success font-medium transition flex items-center gap-2 border border-success/30">
+                                    <span class="material-symbols-outlined text-base">undo</span>
+                                    ${translations.undo} (<span id="undoCountdown">${undoTimeRemaining}</span>s)
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -264,7 +446,7 @@
                         <div class="flex gap-3">
                             <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">error</span>
                             <div>
-                                <p class="font-semibold">Error al cancelar</p>
+                                <p class="font-semibold">${translations.error_canceling}</p>
                                 <p class="text-xs mt-1">${errorMessage}</p>
                             </div>
                         </div>
@@ -273,33 +455,33 @@
             }
 
             html += `
-                <!-- Patient Info Card -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                            Información del Pedido</h2>
-                        <a href="/pharmacy/orders/${order.folio}/route" class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition flex items-center gap-2">
-                            <span class="material-symbols-outlined text-base">map</span>
-                            View Route
-                        </a>
+                            ${translations.order_info}</h2>
+                        ${order.es_host ? `
+                            <a href="/pharmacy/orders/${order.folio}/route" class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition flex items-center gap-2">
+                                <span class="material-symbols-outlined text-base">map</span>
+                                ${translations.view_route}
+                            </a>
+                        ` : ''}
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Folio del Pedido</p>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">${translations.order_folio}</p>
                             <p class="font-medium text-body-text dark:text-body-text-dark">${order.folio}</p>
                         </div>
                         <div>
-                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Fecha del Pedido</p>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">${translations.order_date}</p>
                             <p class="font-medium text-body-text dark:text-body-text-dark">${order.fecha_pedido}</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Prescription Details -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                            Detalles de la Receta</h2>
+                            ${translations.prescription_details}</h2>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -307,13 +489,13 @@
                             <thead>
                                 <tr>
                                     <th class="py-3.5 px-6 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                        Medicamento</th>
+                                        ${translations.medication}</th>
                                     <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                        Cantidad</th>
+                                        ${translations.quantity}</th>
                                     <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                        Precio Unitario</th>
+                                        ${translations.unit_price}</th>
                                     <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                        Sucursal</th>
+                                        ${translations.from_branch}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border-light dark:divide-border-dark">
@@ -324,20 +506,27 @@
                 order.lineas.forEach(linea => {
                     if (linea.detalles && linea.detalles.length > 0) {
                         linea.detalles.forEach(detalle => {
-                            const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.cantidad) || 0);
-                            subtotal += lineTotal;
-                            html += `
-                                <tr>
-                                    <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                        ${linea.medicamento}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        ${detalle.cantidad}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        $${parseFloat(detalle.precio).toFixed(2)}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        ${detalle.sucursal}</td>
-                                </tr>
-                            `;
+
+                            const soyHost = order.es_host;
+                            const esMiDetalle = detalle.sucursal_id == currentSucursalId;
+
+                            if (soyHost || esMiDetalle) {
+                                const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.
+                                    cantidad) || 0);
+                                subtotal += lineTotal;
+                                html += `
+                                    <tr>
+                                        <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
+                                            ${linea.medicamento}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            ${detalle.cantidad}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            $${parseFloat(detalle.precio).toFixed(2)}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            ${detalle.sucursal}</td>
+                                    </tr>
+                                `;
+                            }
                         });
                     }
                 });
@@ -345,7 +534,7 @@
                 html += `
                     <tr>
                         <td colspan="4" class="whitespace-nowrap py-4 px-6 text-sm text-center text-neutral-text dark:text-neutral-text-dark">
-                            No hay medicamentos en este pedido</td>
+                            ${translations.no_medications}</td>
                     </tr>
                 `;
             }
@@ -359,33 +548,41 @@
 
             container.innerHTML = html;
 
-            // Actualizar resumen de precios
-            updatePriceSummary(subtotal);
+            const penalizacion = order.penalizacion || 0;
+            updatePriceSummary(subtotal, penalizacion);
         }
 
-        function updatePriceSummary(subtotal) {
+        function updatePriceSummary(subtotal, penalizacion) {
             const subtotalEl = document.getElementById('subtotal');
             const serviceFeeEl = document.getElementById('serviceFee');
+            const penaltyRowEl = document.getElementById('penalty-row');
             const estimatedEl = document.getElementById('estimatedTotal');
             const priceSummary = document.getElementById('price-summary');
             const cancelBtn = document.getElementById('cancelOrderBtn');
             const startBtn = document.getElementById('startPreparingBtn');
             const order = orders[currentOrderIndex];
             const status = order?.estatus ? order.estatus.toLowerCase() : '';
-            
+
             if (subtotalEl && serviceFeeEl && estimatedEl) {
-                const total = subtotal + serviceFeeFixed;
+                const total = subtotal + penalizacion;
                 subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-                serviceFeeEl.textContent = `$${serviceFeeFixed.toFixed(2)}`;
                 estimatedEl.textContent = `$${total.toFixed(2)}`;
-                
-                // Mostrar resumen si hay líneas
+                serviceFeeEl.textContent = `$${penalizacion.toFixed(2)}`;
+
                 if (priceSummary) {
                     priceSummary.classList.toggle('hidden', subtotal === 0);
                 }
+                if (penaltyRowEl) {
+                    if (penalizacion > 0) {
+                        penaltyRowEl.classList.remove('hidden');
+                        penaltyRowEl.classList.add('flex');
+                    } else {
+                        penaltyRowEl.classList.add('hidden');
+                        penaltyRowEl.classList.remove('flex');
+                    }
+                }
             }
 
-            // Habilitar/deshabilitar botones según estatus
             if (cancelBtn && startBtn) {
                 let cancelDisabled = false;
                 let startDisabled = false;
@@ -411,6 +608,22 @@
                 startBtn.disabled = startDisabled;
                 startBtn.classList.toggle('opacity-50', startDisabled);
                 startBtn.classList.toggle('cursor-not-allowed', startDisabled);
+            }
+
+            // Show/hide buttons container and participant message based on es_host
+            const actionsContainer = document.getElementById('order-actions-container');
+            const participantMessage = document.getElementById('participant-message');
+            
+            if (actionsContainer && participantMessage) {
+                if (order.es_host) {
+                    // Show buttons, hide message
+                    actionsContainer.classList.remove('hidden');
+                    participantMessage.classList.add('hidden');
+                } else {
+                    // Hide buttons, show message
+                    actionsContainer.classList.add('hidden');
+                    participantMessage.classList.remove('hidden');
+                }
             }
         }
 
@@ -440,8 +653,36 @@
             } else {
                 const container = document.getElementById('order-details-container');
                 if (container) {
-                    container.innerHTML = '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
+                    container.innerHTML =
+                        '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
                 }
+            }
+        }
+
+        function showCancelModal() {
+            const order = orders[currentOrderIndex];
+            if (!order) return;
+
+            const modal = document.getElementById('cancelOrderModal');
+            const folioSpan = document.getElementById('modalOrderFolio');
+            
+            if (folioSpan) {
+                folioSpan.textContent = order.folio;
+            }
+            
+            if (modal) {
+                modal.classList.remove('hidden');
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function hideCancelModal() {
+            const modal = document.getElementById('cancelOrderModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                // Restore body scroll
+                document.body.style.overflow = '';
             }
         }
 
@@ -451,8 +692,12 @@
                 return;
             }
 
+            // Hide modal
+            hideCancelModal();
+
             const btn = document.getElementById('cancelOrderBtn');
             btn.disabled = true;
+            btn.textContent = translations.canceling;
 
             try {
                 const res = await fetch(`/pharmacy/orders/cancel/${order.folio}`, {
@@ -465,12 +710,12 @@
                 });
 
                 const data = await res.json().catch(() => null);
-                console.log(data);
 
                 if (!res.ok) {
                     errorMessage = data?.message || 'Error al cancelar el pedido';
-                    renderOrderDetails(); // Re-render para mostrar el error
+                    renderOrderDetails();
                     btn.disabled = false;
+                    btn.textContent = translations.cancel_button;
                     return;
                 }
 
@@ -479,22 +724,27 @@
                 errorMessage = null;
                 successMessage = data.message;
                 renderOrderDetails();
-                updatePriceSummary(0);
+                updatePriceSummary(0, 0);
 
                 // Actualizar el badge del card en la lista
                 const orderCard = document.querySelector(`[data-folio="${order.folio}"]`);
                 if (orderCard) {
-                    const badge = orderCard.querySelector('.inline-flex');
-                    if (badge) {
-                        badge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-danger text-white';
-                        badge.textContent = 'cancelado';
+                    // Find the second .inline-flex which is the status badge (first one is host/participant badge)
+                    const badges = orderCard.querySelectorAll('.inline-flex');
+                    if (badges.length >= 2) {
+                        const statusBadge = badges[1]; // The status badge is the second one
+                        statusBadge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-danger text-white';
+                        statusBadge.textContent = 'cancelado';
                     }
                 }
+
+                btn.textContent = translations.cancel_button;
 
             } catch (e) {
                 errorMessage = 'Error en la solicitud: ' + e.message;
                 renderOrderDetails();
                 btn.disabled = false;
+                btn.textContent = translations.cancel_button;
             }
         }
 
@@ -521,30 +771,153 @@
                     throw new Error(err?.error || err?.message || 'No se pudo marcar como surtido');
                 }
 
-                alert('Pedido marcado como surtido y notificación enviada al paciente.');
-                location.reload();
+                // Update order status locally without reloading
+                order.estatus = 'surtido';
+                successMessage = translations.marked_as_ready;
+                errorMessage = null;
+                
+                // Start undo timer (30 seconds)
+                startUndoTimer(order.folio);
+                
+                renderOrderDetails();
+                
+                // Update the status badge in the order card
+                const orderCard = document.querySelector(`[data-folio=\"${order.folio}\"]`);
+                if (orderCard) {
+                    const badges = orderCard.querySelectorAll('.inline-flex');
+                    if (badges.length >= 2) {
+                        const statusBadge = badges[1];
+                        statusBadge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary text-white';
+                        statusBadge.textContent = 'surtido';
+                    }
+                }
+                
+                btn.disabled = false;
+                btn.textContent = translations.mark_as_ready;
             } catch (e) {
                 alert(e.message || 'No se pudo marcar como surtido. Intenta de nuevo.');
                 btn.disabled = false;
-                btn.textContent = 'Marcar como surtido';
+                btn.textContent = translations.mark_as_ready;
             }
         }
 
-        // Inicializar con el primer pedido
+        function startUndoTimer(folio) {
+            // Clear any existing timer
+            if (undoTimer) {
+                clearInterval(undoTimer);
+            }
+            
+            // Set initial time (30 seconds)
+            undoTimeRemaining = 30;
+            
+            // Start countdown
+            undoTimer = setInterval(() => {
+                undoTimeRemaining--;
+                
+                // Update countdown display if button exists
+                const countdown = document.getElementById('undoCountdown');
+                if (countdown) {
+                    countdown.textContent = undoTimeRemaining;
+                }
+                
+                // When time runs out
+                if (undoTimeRemaining <= 0) {
+                    clearInterval(undoTimer);
+                    undoTimer = null;
+                    renderOrderDetails(); // Re-render to hide undo button
+                }
+            }, 1000);
+        }
+
+        async function deshacerSurtido() {
+            const order = orders[currentOrderIndex];
+            if (!order) return;
+
+            const btn = document.getElementById('undoButton');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">refresh</span> Deshaciendo...';
+            }
+
+            try {
+                const res = await fetch(`/pharmacy/orders/undo-surtido/${order.folio}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.error || err?.message || 'No se pudo deshacer');
+                }
+
+                // Clear timer
+                if (undoTimer) {
+                    clearInterval(undoTimer);
+                    undoTimer = null;
+                }
+                undoTimeRemaining = 0;
+
+                // Update order status back to confirmed
+                order.estatus = 'confirmado';
+                successMessage = translations.undo_success;
+                errorMessage = null;
+                renderOrderDetails();
+
+                // Update the status badge in the order card
+                const orderCard = document.querySelector(`[data-folio=\"${order.folio}\"]`);
+                if (orderCard) {
+                    const badges = orderCard.querySelectorAll('.inline-flex');
+                    if (badges.length >= 2) {
+                        const statusBadge = badges[1];
+                        statusBadge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-white';
+                        statusBadge.textContent = 'confirmado';
+                    }
+                }
+            } catch (e) {
+                errorMessage = e.message || 'No se pudo deshacer. Intenta de nuevo.';
+                renderOrderDetails();
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             renderOrderDetails();
-            
-            // Marcar el primer pedido como seleccionado
+
             const firstCard = document.querySelector('.order-card');
             if (firstCard) {
                 firstCard.classList.add('bg-background-light', 'dark:bg-background-dark');
             }
 
-            // Agregar evento al botón cancelar
+            // Only attach event listeners if buttons exist (host branches only)
             const cancelBtn = document.getElementById('cancelOrderBtn');
             if (cancelBtn) {
-                cancelBtn.addEventListener('click', cancelCurrentOrder);
+                cancelBtn.addEventListener('click', showCancelModal);
             }
+
+            // Modal event listeners
+            const cancelModalBtn = document.getElementById('cancelModalBtn');
+            if (cancelModalBtn) {
+                cancelModalBtn.addEventListener('click', hideCancelModal);
+            }
+
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+            if (confirmCancelBtn) {
+                confirmCancelBtn.addEventListener('click', cancelCurrentOrder);
+            }
+
+            // Close modal when clicking outside
+            const modal = document.getElementById('cancelOrderModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        hideCancelModal();
+                    }
+                });
+            }
+            
             const startBtn = document.getElementById('startPreparingBtn');
             if (startBtn) {
                 startBtn.addEventListener('click', marcarComoSurtido);
@@ -554,10 +927,19 @@
             if (statusFilter) {
                 statusFilter.addEventListener('change', applyStatusFilter);
             }
+
+            // Event delegation for dynamically created undo button
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'undoButton') {
+                    deshacerSurtido();
+                } else if (e.target && e.target.closest('#undoButton')) {
+                    deshacerSurtido();
+                }
+            });
+
             applyStatusFilter();
         });
     </script>
 </body>
 
-</html>
-<?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/pharmacy/orders.blade.php ENDPATH**/ ?>
+</html><?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/pharmacy/orders.blade.php ENDPATH**/ ?>

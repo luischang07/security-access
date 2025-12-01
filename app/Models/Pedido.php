@@ -36,8 +36,8 @@ class Pedido extends Model
   ];
 
   protected $casts = [
-    'fecha_pedido' => 'date',
-    'fecha_recoleccion' => 'date',
+    'fecha_pedido' => 'datetime',
+    'fecha_recoleccion' => 'datetime',
     'costo_total' => 'decimal:2',
   ];
 
@@ -46,9 +46,6 @@ class Pedido extends Model
     return $this->belongsTo(Paciente::class, 'paciente_id', 'user_id');
   }
 
-  /**
-   * Get the sucursal for this pedido (manual relation due to composite keys)
-   */
   public function sucursal()
   {
     return Sucursal::where('cadena_id', $this->cadena_id)
@@ -56,9 +53,6 @@ class Pedido extends Model
       ->first();
   }
 
-  /**
-   * Get sucursal relation as query builder (for eager loading workaround)
-   */
   public function getSucursalAttribute()
   {
     if (!isset($this->attributes['_sucursal_loaded'])) {
@@ -80,9 +74,6 @@ class Pedido extends Model
     return $this->hasMany(RutaRecoleccion::class, 'folio_pedido', 'folio_pedido');
   }
 
-  /**
-   * Verificar si el pedido pertenece al paciente dado
-   */
   public function belongsToPatient(int $userId): bool
   {
     return $this->paciente_id === $userId;
@@ -93,9 +84,6 @@ class Pedido extends Model
     return $this->hasOne(PedidoPenalizacion::class, 'folio_pedido', 'folio_pedido');
   }
 
-  /**
-   * Scope para filtrar pedidos por paciente
-   */
   public function scopeForPatient($query, int $userId)
   {
     return $query->where('paciente_id', $userId);

@@ -70,7 +70,7 @@ class GestorDeSurtido
       $lng = $sucSeleccionada->getLongitud();
 
       // Find branches using Hybrid Algorithm (OSRM + Spatial)
-      $sucCercanasWithRouteInfo = $this->geoLocationService->findNearestBranchesHybrid(
+      $sucCercanasWithRouteInfo = $this->geoLocationService->buscarSucursalesPorTiempoDeViaje(
         $medicamentoIds,
         $lat,
         $lng,
@@ -109,6 +109,9 @@ class GestorDeSurtido
         }
       }
     }
+
+    $pedido->setFaltantes($this->sinStock);
+
     return $pedido;
   }
 
@@ -208,7 +211,7 @@ class GestorDeSurtido
         $lng = $sucSeleccionada->getLongitud();
 
         // Find branches using Hybrid Algorithm (OSRM + Spatial)
-        $sucCercanasWithRouteInfo = $this->geoLocationService->findNearestBranchesHybrid(
+        $sucCercanasWithRouteInfo = $this->geoLocationService->buscarSucursalesPorTiempoDeViaje(
           $medicamentoIds,
           $lat,
           $lng,

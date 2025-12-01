@@ -11,7 +11,7 @@ use App\Domain\Notificacion;
 class Paciente
 {
   private UserEntity $user;
-  private float $montoPenalizacion = 0.0;
+  private float $montoPenalizacion = 0;
 
   /** @var Collection|Notificacion[] */
   private Collection $notificaciones;

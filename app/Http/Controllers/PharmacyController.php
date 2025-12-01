@@ -116,9 +116,9 @@ class PharmacyController extends Controller
       ->where('cadena_id', $branchIds['cadena_id'])
       ->where('sucursal_id', $branchIds['sucursal_id'])
       ->with([
-        'rutaRecoleccion',
+        'rutaRecoleccion.sucursal.cadena',
         'lineasPedidos.medicamento',
-        'lineasPedidos.detalles'
+        'lineasPedidos.detalles.sucursal'
       ])
       ->firstOrFail();
 
@@ -138,5 +138,33 @@ class PharmacyController extends Controller
     } catch (\Throwable $e) {
       return response()->json(['error' => $e->getMessage()], 400);
     }
+  }
+
+  public function deshacerSurtido($folio)
+  {
+    $pedido = $this->pedidoService->getPedidoPorFolio($folio);
+    if (!$pedido) {
+      return response()->json(['error' => 'Pedido no encontrado.'], 404);
+    }
+
+    try {
+      $this->pedidoService->deshacerSurtido($pedido);
+      return response()->json(['success' => true, 'message' => 'Estado del pedido revertido correctamente.']);
+    } catch (\Throwable $e) {
+      return response()->json(['error' => $e->getMessage()], 400);
+    }
+  }
+
+  public function profile()
+  {
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $empleado = $user->empleado;
+
+    if (!$empleado) {
+      abort(403, 'No se encontró información del empleado.');
+    }
+
+    return view('pharmacy.profile', compact('user', 'empleado'));
   }
 }

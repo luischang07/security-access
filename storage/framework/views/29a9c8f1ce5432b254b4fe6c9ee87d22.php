@@ -10,6 +10,11 @@
                 'route' => 'patient.dashboard',
             ],
             [
+                'icon' => 'map',
+                'label' => 'Mapa de Farmacias',
+                'route' => 'prescription.pharmacy-map',
+            ],
+            [
                 'icon' => 'receipt_long',
                 'label' => __('patient.dashboard.sidebar.my_orders'),
                 'route' => 'patient.orders',

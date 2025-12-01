@@ -15,35 +15,8 @@
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
-  <!-- Top Navigation Bar -->
-  <header
-    class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-6 md:px-10 py-3 bg-card-light dark:bg-card-dark backdrop-blur-sm sticky top-0 z-50">
-    <div class="flex items-center gap-4 text-body-text dark:text-body-text-dark">
-      <div class="size-6 text-primary">
-        <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor"></path>
-        </svg>
-      </div>
-      <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Te Acerco Salud</h2>
-    </div>
-    <nav class="hidden lg:flex flex-1 justify-center gap-8">
-      <a class="text-body-text dark:text-body-text-dark text-sm font-medium leading-normal hover:text-primary transition"
-        href="<?php echo e(route('patient.dashboard')); ?>"><?php echo e(__('common.navbar.home')); ?></a>
-      <a class="text-body-text dark:text-body-text-dark text-sm font-medium leading-normal hover:text-primary transition"
-        href="<?php echo e(route('patient.orders')); ?>"><?php echo e(__('patient.orders.title')); ?></a>
-      <a class="text-primary text-sm font-bold leading-normal" href="#"><?php echo e(__('prescription.pharmacy_map.title')); ?></a>
-      <a class="text-body-text dark:text-body-text-dark text-sm font-medium leading-normal hover:text-primary transition"
-        href="<?php echo e(route('patient.profile')); ?>"><?php echo e(__('patient.dashboard.sidebar.profile')); ?></a>
-    </nav>
-    <div class="flex items-center gap-4">
-      <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-        style='background-image: url("https://ui-avatars.com/api/?name=<?php echo e(urlencode(auth()->user()->name ?? 'User')); ?>&background=137fec&color=fff");'>
-      </div>
-      <button class="lg:hidden text-body-text dark:text-body-text-dark">
-        <span class="material-symbols-outlined">menu</span>
-      </button>
-    </div>
-  </header>
+  
+  <?php echo $__env->make('components.topbar', ['type' => 'patient', 'user' => auth()->user(), 'showMapLinks' => true], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
   <!-- Main Content -->
   <main class="flex flex-1 flex-col lg:flex-row overflow-hidden h-[calc(100vh-64px)]">

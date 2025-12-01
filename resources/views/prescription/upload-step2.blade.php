@@ -295,8 +295,18 @@
                                 <span class="material-symbols-outlined">arrow_back</span>
                                 <span>{{ __('prescription.upload_step2.edit_prescription') }}</span>
                             </a>
+                            @php
+                                $lineasConDetalles = collect($pedido->getLineasPedidos() ?? [])->filter(function ($linea) {
+                                    $detalles = method_exists($linea, 'getDetalleLineaPedido')
+                                        ? $linea->getDetalleLineaPedido()
+                                        : collect();
+                                    return $detalles->count() > 0;
+                                });
+                                $hasMedications = $lineasConDetalles->count() > 0;
+                            @endphp
                             <button type="submit"
-                                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
+                                @if(!$hasMedications) disabled @endif
+                                class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition {{ !$hasMedications ? 'opacity-50 cursor-not-allowed' : '' }}">
                                 <span>{{ __('prescription.upload_step2.confirm_order') }}</span>
                                 <span class="material-symbols-outlined">check_circle</span>
                             </button>

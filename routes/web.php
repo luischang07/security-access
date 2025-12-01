@@ -71,8 +71,10 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
     Route::get('/orders/{folio}/route', [PharmacyController::class, 'showOrderRoute'])->name('orders.route');
     Route::post('/orders/cancel/{folio}', [CancelacionController::class, 'cancelarPorFolio'])->name('cancelarOrdenPorFolio');
     Route::post('/orders/mark-surtido/{folio}', [PharmacyController::class, 'marcarComoSurtido'])->name('orders.markSurtido');
+    Route::post('/orders/undo-surtido/{folio}', [PharmacyController::class, 'deshacerSurtido'])->name('orders.undoSurtido');
     Route::get('/inventory', [PharmacyController::class, 'inventory'])->name('inventory');
     Route::get('/reports', [PharmacyController::class, 'reports'])->name('reports');
+    Route::get('/profile', [PharmacyController::class, 'profile'])->name('profile');
   });
 
   // Admin Routes

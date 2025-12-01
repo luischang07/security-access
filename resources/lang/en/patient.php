@@ -138,6 +138,28 @@ return [
     ],
   ],
 
+  // Order Detail view translations
+  'order_detail' => [
+    'title' => 'Order Detail',
+    'back_to_orders' => 'Back to My Orders',
+    'order' => 'Order',
+    'order_date' => 'Order Date',
+    'pickup_date' => 'Pickup Date',
+    'pharmacy' => 'Pharmacy',
+    'medications' => 'Medications',
+    'medication' => 'Medication',
+    'quantity' => 'Quantity',
+    'unit_price' => 'Unit Price',
+    'subtotal' => 'Subtotal',
+    'no_medications' => 'There are no medications in this order.',
+    'cost_summary' => 'Cost Summary',
+    'subtotal_label' => 'Subtotal',
+    'service_fee' => 'Service Fee',
+    'total' => 'Total',
+    'back_to_list' => 'Back to List',
+    'reorder' => 'Reorder',
+  ],
+
   // Patient Profile
   'profile' => [
     'title' => 'My Profile',

@@ -51,9 +51,12 @@ class GestionPedidoController extends Controller
 
       $cadenas = $this->cadenaService->getCadenas();
 
+      $formData = Session::get('prescription_form_data', []);
+
       return view('prescription.upload-step1', [
         'cadenas' => $cadenas,
-        'pedidoInicial' => $pedido
+        'pedidoInicial' => $pedido,
+        'formData' => $formData
       ]);
     } catch (\Throwable $e) {
       return redirect()->route('patient.dashboard')->with('error', 'No puedes realizar pedidos mientras tengas una penalización pendiente y un pedido activo');
@@ -167,11 +170,27 @@ class GestionPedidoController extends Controller
       return redirect()->route('prescription.upload.step1')->with('error', 'La sesión del pedido ha expirado. Por favor inicie de nuevo.');
     }
 
+    Session::put('prescription_form_data', [
+      'cedula_profesional' => $cedulaProfesional,
+      'cadena_id' => $pedido->getSucursal()->getCadenaId(),
+      'sucursal_id' => $pedido->getSucursal()->getSucursalId(),
+      'medications' => $this->pedidoService->getLineasPedidoActuales($pedido)
+    ]);
+
     Session::forget('pedido_temporal');
     $pedido = $this->pedidoService->asignarFechaRecoleccion($pedido);
     $pedido = $this->pedidoService->setCedulaProfesional($cedulaProfesional, $pedido);
     $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
     $pedido = $this->GestorDeSurtido->surtir($pedido);
+
+    $porcentajeSurtido = $pedido->calcularPorcentajeSurtido();
+    if ($porcentajeSurtido < 0.5) {
+
+      Session::put('pedido_temporal', serialize($pedido));
+
+      return redirect()->route('prescription.upload.step1')
+        ->with('error', 'No se puede surtir al menos el 50% de tu receta. Por favor intenta reducir los medicamentos solicitados.');
+    }
 
     Session::put('pedido_temporal', serialize($pedido));
     return view('prescription.upload-step2', compact('pedido', 'montoPenalizacion'));
@@ -186,6 +205,8 @@ class GestionPedidoController extends Controller
     }
 
     Session::forget('pedido_temporal');
+    Session::forget('prescription_form_data');
+
     try {
       $pedido = $this->GestorDeSurtido->confirmarPedido($pedido);
       $folio = $pedido->getFolio();

@@ -152,7 +152,7 @@
                                                         $medicamentosEnSucursal->push([
                                                             'nombre' => $linea->medicamento->nombre,
                                                             'cantidad' => $detalle->cantidad_surtida,
-                                                            'precio' => $detalle->precio,
+                                                            'precio' => $detalle->precio_unitario,
                                                         ]);
                                                     }
                                                 }

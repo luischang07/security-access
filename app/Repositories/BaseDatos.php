@@ -188,7 +188,7 @@ class BaseDatos
     return LineaPedido::create([
       'folio_pedido' => $folio_pedido,
       'medicamento_id' => $ldp->getMedicamentoId(),
-      'cantidad' => $ldp->getCantidad(),
+      'cantidad' => $ldp->calcularCantidadSurtida(),
     ]);
   }
 
