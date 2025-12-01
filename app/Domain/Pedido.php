@@ -21,11 +21,13 @@ class Pedido
   private Collection $lineasPedido;
   private ?int $pacienteId = null;
   private ?Sucursal $sucursal = null;
-  private float $costoTotal = 0.0;
+  private float $costoTotal = 0;
   private Collection $faltantes;
 
   private Collection $ruta;
   private $routeGeometry = null;
+  private $montoPenalizacion;
+
 
   private function __construct()
   {
@@ -232,6 +234,17 @@ class Pedido
   {
     return $this->cedulaProfesional;
   }
+  public function setMontoPenalizacion($monto)
+  {
+    $this->costoTotal = $this->costoTotal + $monto;
+    $this->montoPenalizacion = $monto;
+  }
+
+  public function getMontoPenalizacion()
+  {
+    return $this->montoPenalizacion;
+  }
+
   public function sumarMontoPenalizacion(float $monto): void
   {
     $this->costoTotal = $this->costoTotal + $monto;

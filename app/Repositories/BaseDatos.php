@@ -31,6 +31,7 @@ use App\Models\Notificacion;
 use App\Domain\Notificacion as DomainNotificacion;
 use App\Models\Empleado;
 
+use App\Models\PedidoPenalizacion;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -237,9 +238,17 @@ class BaseDatos
 
   public function getPedidosPorSucursal($cadena_id, $sucursal_id)
   {
-    $pedidos = Pedido::where('cadena_id', $cadena_id)
-      ->where('sucursal_id', $sucursal_id)
-      ->with(['lineasPedidos.medicamento', 'lineasPedidos.detalles'])
+    $pedidos = Pedido::query()
+      ->where(function ($q) use ($cadena_id, $sucursal_id) {
+        $q->where('cadena_id', $cadena_id)
+          ->where('sucursal_id', $sucursal_id);
+      })
+      ->orWhereHas('lineasPedidos.detalles', function ($q) use ($cadena_id, $sucursal_id) {
+        $q->where('cadena_id', $cadena_id)
+          ->where('sucursal_id', $sucursal_id);
+      })
+      ->with(['penalizacion', 'lineasPedidos.detalles.sucursal'])
+      ->orderBy('fecha_pedido', 'desc')
       ->get();
 
     $pedidos = $pedidos->map(function ($pedido) {
@@ -262,5 +271,13 @@ class BaseDatos
   public function cancelarTransaccion()
   {
     DB::rollBack();
+  }
+
+  public function guardarMontoPenalizacion($folio, $monto)
+  {
+    PedidoPenalizacion::create([
+      'folio_pedido' => $folio,
+      'monto' => $monto,
+    ]);
   }
 }

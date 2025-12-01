@@ -88,6 +88,11 @@ class Pedido extends Model
     return $this->paciente_id === $userId;
   }
 
+  public function penalizacion()
+  {
+    return $this->hasOne(PedidoPenalizacion::class, 'folio_pedido', 'folio_pedido');
+  }
+
   /**
    * Scope para filtrar pedidos por paciente
    */

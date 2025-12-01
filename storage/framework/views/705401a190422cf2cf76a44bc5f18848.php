@@ -311,11 +311,11 @@
                         <!-- Action Buttons -->
                         <form action="/prescription/upload/step2" method="POST" class="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 p-4 mt-2 w-full">
                             <?php echo csrf_field(); ?>
-                            <button type="button" onclick="window.history.back()"
+                            <a href="<?php echo e(route('prescription.upload.step1')); ?>"
                                 class="flex items-center justify-center gap-2 rounded-lg h-12 px-8 text-neutral-text dark:text-neutral-text-dark text-base font-bold tracking-wide hover:bg-background-light dark:hover:bg-background-dark transition">
                                 <span class="material-symbols-outlined">arrow_back</span>
                                 <span><?php echo e(__('prescription.upload_step2.edit_prescription')); ?></span>
-                            </button>
+                            </a>
                             <button type="submit"
                                 class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
                                 <span><?php echo e(__('prescription.upload_step2.confirm_order')); ?></span>

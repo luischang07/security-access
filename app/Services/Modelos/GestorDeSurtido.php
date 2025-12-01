@@ -17,14 +17,16 @@ use Illuminate\Support\Collection;
 class GestorDeSurtido
 {
   private SucursalService $sucursalService;
+  private PacienteService $pacienteService;
   private PedidoService $pedidoService;
   private GeoLocationService $geoLocationService;
   private Collection $sinStock;
   private BaseDatos $dataBase;
 
-  public function __construct(SucursalService $sucursalService, PedidoService $pedidoService, GeoLocationService $geoLocationService)
+  public function __construct(SucursalService $sucursalService, PacienteService $pacienteService, PedidoService $pedidoService, GeoLocationService $geoLocationService)
   {
     $this->sucursalService = $sucursalService;
+    $this->pacienteService = $pacienteService;
     $this->pedidoService = $pedidoService;
     $this->geoLocationService = $geoLocationService;
     $this->sinStock = collect();
@@ -256,9 +258,9 @@ class GestorDeSurtido
         }
       }
 
-      $montoPenalizacion = app(PacienteService::class)->getMontoPenalizacion($pedido->getPacienteId());
-      info("Monto penalización aplicada: $montoPenalizacion");
+      $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($pedido->getPacienteId());
       $pedido->sumarMontoPenalizacion((float) $montoPenalizacion);
+
       $this->guardarPedido($pedido);
       $this->dataBase->commitTransaccion();
       $pedido->setFaltantes($this->sinStock);
@@ -313,6 +315,9 @@ class GestorDeSurtido
           'sucursal_id' => $sucursal->getSucursalId(),
           'orden' => $orden++,
         ]);
+      }
+      if ($pedido->getMontoPenalizacion() > 0) {
+        $this->dataBase->guardarMontoPenalizacion($pedido->getFolio(), $pedido->getMontoPenalizacion());
       }
     });
 
