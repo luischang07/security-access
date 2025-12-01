@@ -22,22 +22,22 @@ class SucursalService
     return $this->dataBase->getTodasSucursales();
   }
 
-  public function getSucursal($cadena_id, $sucursal_id): Sucursal
+  public function getSucursal(string $cadena_id, string $sucursal_id): ?Sucursal
   {
     return $this->dataBase->getSucursal($cadena_id, $sucursal_id);
   }
 
-  public function getSucursalesPorCadena($cadena_id): Collection
+  public function getSucursalesPorCadena(string $cadena_id): Collection
   {
     return $this->dataBase->getSucursalesPorCadena($cadena_id);
   }
 
-  public function getLineaInventario($cadena_id, $sucursal_id, $medicamento_id): LineaInventario
+  public function getLineaInventario(string $cadena_id, string $sucursal_id, int $medicamento_id): ?LineaInventario
   {
     return $this->dataBase->getInventario($cadena_id, $sucursal_id, $medicamento_id);
   }
 
-  public function actualizarInventario($ldi): void
+  public function actualizarInventario(LineaInventario $ldi): void
   {
     $this->dataBase->actualizarInventario($ldi);
   }
