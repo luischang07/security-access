@@ -27,10 +27,6 @@ class GeoLocationServiceTest extends TestCase
     $this->assertInstanceOf(MySqlGeoStrategy::class, $strategy);
   }
 
-
-
-
-
   public function test_factory_throws_exception_for_unsupported_driver()
   {
     $this->expectException(InvalidArgumentException::class);
