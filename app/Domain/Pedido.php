@@ -21,6 +21,8 @@ class Pedido
     private $costo_Total;
     private $faltantes;
 
+    private $montoPenalizacion;
+
     private $ruta;
 
     private function __construct()
@@ -186,18 +188,6 @@ class Pedido
         return $this->getFaltantes()->count() > 0;
     }
 
-    public function reiniciarParaCaptura(): void
-    {
-        foreach ($this->lineas_pedido as $linea) {
-            $linea->limpiarDetalles();
-        }
-        $this->ruta = collect();
-        $this->faltantes = collect();
-        $this->costo_Total = 0;
-        $this->estatus = null;
-        $this->fecha_recoleccion = null;
-    }
-
     public function asignarFechaPedido()
     {
         $this->fecha_pedido = Carbon::now();
@@ -235,8 +225,12 @@ class Pedido
     public function setMontoPenalizacion($monto)
     {
         $this->costo_Total = $this->costo_Total + $monto;
+        $this->montoPenalizacion = $monto;
+    }
 
-        info('monto final: ', [$this->costo_Total]);
+    public function getMontoPenalizacion()
+    {
+        return $this->montoPenalizacion;
     }
 
     public function getFechaRecoleccion()
@@ -251,7 +245,7 @@ class Pedido
 
     public function setEstatus()
     {
-        $this->estatus = "Confirmado";
+        $this->estatus = "confirmado";
     }
 
     public function cambiarEstatus($nuevoEstatus)
@@ -315,6 +309,10 @@ class Pedido
         }
         $pedido->lineas_pedido = $lineasPedidoCollection;
 
+        if ($pedidoModel->penalizacion) {
+            $pedido->montoPenalizacion = $pedidoModel->penalizacion->monto;
+        }
+
         return $pedido;
     }
 
@@ -332,7 +330,7 @@ class Pedido
             return 0;
         }
 
-        return ($totalSurtido / $totalSolicitado);
+        return ($totalSurtido / $totalSolicitado) * 100;
     }
 
     public function removerLineasSinDetalles()

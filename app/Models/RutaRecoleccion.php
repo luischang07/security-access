@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Awobaz\Compoships\Compoships;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class RutaRecoleccion extends Model
 {
   use HasRelationships;
+  use Compoships;
   protected $table = 'ruta_recoleccion';
   protected $primaryKey = ['folio_pedido', 'cadena_id', 'sucursal_id'];
   public $incrementing = false;

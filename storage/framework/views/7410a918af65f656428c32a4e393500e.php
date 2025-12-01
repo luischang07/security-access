@@ -55,6 +55,13 @@
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark">
+
+    <?php
+        $empleado = auth()->user()->empleado;
+        $currentCadenaId = $empleado->cadena_id;
+        $currentSucursalId = $empleado->sucursal_id;
+    ?>
+
     <div class="relative flex h-screen w-full flex-col overflow-hidden">
         <div class="layout-container flex h-full grow flex-col">
 
@@ -68,26 +75,39 @@
                 ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
                 <div class="flex flex-1">
-                    <!-- Order List Panel -->
                     <div
                         class="w-full md:w-96 lg:w-[28rem] flex flex-col border-r border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark overflow-hidden">
                         <div class="p-6 border-b border-border-light dark:border-border-dark">
                             <h1 class="text-2xl font-bold text-body-text dark:text-body-text-dark mb-4">
                                 <?php echo e(__('pharmacy.orders.title')); ?></h1>
 
-                            <!-- Search bar removed -->
-
-                            <!-- Status Tabs removed per request -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark"
+                                    for="statusFilter">Filtrar por estatus</label>
+                                <select id="statusFilter"
+                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
+                                    <option value="all">Todos</option>
+                                    <option value="confirmado">Confirmados</option>
+                                    <option value="surtido">Surtidos</option>
+                                    <option value="cancelado">Cancelados</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <!-- Order Cards List -->
-                        <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="orders-list">
                             <?php $__empty_1 = true; $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <div
-                                    onclick="selectOrder(this, <?php echo e($index); ?>)"
+                                <?php
+                                    $estatusLower = strtolower($pedido->getEstatus());
+                                    $sucursalPedido = $pedido->getSucursal();
+                                    $esHostVisual =
+                                        $sucursalPedido->getCadenaId() == $currentCadenaId &&
+                                        $sucursalPedido->getSucursalId() == $currentSucursalId;
+                                ?>
+                                <div onclick="selectOrder(this, <?php echo e($index); ?>)"
                                     class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors <?php echo e($index === 0 ? 'bg-background-light dark:bg-background-dark' : ''); ?>"
                                     data-order-index="<?php echo e($index); ?>"
-                                    data-folio="<?php echo e($pedido->getFolio()); ?>">
+                                    data-folio="<?php echo e($pedido->getFolio()); ?>"
+                                    data-estatus="<?php echo e($estatusLower); ?>">
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <h3 class="font-bold text-body-text dark:text-body-text-dark">
@@ -95,14 +115,33 @@
                                             <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
                                                 <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
                                         </div>
-                                        <span
-                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
+
+                                        <?php if($esHostVisual): ?>
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                Sucursal Host
+                                            </span>
+                                        <?php else: ?>
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
+                                                Sucursal Participante
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
-                                            class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white"><?php echo e($pedido->getEstatus()); ?></span>
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                            <?php if($estatusLower === 'surtido'): ?> bg-secondary text-white
+                                            <?php elseif($estatusLower === 'cancelado'): ?> bg-danger text-white
+                                            <?php elseif($estatusLower === 'confirmado'): ?> bg-success text-white
+                                            <?php else: ?> bg-neutral-200 text-neutral-text <?php endif; ?>">
+                                            <?php echo e($pedido->getEstatus()); ?>
+
+                                        </span>
                                         <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
+                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?>
+
+                                        </p>
                                     </div>
                                 </div>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
@@ -114,52 +153,49 @@
                         </div>
                     </div>
 
-                    <!-- Order Detail Panel -->
                     <div class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
                         <div class="flex-1 overflow-y-auto p-6 space-y-6">
                             <?php if($pedidos->isNotEmpty()): ?>
                                 <div id="order-details-container">
-                                    <!-- Detalles del pedido se mostrarán aquí con JavaScript -->
                                 </div>
                             <?php else: ?>
-                                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
+                                <div
+                                    class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
                                     <?php echo e(__('pharmacy.orders.no_orders')); ?>
 
                                 </div>
                             <?php endif; ?>
                         </div>
 
-                        <!-- Footer Actions -->
-                        <div class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                        <div
+                            class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                             <div class="flex flex-col gap-4">
-                                <!-- Price Summary -->
-                                <div id="price-summary" class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                <div id="price-summary"
+                                    class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
                                     <div class="flex justify-between items-center">
                                         <span>Subtotal:</span>
-                                        <span id="subtotal" class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
+                                        <span id="subtotal"
+                                            class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span>Tarifa de servicio:</span>
-                                        <span id="serviceFee" class="font-medium text-body-text dark:text-body-text-dark">$1.00</span>
+                                    <div id="penalty-row" class="flex justify-between items-center hidden">
+                                        <span>Penalización</span>
+                                        <span id="serviceFee" class="font-medium text-danger">$0.00</span>
                                     </div>
-                                    <div class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
+                                    <div
+                                        class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
                                         <span class="font-bold">Total estimado:</span>
                                         <span id="estimatedTotal" class="font-bold text-primary text-lg">$0.00</span>
                                     </div>
                                 </div>
 
-                                <!-- Actions -->
                                 <div class="flex items-center gap-2 w-full">
-                                    <button
-                                        id="cancelOrderBtn"
+                                    <button id="cancelOrderBtn"
                                         class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
                                         Cancelar
                                     </button>
-                                    <button
-                                        id="startPreparingBtn"
+                                    <button id="startPreparingBtn"
                                         class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
-                                        <?php echo e(__('pharmacy.orders.start_preparing')); ?>
-
+                                        Marcar como surtido
                                     </button>
                                 </div>
                             </div>
@@ -172,49 +208,78 @@
 
     <?php
         $ordersData = [];
+
         foreach ($pedidos as $p) {
+            $sucursalPedido = $p->getSucursal();
+            $esHost =
+                $sucursalPedido->getCadenaId() == $currentCadenaId &&
+                $sucursalPedido->getSucursalId() == $currentSucursalId;
+
             $lineas_array = [];
             foreach ($p->getLineasPedidos() as $linea) {
                 $detalles_array = [];
                 foreach ($linea->getDetalles() as $detalle) {
-                    $detalles_array[] = [
-                        'cantidad' => $detalle->getCantidadSurtida(),
-                        'precio' => $detalle->getPrecio(),
-                        'sucursal' => $detalle->getSucursal()->getNombre(),
+                    if ($esHost) {
+                        $detalles_array[] = [
+                            'cantidad' => $detalle->getCantidadSurtida(),
+                            'precio' => $detalle->getPrecio(),
+                            'sucursal' => $detalle->getSucursal()->getNombre(),
+                            'sucursal_id' => $detalle->getSucursal()->getSucursalId(),
+                        ];
+                        continue;
+                    }
+
+                    $sucursalDetalle = $detalle->getSucursal();
+                    if (
+                        $sucursalDetalle->getCadenaId() == $currentCadenaId &&
+                        $sucursalDetalle->getSucursalId() == $currentSucursalId
+                    ) {
+                        $detalles_array[] = [
+                            'cantidad' => $detalle->getCantidadSurtida(),
+                            'precio' => $detalle->getPrecio(),
+                            'sucursal' => $sucursalDetalle->getNombre(),
+                            'sucursal_id' => $sucursalDetalle->getSucursalId(),
+                        ];
+                    }
+                }
+
+                if (!empty($detalles_array)) {
+                    $lineas_array[] = [
+                        'medicamento' => $linea->getMedicamento()->getNombre(),
+                        'detalles' => $detalles_array,
                     ];
                 }
-                $lineas_array[] = [
-                    'medicamento' => $linea->getMedicamento()->getNombre(),
-                    'detalles' => $detalles_array,
-                ];
             }
+
             $ordersData[] = [
                 'folio' => $p->getFolio(),
+                'sucursal_host_id' => $sucursalPedido->getSucursalId(),
                 'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
                 'estatus' => $p->getEstatus(),
                 'lineas' => $lineas_array,
+                'penalizacion' => $p->getMontoPenalizacion() ? (float) $p->getMontoPenalizacion() : 0,
+                'es_host' => $esHost,
             ];
         }
     ?>
 
     <script>
-        // Data de los pedidos
         const orders = <?php echo json_encode($ordersData, 15, 512) ?>;
         const csrfToken = '<?php echo e(csrf_token()); ?>';
+        const currentSucursalId = "<?php echo e($currentSucursalId); ?>";
         let currentOrderIndex = 0;
-        const serviceFeeFixed = 1.00;
+        let errorMessage = null;
 
         function selectOrder(element, index) {
-            // Remover selección anterior
             document.querySelectorAll('.order-card').forEach(card => {
                 card.classList.remove('bg-background-light', 'dark:bg-background-dark');
                 card.classList.add('border-transparent');
             });
 
-            // Marcar el nuevo seleccionado
             element.classList.add('bg-background-light', 'dark:bg-background-dark');
-            
+
             currentOrderIndex = index;
+            errorMessage = null;
             renderOrderDetails();
         }
 
@@ -222,8 +287,23 @@
             const order = orders[currentOrderIndex];
             const container = document.getElementById('order-details-container');
 
-            let html = `
-                <!-- Patient Info Card -->
+            let html = ``;
+
+            if (errorMessage) {
+                html += `
+                    <div class="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/15 mb-4">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">error</span>
+                            <div>
+                                <p class="font-semibold">Error al cancelar</p>
+                                <p class="text-xs mt-1">${errorMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
@@ -241,7 +321,6 @@
                     </div>
                 </div>
 
-                <!-- Prescription Details -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
@@ -270,20 +349,27 @@
                 order.lineas.forEach(linea => {
                     if (linea.detalles && linea.detalles.length > 0) {
                         linea.detalles.forEach(detalle => {
-                            const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.cantidad) || 0);
-                            subtotal += lineTotal;
-                            html += `
-                                <tr>
-                                    <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                        ${linea.medicamento}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        ${detalle.cantidad}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        $${parseFloat(detalle.precio).toFixed(2)}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        ${detalle.sucursal}</td>
-                                </tr>
-                            `;
+
+                            const soyHost = order.es_host;
+                            const esMiDetalle = detalle.sucursal_id == currentSucursalId;
+
+                            if (soyHost || esMiDetalle) {
+                                const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.
+                                    cantidad) || 0);
+                                subtotal += lineTotal;
+                                html += `
+                                    <tr>
+                                        <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
+                                            ${linea.medicamento}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            ${detalle.cantidad}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            $${parseFloat(detalle.precio).toFixed(2)}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            ${detalle.sucursal}</td>
+                                    </tr>
+                                `;
+                            }
                         });
                     }
                 });
@@ -305,25 +391,97 @@
 
             container.innerHTML = html;
 
-            // Actualizar resumen de precios
-            updatePriceSummary(subtotal);
+            const penalizacion = order.penalizacion || 0;
+            updatePriceSummary(subtotal, penalizacion);
         }
 
-        function updatePriceSummary(subtotal) {
+        function updatePriceSummary(subtotal, penalizacion) {
             const subtotalEl = document.getElementById('subtotal');
             const serviceFeeEl = document.getElementById('serviceFee');
+            const penaltyRowEl = document.getElementById('penalty-row');
             const estimatedEl = document.getElementById('estimatedTotal');
             const priceSummary = document.getElementById('price-summary');
-            
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            const startBtn = document.getElementById('startPreparingBtn');
+            const order = orders[currentOrderIndex];
+            const status = order?.estatus ? order.estatus.toLowerCase() : '';
+
             if (subtotalEl && serviceFeeEl && estimatedEl) {
-                const total = subtotal + serviceFeeFixed;
+                const total = subtotal + penalizacion;
                 subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-                serviceFeeEl.textContent = `$${serviceFeeFixed.toFixed(2)}`;
                 estimatedEl.textContent = `$${total.toFixed(2)}`;
-                
-                // Mostrar resumen si hay líneas
+                serviceFeeEl.textContent = `$${penalizacion.toFixed(2)}`;
+
                 if (priceSummary) {
                     priceSummary.classList.toggle('hidden', subtotal === 0);
+                }
+                if (penaltyRowEl) {
+                    if (penalizacion > 0) {
+                        penaltyRowEl.classList.remove('hidden');
+                        penaltyRowEl.classList.add('flex');
+                    } else {
+                        penaltyRowEl.classList.add('hidden');
+                        penaltyRowEl.classList.remove('flex');
+                    }
+                }
+            }
+
+            if (cancelBtn && startBtn) {
+                let cancelDisabled = false;
+                let startDisabled = false;
+
+                if (status === 'confirmado') {
+                    cancelDisabled = true;
+                    startDisabled = false;
+                } else if (status === 'surtido') {
+                    cancelDisabled = false;
+                    startDisabled = true;
+                } else if (status === 'cancelado') {
+                    cancelDisabled = true;
+                    startDisabled = true;
+                } else {
+                    cancelDisabled = false;
+                    startDisabled = false;
+                }
+
+                cancelBtn.disabled = cancelDisabled;
+                cancelBtn.classList.toggle('opacity-50', cancelDisabled);
+                cancelBtn.classList.toggle('cursor-not-allowed', cancelDisabled);
+
+                startBtn.disabled = startDisabled;
+                startBtn.classList.toggle('opacity-50', startDisabled);
+                startBtn.classList.toggle('cursor-not-allowed', startDisabled);
+            }
+        }
+
+        function strtolower(str) {
+            return typeof str === 'string' ? str.toLowerCase() : '';
+        }
+
+        function applyStatusFilter() {
+            const filter = document.getElementById('statusFilter').value;
+            const cards = document.querySelectorAll('.order-card');
+            let firstVisibleIndex = null;
+
+            cards.forEach(card => {
+                const status = card.dataset.estatus;
+                const matches = filter === 'all' || status === filter;
+                card.style.display = matches ? '' : 'none';
+                if (matches && firstVisibleIndex === null) {
+                    firstVisibleIndex = parseInt(card.dataset.orderIndex, 10);
+                }
+            });
+
+            if (firstVisibleIndex !== null) {
+                const card = Array.from(cards).find(c => parseInt(c.dataset.orderIndex, 10) === firstVisibleIndex);
+                if (card) {
+                    selectOrder(card, firstVisibleIndex);
+                }
+            } else {
+                const container = document.getElementById('order-details-container');
+                if (container) {
+                    container.innerHTML =
+                        '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
                 }
             }
         }
@@ -347,35 +505,83 @@
                     }
                 });
 
+                const data = await res.json().catch(() => null);
+
                 if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    throw new Error(err?.message || 'Error al cancelar el pedido');
+                    errorMessage = data?.message || 'Error al cancelar el pedido';
+                    renderOrderDetails();
+                    btn.disabled = false;
+                    return;
                 }
 
-                location.reload();
+                order.estatus = 'Cancelado';
+                errorMessage = null;
+                renderOrderDetails();
+                updatePriceSummary(0, 0);
+
             } catch (e) {
+                errorMessage = 'Error en la solicitud: ' + e.message;
+                renderOrderDetails();
                 btn.disabled = false;
             }
         }
 
-        // Inicializar con el primer pedido
+        async function marcarComoSurtido() {
+            const order = orders[currentOrderIndex];
+            if (!order) return;
+
+            const btn = document.getElementById('startPreparingBtn');
+            btn.disabled = true;
+            btn.textContent = 'Marcando...';
+
+            try {
+                const res = await fetch(`/pharmacy/orders/mark-surtido/${order.folio}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.error || err?.message || 'No se pudo marcar como surtido');
+                }
+
+                alert('Pedido marcado como surtido y notificación enviada al paciente.');
+                location.reload();
+            } catch (e) {
+                alert(e.message || 'No se pudo marcar como surtido. Intenta de nuevo.');
+                btn.disabled = false;
+                btn.textContent = 'Marcar como surtido';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             renderOrderDetails();
-            
-            // Marcar el primer pedido como seleccionado
+
             const firstCard = document.querySelector('.order-card');
             if (firstCard) {
                 firstCard.classList.add('bg-background-light', 'dark:bg-background-dark');
             }
 
-            // Agregar evento al botón cancelar
             const cancelBtn = document.getElementById('cancelOrderBtn');
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', cancelCurrentOrder);
             }
+            const startBtn = document.getElementById('startPreparingBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', marcarComoSurtido);
+            }
+
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', applyStatusFilter);
+            }
+            applyStatusFilter();
         });
     </script>
 </body>
 
-</html>
-<?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/pharmacy/orders.blade.php ENDPATH**/ ?>
+</html><?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/pharmacy/orders.blade.php ENDPATH**/ ?>

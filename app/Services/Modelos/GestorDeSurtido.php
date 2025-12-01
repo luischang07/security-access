@@ -123,7 +123,6 @@ class GestorDeSurtido
         throw new \RuntimeException('No se pudo surtir al menos el 50% del pedido.');
       }
 
-
       $pedido->removerLineasSinDetalles();
       $pedido->setEstatus();
       $pedido->calcularTotales();
@@ -198,6 +197,9 @@ class GestorDeSurtido
           'sucursal_id' => $sucursal->getSucursalId(),
           'orden' => $orden++,
         ]);
+      }
+      if ($pedido->getMontoPenalizacion() > 0) {
+        $this->dataBase->guardarMontoPenalizacion($pedido->getFolio(), $pedido->getMontoPenalizacion());
       }
     });
   }
