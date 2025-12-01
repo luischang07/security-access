@@ -51,7 +51,10 @@ class GestionPedidoController extends Controller
 
       $cadenas = $this->cadenaService->getCadenas();
 
-      return view('prescription.upload-step1', compact('cadenas', 'pedido'));
+      return view('prescription.upload-step1', [
+        'cadenas' => $cadenas,
+        'pedidoInicial' => $pedido
+      ]);
     } catch (\Throwable $e) {
       return redirect()->route('patient.dashboard')->with('error', 'No puedes realizar pedidos mientras tengas una penalización pendiente y un pedido activo');
     }
@@ -86,6 +89,12 @@ class GestionPedidoController extends Controller
     $medicamentos = $this->medicamentoService->obtenerMedicamentosPorNombre($query);
 
     return response()->json($medicamentos);
+  }
+
+  public function getSucursalesPorCadena($cadena_id)
+  {
+    $sucursales = $this->sucursalService->getSucursalesPorCadena($cadena_id);
+    return response()->json($sucursales);
   }
 
   public function agregarMedicamento(Request $request)

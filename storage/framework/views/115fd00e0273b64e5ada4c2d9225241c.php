@@ -75,87 +75,52 @@
                             <h1 class="text-2xl font-bold text-body-text dark:text-body-text-dark mb-4">
                                 <?php echo e(__('pharmacy.orders.title')); ?></h1>
 
-                            <!-- Search bar removed -->
-
-                            <!-- Status Tabs removed per request -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark" for="statusFilter">Filtrar por estatus</label>
+                                <select id="statusFilter" class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
+                                    <option value="all">Todos</option>
+                                    <option value="confirmado">Confirmados</option>
+                                    <option value="surtido">Surtidos</option>
+                                    <option value="cancelado">Cancelados</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Order Cards List -->
-                        <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                            <?php
-                                $pedidosConfirmados = collect($pedidos)->filter(fn($p) => strtolower($p->getEstatus()) === 'confirmado');
-                                $pedidosCancelados = collect($pedidos)->filter(fn($p) => strtolower($p->getEstatus()) === 'cancelado');
-                            ?>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="orders-list">
+                            <?php $__empty_1 = true; $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <?php $estatusLower = strtolower($pedido->getEstatus()); ?>
+                                <div
+                                    onclick="selectOrder(this, <?php echo e($index); ?>)"
+                                    class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors <?php echo e($index === 0 ? 'bg-background-light dark:bg-background-dark' : ''); ?>"
+                                    data-order-index="<?php echo e($index); ?>"
+                                    data-folio="<?php echo e($pedido->getFolio()); ?>"
+                                    data-estatus="<?php echo e($estatusLower); ?>">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <h3 class="font-bold text-body-text dark:text-body-text-dark">
+                                                Folio: <?php echo e($pedido->getFolio()); ?></h3>
+                                            <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                                                <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
+                                        </div>
+                                        <span
+                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
+                                    </div>
+                                    <div class="mt-3 flex items-center justify-between">
+                                        <span
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                            <?php if($estatusLower === 'confirmado'): ?> bg-secondary text-white
+                                            <?php elseif($estatusLower === 'cancelado'): ?> bg-danger text-white
+                                            <?php elseif($estatusLower === 'completado'): ?> bg-success text-white
+                                            <?php else: ?> bg-neutral-200 text-neutral-text <?php endif; ?>">
+                                            <?php echo e($pedido->getEstatus()); ?>
 
-                            <!-- Confirmados -->
-                            <?php if($pedidosConfirmados->count() > 0): ?>
-                                <div>
-                                    <h3 class="text-xs font-bold uppercase text-neutral-text dark:text-neutral-text-dark mb-2">Confirmados</h3>
-                                    <div class="space-y-2">
-                                        <?php $__currentLoopData = $pedidosConfirmados; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <div
-                                                onclick="selectOrder(this, <?php echo e($index); ?>)"
-                                                class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors <?php echo e($index === 0 ? 'bg-background-light dark:bg-background-dark' : ''); ?>"
-                                                data-order-index="<?php echo e($index); ?>"
-                                                data-folio="<?php echo e($pedido->getFolio()); ?>"
-                                                data-estatus="<?php echo e(strtolower($pedido->getEstatus())); ?>">
-                                                <div class="flex items-start justify-between">
-                                                    <div>
-                                                        <h3 class="font-bold text-body-text dark:text-body-text-dark">
-                                                            Folio: <?php echo e($pedido->getFolio()); ?></h3>
-                                                        <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                            <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
-                                                    </div>
-                                                    <span
-                                                        class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
-                                                </div>
-                                                <div class="mt-3 flex items-center justify-between">
-                                                    <span
-                                                        class="inline-flex items-center rounded-full bg-success px-2.5 py-0.5 text-xs font-medium text-white"><?php echo e($pedido->getEstatus()); ?></span>
-                                                    <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                        <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </span>
+                                        <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
                                     </div>
                                 </div>
-                            <?php endif; ?>
-
-                            <!-- Cancelados -->
-                            <?php if($pedidosCancelados->count() > 0): ?>
-                                <div>
-                                    <h3 class="text-xs font-bold uppercase text-neutral-text dark:text-neutral-text-dark mb-2">Cancelados</h3>
-                                    <div class="space-y-2">
-                                        <?php $__currentLoopData = $pedidosCancelados; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <div
-                                                onclick="selectOrder(this, <?php echo e($index); ?>)"
-                                                class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors opacity-60"
-                                                data-order-index="<?php echo e($index); ?>"
-                                                data-folio="<?php echo e($pedido->getFolio()); ?>"
-                                                data-estatus="<?php echo e(strtolower($pedido->getEstatus())); ?>">
-                                                <div class="flex items-start justify-between">
-                                                    <div>
-                                                        <h3 class="font-bold text-body-text dark:text-body-text-dark">
-                                                            Folio: <?php echo e($pedido->getFolio()); ?></h3>
-                                                        <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                            <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
-                                                    </div>
-                                                    <span
-                                                        class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
-                                                </div>
-                                                <div class="mt-3 flex items-center justify-between">
-                                                    <span
-                                                        class="inline-flex items-center rounded-full bg-danger px-2.5 py-0.5 text-xs font-medium text-white"><?php echo e($pedido->getEstatus()); ?></span>
-                                                    <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                        <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if($pedidosConfirmados->count() === 0 && $pedidosCancelados->count() === 0): ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">
                                     <?php echo e(__('pharmacy.orders.no_orders')); ?>
 
@@ -208,8 +173,7 @@
                                     <button
                                         id="startPreparingBtn"
                                         class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
-                                        <?php echo e(__('pharmacy.orders.start_preparing')); ?>
-
+                                        Marcar como surtido
                                     </button>
                                 </div>
                             </div>
@@ -253,6 +217,8 @@
         const csrfToken = '<?php echo e(csrf_token()); ?>';
         let currentOrderIndex = 0;
         const serviceFeeFixed = 1.00;
+        let errorMessage = null; // Variable para almacenar mensaje de error
+        let successMessage = null; // Variable para almacenar mensaje de éxito
 
         function selectOrder(element, index) {
             // Remover selección anterior
@@ -265,6 +231,8 @@
             element.classList.add('bg-background-light', 'dark:bg-background-dark');
             
             currentOrderIndex = index;
+            errorMessage = null; // Limpiar error anterior
+            successMessage = null; // Limpiar mensaje de éxito anterior
             renderOrderDetails();
         }
 
@@ -272,7 +240,39 @@
             const order = orders[currentOrderIndex];
             const container = document.getElementById('order-details-container');
 
-            let html = `
+            let html = ``;
+
+            // Mostrar alert de éxito si existe
+            if (successMessage) {
+                html += `
+                    <div class="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success dark:border-success/30 dark:bg-success/15 mb-4">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">check_circle</span>
+                            <div>
+                                <p class="font-semibold">Éxito</p>
+                                <p class="text-xs mt-1">${successMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Mostrar alert de error si existe
+            if (errorMessage) {
+                html += `
+                    <div class="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/15 mb-4">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">error</span>
+                            <div>
+                                <p class="font-semibold">Error al cancelar</p>
+                                <p class="text-xs mt-1">${errorMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
                 <!-- Patient Info Card -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
@@ -371,6 +371,7 @@
             const cancelBtn = document.getElementById('cancelOrderBtn');
             const startBtn = document.getElementById('startPreparingBtn');
             const order = orders[currentOrderIndex];
+            const status = order?.estatus ? order.estatus.toLowerCase() : '';
             
             if (subtotalEl && serviceFeeEl && estimatedEl) {
                 const total = subtotal + serviceFeeFixed;
@@ -384,22 +385,64 @@
                 }
             }
 
-            // Deshabilitar botones si el pedido está cancelado
-            const isDisabled = order && order.estatus && strtolower(order.estatus) === 'cancelado';
-            if (cancelBtn) {
-                cancelBtn.disabled = isDisabled;
-                cancelBtn.classList.toggle('opacity-50', isDisabled);
-                cancelBtn.classList.toggle('cursor-not-allowed', isDisabled);
-            }
-            if (startBtn) {
-                startBtn.disabled = isDisabled;
-                startBtn.classList.toggle('opacity-50', isDisabled);
-                startBtn.classList.toggle('cursor-not-allowed', isDisabled);
+            // Habilitar/deshabilitar botones según estatus
+            if (cancelBtn && startBtn) {
+                let cancelDisabled = false;
+                let startDisabled = false;
+
+                if (status === 'confirmado') {
+                    cancelDisabled = true;
+                    startDisabled = false;
+                } else if (status === 'surtido') {
+                    cancelDisabled = false;
+                    startDisabled = true;
+                } else if (status === 'cancelado') {
+                    cancelDisabled = true;
+                    startDisabled = true;
+                } else {
+                    cancelDisabled = false;
+                    startDisabled = false;
+                }
+
+                cancelBtn.disabled = cancelDisabled;
+                cancelBtn.classList.toggle('opacity-50', cancelDisabled);
+                cancelBtn.classList.toggle('cursor-not-allowed', cancelDisabled);
+
+                startBtn.disabled = startDisabled;
+                startBtn.classList.toggle('opacity-50', startDisabled);
+                startBtn.classList.toggle('cursor-not-allowed', startDisabled);
             }
         }
 
         function strtolower(str) {
             return typeof str === 'string' ? str.toLowerCase() : '';
+        }
+
+        function applyStatusFilter() {
+            const filter = document.getElementById('statusFilter').value;
+            const cards = document.querySelectorAll('.order-card');
+            let firstVisibleIndex = null;
+
+            cards.forEach(card => {
+                const status = card.dataset.estatus;
+                const matches = filter === 'all' || status === filter;
+                card.style.display = matches ? '' : 'none';
+                if (matches && firstVisibleIndex === null) {
+                    firstVisibleIndex = parseInt(card.dataset.orderIndex, 10);
+                }
+            });
+
+            if (firstVisibleIndex !== null) {
+                const card = Array.from(cards).find(c => parseInt(c.dataset.orderIndex, 10) === firstVisibleIndex);
+                if (card) {
+                    selectOrder(card, firstVisibleIndex);
+                }
+            } else {
+                const container = document.getElementById('order-details-container');
+                if (container) {
+                    container.innerHTML = '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
+                }
+            }
         }
 
         async function cancelCurrentOrder() {
@@ -421,14 +464,69 @@
                     }
                 });
 
+                const data = await res.json().catch(() => null);
+                console.log(data);
+
                 if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    throw new Error(err?.message || 'Error al cancelar el pedido');
+                    errorMessage = data?.message || 'Error al cancelar el pedido';
+                    renderOrderDetails(); // Re-render para mostrar el error
+                    btn.disabled = false;
+                    return;
                 }
 
+                // Éxito: actualizar orden
+                order.estatus = 'cancelado';
+                errorMessage = null;
+                successMessage = data.message;
+                renderOrderDetails();
+                updatePriceSummary(0);
+
+                // Actualizar el badge del card en la lista
+                const orderCard = document.querySelector(`[data-folio="${order.folio}"]`);
+                if (orderCard) {
+                    const badge = orderCard.querySelector('.inline-flex');
+                    if (badge) {
+                        badge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-danger text-white';
+                        badge.textContent = 'cancelado';
+                    }
+                }
+
+            } catch (e) {
+                errorMessage = 'Error en la solicitud: ' + e.message;
+                renderOrderDetails();
+                btn.disabled = false;
+            }
+        }
+
+        async function marcarComoSurtido() {
+            const order = orders[currentOrderIndex];
+            if (!order) return;
+
+            const btn = document.getElementById('startPreparingBtn');
+            btn.disabled = true;
+            btn.textContent = 'Marcando...';
+
+            try {
+                const res = await fetch(`/pharmacy/orders/mark-surtido/${order.folio}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.error || err?.message || 'No se pudo marcar como surtido');
+                }
+
+                alert('Pedido marcado como surtido y notificación enviada al paciente.');
                 location.reload();
             } catch (e) {
+                alert(e.message || 'No se pudo marcar como surtido. Intenta de nuevo.');
                 btn.disabled = false;
+                btn.textContent = 'Marcar como surtido';
             }
         }
 
@@ -447,6 +545,16 @@
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', cancelCurrentOrder);
             }
+            const startBtn = document.getElementById('startPreparingBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', marcarComoSurtido);
+            }
+
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', applyStatusFilter);
+            }
+            applyStatusFilter();
         });
     </script>
 </body>

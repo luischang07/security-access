@@ -28,7 +28,7 @@ class PedidoService
     $this->pacienteService = new PacienteService();
   }
 
-  public function nuevoPedido($paciente_id)
+  public function nuevoPedido($paciente_id): Pedido
   {
     $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
     $pedidos = $this->dataBase->getPedidos($paciente_id);
@@ -77,13 +77,16 @@ class PedidoService
 
   public function cancelarPedido(Pedido $pedido): Pedido
   {
+    if (strtolower($pedido->getEstatus()) !== ModelsPedido::ESTATUS_SURTIDO) {
+      throw new Exception("Solo puedes cancelar pedidos si el pedido que esta surtido");
+    }
+    $pedido->cambiarEstatus(ModelsPedido::ESTATUS_CANCELADO);
+    $this->dataBase->guardarCambioEstatusPedido($pedido);
+
     $dlp = $pedido->getAllDetalles();
 
     $this->dataBase->iniciarTransaccion();
     try {
-      $pedido->cambiarEstatus(ModelsPedido::STATUS_CANCELED);
-      $this->dataBase->cancelarPedido($pedido);
-
       foreach ($dlp as $detalle) {
         /** @var DetalleLineaPedido $detalle */
         $inventario = $this->dataBase->getInventario(
@@ -116,6 +119,7 @@ class PedidoService
 
     return $pedido;
   }
+
 
   public function getSucursal(string $cadenaId, string $sucursalId): Sucursal
   {
@@ -194,9 +198,9 @@ class PedidoService
       $this->dataBase->guardarCambioEstatusPedido($pedido);
       $mensaje = "Su pedido {$pedido->getfolio()} está listo para ser recogido. Tienes 48 horas para recogerlo en la sucursal {$pedido->getSucursal()->getNombre()}.";
       $notificacion = Notificacion::crear($mensaje, now());
-      $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
+      $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
       $paciente->agregarNotificacion($notificacion);
-      $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
+      $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getfolio());
       $this->dataBase->commitTransaccion();
     } catch (\Exception $e) {
       $this->dataBase->cancelarTransaccion();

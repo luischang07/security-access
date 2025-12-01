@@ -27,6 +27,11 @@ class SucursalService
     return $this->dataBase->getSucursal($cadena_id, $sucursal_id);
   }
 
+  public function getSucursalesPorCadena($cadena_id): Collection
+  {
+    return $this->dataBase->getSucursalesPorCadena($cadena_id);
+  }
+
   public function getLineaInventario($cadena_id, $sucursal_id, $medicamento_id): LineaInventario
   {
     return $this->dataBase->getInventario($cadena_id, $sucursal_id, $medicamento_id);

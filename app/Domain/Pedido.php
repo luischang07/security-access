@@ -232,7 +232,7 @@ class Pedido
   {
     return $this->cedulaProfesional;
   }
-  public function setMontoPenalizacion(float $monto): void
+  public function sumarMontoPenalizacion(float $monto): void
   {
     $this->costoTotal = $this->costoTotal + $monto;
 

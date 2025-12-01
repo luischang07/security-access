@@ -36,7 +36,7 @@ class Paciente
   {
     return $this->montoPenalizacion;
   }
-  public function setMontoPenalizacion(float $monto): void
+  public function sumarMontoPenalizacion(float $monto): void
   {
     $this->montoPenalizacion += $monto;
   }

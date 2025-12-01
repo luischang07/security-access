@@ -106,7 +106,7 @@
                                     <span
                                         class="inline-flex items-center rounded-full 
                                         <?php if(strtolower($pedido->estatus) === 'confirmado'): ?> bg-success
-                                        <?php elseif(strtolower($pedido->estatus) === 'listo'): ?> bg-primary
+                                        <?php elseif(strtolower($pedido->estatus) === 'surtido'): ?> bg-primary
                                         <?php elseif(strtolower($pedido->estatus) === 'completado'): ?> bg-secondary
                                         <?php else: ?> bg-neutral-text <?php endif; ?>
                                         px-2.5 py-0.5 text-xs font-medium text-white">

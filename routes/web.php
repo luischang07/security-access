@@ -58,7 +58,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
     Route::post('/medications/remove', [GestionPedidoController::class, 'eliminarMedicamento'])->name('medications.remove');
 
     // AJAX: obtener sucursales por cadena
-    Route::get('/sucursales/{cadena_id}', [PrescriptionController::class, 'sucursalesPorCadena'])->name('sucursales.by_cadena');
+    Route::get('/sucursales/{cadena_id}', [GestionPedidoController::class, 'getSucursalesPorCadena'])->name('sucursales.by_cadena');
 
     // AJAX: obtener datos del mapa de farmacias
     Route::get('/pharmacies-data', [PrescriptionController::class, 'getPharmaciesData'])->name('pharmacies.data');

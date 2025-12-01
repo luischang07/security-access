@@ -109,9 +109,9 @@
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
                                             class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                            @if($estatusLower === 'surtido') bg-secondary text-white
+                                            @if($estatusLower === 'confirmado') bg-secondary text-white
                                             @elseif($estatusLower === 'cancelado') bg-danger text-white
-                                            @elseif($estatusLower === 'confirmado') bg-success text-white
+                                            @elseif($estatusLower === 'completado') bg-success text-white
                                             @else bg-neutral-200 text-neutral-text @endif">
                                             {{ $pedido->getEstatus() }}
                                         </span>
@@ -215,6 +215,7 @@
         let currentOrderIndex = 0;
         const serviceFeeFixed = 1.00;
         let errorMessage = null; // Variable para almacenar mensaje de error
+        let successMessage = null; // Variable para almacenar mensaje de éxito
 
         function selectOrder(element, index) {
             // Remover selección anterior
@@ -228,6 +229,7 @@
             
             currentOrderIndex = index;
             errorMessage = null; // Limpiar error anterior
+            successMessage = null; // Limpiar mensaje de éxito anterior
             renderOrderDetails();
         }
 
@@ -236,6 +238,21 @@
             const container = document.getElementById('order-details-container');
 
             let html = ``;
+
+            // Mostrar alert de éxito si existe
+            if (successMessage) {
+                html += `
+                    <div class="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success dark:border-success/30 dark:bg-success/15 mb-4">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">check_circle</span>
+                            <div>
+                                <p class="font-semibold">Éxito</p>
+                                <p class="text-xs mt-1">${successMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
             // Mostrar alert de error si existe
             if (errorMessage) {
@@ -454,10 +471,21 @@
                 }
 
                 // Éxito: actualizar orden
-                order.estatus = 'Cancelado';
+                order.estatus = 'cancelado';
                 errorMessage = null;
+                successMessage = data.message;
                 renderOrderDetails();
                 updatePriceSummary(0);
+
+                // Actualizar el badge del card en la lista
+                const orderCard = document.querySelector(`[data-folio="${order.folio}"]`);
+                if (orderCard) {
+                    const badge = orderCard.querySelector('.inline-flex');
+                    if (badge) {
+                        badge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-danger text-white';
+                        badge.textContent = 'cancelado';
+                    }
+                }
 
             } catch (e) {
                 errorMessage = 'Error en la solicitud: ' + e.message;

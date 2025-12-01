@@ -36,7 +36,8 @@ class PrescriptionController extends Controller
   {
     // Only load cadenas for the initial page; branches will be requested on demand
     $cadenas = $this->dataBase->getCadenas();
-    return view('prescription.upload-step1', compact('cadenas'));
+    $pedidoInicial = null; // No existing prescription data for new forms
+    return view('prescription.upload-step1', compact('cadenas', 'pedidoInicial'));
   }
 
   /**

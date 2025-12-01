@@ -24,9 +24,9 @@ class PacienteService
     return $this->paciente->getMontoPenalizacion();
   }
 
-  public function setMontoPenalizacion(Paciente $paciente, float $monto)
+  public function sumarMontoPenalizacion(Paciente $paciente, float $monto)
   {
-    $paciente->setMontoPenalizacion($monto);
+    $paciente->sumarMontoPenalizacion($monto);
   }
 
   public function getPedidosPorPaciente(int $user_id): Collection

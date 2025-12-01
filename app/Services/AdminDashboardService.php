@@ -121,7 +121,7 @@ class AdminDashboardService
   protected function getAverageFulfillmentTime(): float
   {
     $pedidos = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
-      ->where('estatus', 'entregado')
+      ->where('estatus', 'completado')
       ->whereDate('fecha_recoleccion', '>=', now()->subDays(30))
       ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
       ->first();
@@ -137,13 +137,13 @@ class AdminDashboardService
   protected function getFulfillmentTrend(): float
   {
     $currentWeek = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
-      ->where('estatus', 'entregado')
+      ->where('estatus', 'completado')
       ->whereDate('fecha_recoleccion', '>=', now()->subWeek())
       ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
       ->first();
 
     $lastWeek = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
-      ->where('estatus', 'entregado')
+      ->where('estatus', 'completado')
       ->whereDate('fecha_recoleccion', '>=', now()->subWeeks(2))
       ->whereDate('fecha_recoleccion', '<', now()->subWeek())
       ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')

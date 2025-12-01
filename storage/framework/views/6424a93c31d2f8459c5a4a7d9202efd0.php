@@ -1,7 +1,8 @@
 <div class="max-w-7xl mx-auto">
   <!-- Error/Warning Alert -->
   <?php if(session('error')): ?>
-    <div class="mb-6 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning dark:border-warning/30 dark:bg-warning/15">
+    <div
+      class="mb-6 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning dark:border-warning/30 dark:bg-warning/15">
       <div class="flex gap-3">
         <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">warning</span>
         <div>
@@ -91,7 +92,7 @@
             <div class="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-800 last:border-b-0">
               <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">
-                  <?php echo e($pedido->estatus === 'entregado' ? 'check_circle' : 'cancel'); ?>
+                  <?php echo e($pedido->estatus === 'completado' ? 'check_circle' : 'cancel'); ?>
 
                 </span>
               </div>
@@ -101,7 +102,7 @@
 
                 </p>
                 <p class="text-gray-500 dark:text-gray-400 text-xs">
-                  <?php echo e($pedido->estatus === 'entregado' ? __('patient.dashboard.recent_history.completed') : __('patient.dashboard.recent_history.cancelled')); ?>
+                  <?php echo e($pedido->estatus === 'completado' ? __('patient.dashboard.recent_history.completed') : __('patient.dashboard.recent_history.cancelled')); ?>
 
                   - <?php echo e($pedido->fecha_pedido->format('d/m/Y')); ?>
 

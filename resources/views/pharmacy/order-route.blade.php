@@ -103,7 +103,7 @@
                                     <span
                                         class="inline-flex items-center rounded-full 
                                         @if (strtolower($pedido->estatus) === 'confirmado') bg-success
-                                        @elseif(strtolower($pedido->estatus) === 'listo') bg-primary
+                                        @elseif(strtolower($pedido->estatus) === 'surtido') bg-primary
                                         @elseif(strtolower($pedido->estatus) === 'completado') bg-secondary
                                         @else bg-neutral-text @endif
                                         px-2.5 py-0.5 text-xs font-medium text-white">

@@ -127,7 +127,7 @@ class PharmacyController extends Controller
 
   public function marcarComoSurtido($folio)
   {
-    $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
+    $pedido = $this->pedidoService->getPedidoPorFolio($folio);
     if (!$pedido) {
       return response()->json(['error' => 'Pedido no encontrado.'], 404);
     }
