@@ -75,19 +75,27 @@
                             <h1 class="text-2xl font-bold text-body-text dark:text-body-text-dark mb-4">
                                 {{ __('pharmacy.orders.title') }}</h1>
 
-                            <!-- Search bar removed -->
-
-                            <!-- Status Tabs removed per request -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark" for="statusFilter">Filtrar por estatus</label>
+                                <select id="statusFilter" class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
+                                    <option value="all">Todos</option>
+                                    <option value="confirmado">Confirmados</option>
+                                    <option value="surtido">Surtidos</option>
+                                    <option value="cancelado">Cancelados</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Order Cards List -->
-                        <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="orders-list">
                             @forelse ($pedidos as $index => $pedido)
+                                @php $estatusLower = strtolower($pedido->getEstatus()); @endphp
                                 <div
                                     onclick="selectOrder(this, {{ $index }})"
                                     class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors {{ $index === 0 ? 'bg-background-light dark:bg-background-dark' : '' }}"
                                     data-order-index="{{ $index }}"
-                                    data-folio="{{ $pedido->getFolio() }}">
+                                    data-folio="{{ $pedido->getFolio() }}"
+                                    data-estatus="{{ $estatusLower }}">
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <h3 class="font-bold text-body-text dark:text-body-text-dark">
@@ -100,7 +108,13 @@
                                     </div>
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
-                                            class="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white">{{ $pedido->getEstatus() }}</span>
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                            @if($estatusLower === 'surtido') bg-secondary text-white
+                                            @elseif($estatusLower === 'cancelado') bg-danger text-white
+                                            @elseif($estatusLower === 'confirmado') bg-success text-white
+                                            @else bg-neutral-200 text-neutral-text @endif">
+                                            {{ $pedido->getEstatus() }}
+                                        </span>
                                         <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
                                             {{ $pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A' }}</p>
                                     </div>
@@ -155,7 +169,7 @@
                                     <button
                                         id="startPreparingBtn"
                                         class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
-                                        {{ __('pharmacy.orders.start_preparing') }}
+                                        Marcar como surtido
                                     </button>
                                 </div>
                             </div>
@@ -199,6 +213,7 @@ foreach ($pedidos as $p) {
         const orders = @json($ordersData);
         const csrfToken = '{{ csrf_token() }}';
         let currentOrderIndex = 0;
+        let errorMessage = null; // Variable para almacenar mensaje de error
 
         function selectOrder(element, index) {
             // Remover selección anterior
@@ -211,6 +226,7 @@ foreach ($pedidos as $p) {
             element.classList.add('bg-background-light', 'dark:bg-background-dark');
             
             currentOrderIndex = index;
+            errorMessage = null; // Limpiar error anterior
             renderOrderDetails();
         }
 
@@ -218,7 +234,24 @@ foreach ($pedidos as $p) {
             const order = orders[currentOrderIndex];
             const container = document.getElementById('order-details-container');
 
-            let html = `
+            let html = ``;
+
+            // Mostrar alert de error si existe
+            if (errorMessage) {
+                html += `
+                    <div class="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/15 mb-4">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">error</span>
+                            <div>
+                                <p class="font-semibold">Error al cancelar</p>
+                                <p class="text-xs mt-1">${errorMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
                 <!-- Patient Info Card -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
@@ -312,6 +345,10 @@ foreach ($pedidos as $p) {
             const penaltyRowEl = document.getElementById('penalty-row');
             const estimatedEl = document.getElementById('estimatedTotal');
             const priceSummary = document.getElementById('price-summary');
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            const startBtn = document.getElementById('startPreparingBtn');
+            const order = orders[currentOrderIndex];
+            const status = order?.estatus ? order.estatus.toLowerCase() : '';
             
             if (subtotalEl && serviceFeeEl && estimatedEl) {
                 const total = subtotal + penalizacion;
@@ -332,6 +369,65 @@ foreach ($pedidos as $p) {
                         penaltyRowEl.classList.add('hidden');
                         penaltyRowEl.classList.remove('flex');
                     }
+                }
+            }
+
+            // Habilitar/deshabilitar botones según estatus
+            if (cancelBtn && startBtn) {
+                let cancelDisabled = false;
+                let startDisabled = false;
+
+                if (status === 'confirmado') {
+                    cancelDisabled = true;
+                    startDisabled = false;
+                } else if (status === 'surtido') {
+                    cancelDisabled = false;
+                    startDisabled = true;
+                } else if (status === 'cancelado') {
+                    cancelDisabled = true;
+                    startDisabled = true;
+                } else {
+                    cancelDisabled = false;
+                    startDisabled = false;
+                }
+
+                cancelBtn.disabled = cancelDisabled;
+                cancelBtn.classList.toggle('opacity-50', cancelDisabled);
+                cancelBtn.classList.toggle('cursor-not-allowed', cancelDisabled);
+
+                startBtn.disabled = startDisabled;
+                startBtn.classList.toggle('opacity-50', startDisabled);
+                startBtn.classList.toggle('cursor-not-allowed', startDisabled);
+            }
+        }
+
+        function strtolower(str) {
+            return typeof str === 'string' ? str.toLowerCase() : '';
+        }
+
+        function applyStatusFilter() {
+            const filter = document.getElementById('statusFilter').value;
+            const cards = document.querySelectorAll('.order-card');
+            let firstVisibleIndex = null;
+
+            cards.forEach(card => {
+                const status = card.dataset.estatus;
+                const matches = filter === 'all' || status === filter;
+                card.style.display = matches ? '' : 'none';
+                if (matches && firstVisibleIndex === null) {
+                    firstVisibleIndex = parseInt(card.dataset.orderIndex, 10);
+                }
+            });
+
+            if (firstVisibleIndex !== null) {
+                const card = Array.from(cards).find(c => parseInt(c.dataset.orderIndex, 10) === firstVisibleIndex);
+                if (card) {
+                    selectOrder(card, firstVisibleIndex);
+                }
+            } else {
+                const container = document.getElementById('order-details-container');
+                if (container) {
+                    container.innerHTML = '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
                 }
             }
         }
@@ -355,14 +451,57 @@ foreach ($pedidos as $p) {
                     }
                 });
 
+                const data = await res.json().catch(() => null);
+
                 if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    throw new Error(err?.message || 'Error al cancelar el pedido');
+                    errorMessage = data?.message || 'Error al cancelar el pedido';
+                    renderOrderDetails(); // Re-render para mostrar el error
+                    btn.disabled = false;
+                    return;
                 }
 
+                // Éxito: actualizar orden
+                order.estatus = 'Cancelado';
+                errorMessage = null;
+                renderOrderDetails();
+                updatePriceSummary(0);
+
+            } catch (e) {
+                errorMessage = 'Error en la solicitud: ' + e.message;
+                renderOrderDetails();
+                btn.disabled = false;
+            }
+        }
+
+        async function marcarComoSurtido() {
+            const order = orders[currentOrderIndex];
+            if (!order) return;
+
+            const btn = document.getElementById('startPreparingBtn');
+            btn.disabled = true;
+            btn.textContent = 'Marcando...';
+
+            try {
+                const res = await fetch(`/pharmacy/orders/mark-surtido/${order.folio}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.error || err?.message || 'No se pudo marcar como surtido');
+                }
+
+                alert('Pedido marcado como surtido y notificación enviada al paciente.');
                 location.reload();
             } catch (e) {
+                alert(e.message || 'No se pudo marcar como surtido. Intenta de nuevo.');
                 btn.disabled = false;
+                btn.textContent = 'Marcar como surtido';
             }
         }
 
@@ -381,6 +520,16 @@ foreach ($pedidos as $p) {
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', cancelCurrentOrder);
             }
+            const startBtn = document.getElementById('startPreparingBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', marcarComoSurtido);
+            }
+
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', applyStatusFilter);
+            }
+            applyStatusFilter();
         });
     </script>
 </body>

@@ -1,4 +1,16 @@
 <div class="max-w-7xl mx-auto">
+  <!-- Error/Warning Alert -->
+  @if(session('error'))
+    <div class="mb-6 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning dark:border-warning/30 dark:bg-warning/15">
+      <div class="flex gap-3">
+        <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">warning</span>
+        <div>
+          <p class="font-semibold">{{ session('error') }}</p>
+        </div>
+      </div>
+    </div>
+  @endif
+
   <!-- Header -->
   <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
     <div class="flex min-w-72 flex-col gap-2">

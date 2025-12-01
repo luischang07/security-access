@@ -75,235 +75,109 @@
                             <h1 class="text-2xl font-bold text-body-text dark:text-body-text-dark mb-4">
                                 <?php echo e(__('pharmacy.orders.title')); ?></h1>
 
-                            <!-- Search Bar -->
-                            <div class="relative mb-4">
-                                <span
-                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-text dark:text-neutral-text-dark">search</span>
-                                <input type="text" placeholder="<?php echo e(__('pharmacy.orders.search_placeholder')); ?>"
-                                    class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark placeholder:text-neutral-text dark:placeholder:text-neutral-text-dark focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-
-                            <!-- Status Tabs -->
-                            <div class="flex gap-2 text-sm">
-                                <button
-                                    class="px-4 py-2 rounded-lg bg-primary text-white font-medium"><?php echo e(__('pharmacy.orders.status.new')); ?>
-
-                                    (4)</button>
-                                <button
-                                    class="px-4 py-2 rounded-lg text-neutral-text dark:text-neutral-text-dark hover:bg-background-light dark:hover:bg-background-dark"><?php echo e(__('pharmacy.orders.status.in_progress')); ?>
-
-                                    (2)</button>
-                                <button
-                                    class="px-4 py-2 rounded-lg text-neutral-text dark:text-neutral-text-dark hover:bg-background-light dark:hover:bg-background-dark"><?php echo e(__('pharmacy.orders.status.ready')); ?>
-
-                                    (3)</button>
+                            <div class="space-y-2">
+                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark" for="statusFilter">Filtrar por estatus</label>
+                                <select id="statusFilter" class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
+                                    <option value="all">Todos</option>
+                                    <option value="confirmado">Confirmados</option>
+                                    <option value="surtido">Surtidos</option>
+                                    <option value="cancelado">Cancelados</option>
+                                    <option value="pendiente">Pendientes</option>
+                                    <option value="en_proceso">En proceso</option>
+                                </select>
                             </div>
                         </div>
 
                         <!-- Order Cards List -->
-                        <div class="flex-1 overflow-y-auto p-4 space-y-2">
-                            <?php
-                                $orders = [
-                                    [
-                                        'name' => 'Carlos Rodriguez',
-                                        'order' => '#67890',
-                                        'icon' => 'storefront',
-                                        'time' => '2m',
-                                        'status' => 'new',
-                                    ],
-                                    [
-                                        'name' => 'Maria Gonzalez',
-                                        'order' => '#67889',
-                                        'icon' => 'storefront',
-                                        'time' => '10m',
-                                        'status' => 'new',
-                                    ],
-                                    [
-                                        'name' => 'Sofia Hernandez',
-                                        'order' => '#67888',
-                                        'icon' => 'local_shipping',
-                                        'time' => '25m',
-                                        'status' => 'new',
-                                    ],
-                                    [
-                                        'name' => 'Javier Lopez',
-                                        'order' => '#67887',
-                                        'icon' => 'storefront',
-                                        'time' => '1h',
-                                        'status' => 'new',
-                                    ],
-                                ];
-                            ?>
-
-                            <?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="orders-list">
+                            <?php $__empty_1 = true; $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <?php $estatusLower = strtolower($pedido->getEstatus()); ?>
                                 <div
-                                    class="p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer">
+                                    onclick="selectOrder(this, <?php echo e($index); ?>)"
+                                    class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors <?php echo e($index === 0 ? 'bg-background-light dark:bg-background-dark' : ''); ?>"
+                                    data-order-index="<?php echo e($index); ?>"
+                                    data-folio="<?php echo e($pedido->getFolio()); ?>"
+                                    data-estatus="<?php echo e($estatusLower); ?>">
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <h3 class="font-bold text-body-text dark:text-body-text-dark">
-                                                <?php echo e($order['name']); ?></h3>
+                                                Folio: <?php echo e($pedido->getFolio()); ?></h3>
                                             <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                                <?php echo e(__('pharmacy.orders.order_number')); ?> <?php echo e($order['order']); ?></p>
+                                                <?php echo e(__('pharmacy.orders.order_number')); ?> #<?php echo e($pedido->getFolio()); ?></p>
                                         </div>
                                         <span
-                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark"><?php echo e($order['icon']); ?></span>
+                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
                                     </div>
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
-                                            class="inline-flex items-center rounded-full bg-danger px-2.5 py-0.5 text-xs font-medium text-white"><?php echo e(__('pharmacy.orders.status.new')); ?></span>
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                            <?php if($estatusLower === 'surtido'): ?> bg-secondary text-white
+                                            <?php elseif($estatusLower === 'cancelado'): ?> bg-danger text-white
+                                            <?php elseif($estatusLower === 'confirmado'): ?> bg-success text-white
+                                            <?php else: ?> bg-neutral-200 text-neutral-text <?php endif; ?>">
+                                            <?php echo e($pedido->getEstatus()); ?>
+
+                                        </span>
                                         <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.received_ago', ['time' => $order['time']])); ?></p>
+                                            <?php echo e($pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A'); ?></p>
                                     </div>
                                 </div>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                <div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">
+                                    <?php echo e(__('pharmacy.orders.no_orders')); ?>
+
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <!-- Order Detail Panel -->
                     <div class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
                         <div class="flex-1 overflow-y-auto p-6 space-y-6">
-
-                            <!-- Patient Info Card -->
-                            <div
-                                class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                                        <?php echo e(__('pharmacy.orders.patient_info')); ?></h2>
-                                    <div
-                                        class="flex items-center gap-2 rounded-full bg-danger/10 px-3 py-1 text-xs font-medium text-danger">
-                                        <span class="material-symbols-outlined text-base">warning</span>
-                                        <?php echo e(__('pharmacy.orders.allergy_warning')); ?>: Penicillin
-                                    </div>
+                            <?php if($pedidos->isNotEmpty()): ?>
+                                <div id="order-details-container">
+                                    <!-- Detalles del pedido se mostrarán aquí con JavaScript -->
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.patient_name')); ?></p>
-                                        <p class="font-medium text-body-text dark:text-body-text-dark">Carlos Rodriguez
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.date_of_birth')); ?></p>
-                                        <p class="font-medium text-body-text dark:text-body-text-dark">15/08/1985</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                            <?php echo e(__('pharmacy.orders.contact')); ?></p>
-                                        <p class="font-medium text-body-text dark:text-body-text-dark">(555) 123-4567
-                                        </p>
-                                    </div>
+                            <?php else: ?>
+                                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
+                                    <?php echo e(__('pharmacy.orders.no_orders')); ?>
+
                                 </div>
-                            </div>
-
-                            <!-- Prescription Details -->
-                            <div
-                                class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                                        <?php echo e(__('pharmacy.orders.prescription_details')); ?></h2>
-                                    <div class="flex gap-2">
-                                        <button
-                                            class="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark">
-                                            <span class="material-symbols-outlined text-lg">image</span>
-                                            <?php echo e(__('pharmacy.orders.view_scan')); ?>
-
-                                        </button>
-                                        <button
-                                            class="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark">
-                                            <span class="material-symbols-outlined text-lg">print</span>
-                                            <?php echo e(__('pharmacy.orders.print_label')); ?>
-
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
-                                        <thead>
-                                            <tr>
-                                                <th
-                                                    class="py-3.5 px-6 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.medication')); ?></th>
-                                                <th
-                                                    class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.dosage')); ?></th>
-                                                <th
-                                                    class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.quantity')); ?></th>
-                                                <th
-                                                    class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                                    <?php echo e(__('pharmacy.orders.status_column')); ?></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-border-light dark:divide-border-dark">
-                                            <tr>
-                                                <td
-                                                    class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                                    Amoxicillin</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    500mg</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    30 <?php echo e(__('prescription.upload_step2.capsules')); ?></td>
-                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                                    <span
-                                                        class="inline-flex items-center rounded-full bg-success/20 px-2 py-1 text-xs font-medium text-success"><?php echo e(__('pharmacy.inventory.stock_status.in_stock')); ?></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td
-                                                    class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                                    Ibuprofen</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    200mg</td>
-                                                <td
-                                                    class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                    50 <?php echo e(__('prescription.upload_step2.tablets')); ?></td>
-                                                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                                    <span
-                                                        class="inline-flex items-center rounded-full bg-success/20 px-2 py-1 text-xs font-medium text-success"><?php echo e(__('pharmacy.inventory.stock_status.in_stock')); ?></span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Footer Actions -->
-                        <div
-                            class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 space-y-4">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-medium text-body-text dark:text-body-text-dark">
-                                    <?php echo e(__('pharmacy.orders.update_status')); ?></p>
-                                <div class="flex items-center gap-2">
-                                    <button
-                                        class="px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-medium text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark">
-                                        <?php echo e(__('pharmacy.orders.acknowledge')); ?>
+                        <div class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                            <div class="flex flex-col gap-4">
+                                <!-- Price Summary -->
+                                <div id="price-summary" class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                    <div class="flex justify-between items-center">
+                                        <span>Subtotal:</span>
+                                        <span id="subtotal" class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>Tarifa de servicio:</span>
+                                        <span id="serviceFee" class="font-medium text-body-text dark:text-body-text-dark">$1.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
+                                        <span class="font-bold">Total estimado:</span>
+                                        <span id="estimatedTotal" class="font-bold text-primary text-lg">$0.00</span>
+                                    </div>
+                                </div>
 
+                                <!-- Actions -->
+                                <div class="flex items-center gap-2 w-full">
+                                    <button
+                                        id="cancelOrderBtn"
+                                        class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
+                                        Cancelar
                                     </button>
                                     <button
-                                        class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">
-                                        <?php echo e(__('pharmacy.orders.start_preparing')); ?>
-
+                                        id="startPreparingBtn"
+                                        class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
+                                        Marcar como surtido
                                     </button>
                                 </div>
-                            </div>
-
-                            <div class="relative">
-                                <label for="patient-message"
-                                    class="sr-only"><?php echo e(__('pharmacy.orders.message_patient')); ?></label>
-                                <input type="text" id="patient-message"
-                                    placeholder="<?php echo e(__('pharmacy.orders.message_placeholder')); ?>"
-                                    class="w-full h-12 pl-4 pr-28 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark placeholder:text-neutral-text dark:placeholder:text-neutral-text-dark focus:ring-2 focus:ring-primary focus:border-transparent">
-                                <button
-                                    class="absolute right-1.5 top-1.5 h-9 px-4 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary/90">
-                                    <?php echo e(__('pharmacy.orders.send')); ?>
-
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -311,6 +185,317 @@
             </div>
         </div>
     </div>
+
+    <?php
+        $ordersData = [];
+        foreach ($pedidos as $p) {
+            $lineas_array = [];
+            foreach ($p->getLineasPedidos() as $linea) {
+                $detalles_array = [];
+                foreach ($linea->getDetalles() as $detalle) {
+                    $detalles_array[] = [
+                        'cantidad' => $detalle->getCantidadSurtida(),
+                        'precio' => $detalle->getPrecio(),
+                        'sucursal' => $detalle->getSucursal()->getNombre(),
+                    ];
+                }
+                $lineas_array[] = [
+                    'medicamento' => $linea->getMedicamento()->getNombre(),
+                    'detalles' => $detalles_array,
+                ];
+            }
+            $ordersData[] = [
+                'folio' => $p->getFolio(),
+                'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
+                'estatus' => $p->getEstatus(),
+                'lineas' => $lineas_array,
+            ];
+        }
+    ?>
+
+    <script>
+        // Data de los pedidos
+        const orders = <?php echo json_encode($ordersData, 15, 512) ?>;
+        const csrfToken = '<?php echo e(csrf_token()); ?>';
+        let currentOrderIndex = 0;
+        const serviceFeeFixed = 1.00;
+
+        function selectOrder(element, index) {
+            // Remover selección anterior
+            document.querySelectorAll('.order-card').forEach(card => {
+                card.classList.remove('bg-background-light', 'dark:bg-background-dark');
+                card.classList.add('border-transparent');
+            });
+
+            // Marcar el nuevo seleccionado
+            element.classList.add('bg-background-light', 'dark:bg-background-dark');
+            
+            currentOrderIndex = index;
+            renderOrderDetails();
+        }
+
+        function renderOrderDetails() {
+            const order = orders[currentOrderIndex];
+            const container = document.getElementById('order-details-container');
+
+            let html = `
+                <!-- Patient Info Card -->
+                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
+                            Información del Pedido</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Folio del Pedido</p>
+                            <p class="font-medium text-body-text dark:text-body-text-dark">${order.folio}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Fecha del Pedido</p>
+                            <p class="font-medium text-body-text dark:text-body-text-dark">${order.fecha_pedido}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prescription Details -->
+                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
+                            Detalles de la Receta</h2>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                            <thead>
+                                <tr>
+                                    <th class="py-3.5 px-6 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Medicamento</th>
+                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Cantidad</th>
+                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Precio Unitario</th>
+                                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                        Sucursal</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-light dark:divide-border-dark">
+            `;
+
+            let subtotal = 0;
+            if (order.lineas && order.lineas.length > 0) {
+                order.lineas.forEach(linea => {
+                    if (linea.detalles && linea.detalles.length > 0) {
+                        linea.detalles.forEach(detalle => {
+                            const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.cantidad) || 0);
+                            subtotal += lineTotal;
+                            html += `
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
+                                        ${linea.medicamento}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                        ${detalle.cantidad}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                        $${parseFloat(detalle.precio).toFixed(2)}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                        ${detalle.sucursal}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                });
+            } else {
+                html += `
+                    <tr>
+                        <td colspan="4" class="whitespace-nowrap py-4 px-6 text-sm text-center text-neutral-text dark:text-neutral-text-dark">
+                            No hay medicamentos en este pedido</td>
+                    </tr>
+                `;
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            // Actualizar resumen de precios
+            updatePriceSummary(subtotal);
+        }
+
+        function updatePriceSummary(subtotal) {
+            const subtotalEl = document.getElementById('subtotal');
+            const serviceFeeEl = document.getElementById('serviceFee');
+            const estimatedEl = document.getElementById('estimatedTotal');
+            const priceSummary = document.getElementById('price-summary');
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            const startBtn = document.getElementById('startPreparingBtn');
+            const order = orders[currentOrderIndex];
+            const status = order?.estatus ? order.estatus.toLowerCase() : '';
+            
+            if (subtotalEl && serviceFeeEl && estimatedEl) {
+                const total = subtotal + serviceFeeFixed;
+                subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+                serviceFeeEl.textContent = `$${serviceFeeFixed.toFixed(2)}`;
+                estimatedEl.textContent = `$${total.toFixed(2)}`;
+                
+                // Mostrar resumen si hay líneas
+                if (priceSummary) {
+                    priceSummary.classList.toggle('hidden', subtotal === 0);
+                }
+            }
+
+            // Habilitar/deshabilitar botones según estatus
+            if (cancelBtn && startBtn) {
+                let cancelDisabled = false;
+                let startDisabled = false;
+
+                if (status === 'confirmado') {
+                    cancelDisabled = true;
+                    startDisabled = false;
+                } else if (status === 'surtido') {
+                    cancelDisabled = false;
+                    startDisabled = true;
+                } else if (status === 'cancelado') {
+                    cancelDisabled = true;
+                    startDisabled = true;
+                } else {
+                    cancelDisabled = false;
+                    startDisabled = false;
+                }
+
+                cancelBtn.disabled = cancelDisabled;
+                cancelBtn.classList.toggle('opacity-50', cancelDisabled);
+                cancelBtn.classList.toggle('cursor-not-allowed', cancelDisabled);
+
+                startBtn.disabled = startDisabled;
+                startBtn.classList.toggle('opacity-50', startDisabled);
+                startBtn.classList.toggle('cursor-not-allowed', startDisabled);
+            }
+        }
+
+        function strtolower(str) {
+            return typeof str === 'string' ? str.toLowerCase() : '';
+        }
+
+        function applyStatusFilter() {
+            const filter = document.getElementById('statusFilter').value;
+            const cards = document.querySelectorAll('.order-card');
+            let firstVisibleIndex = null;
+
+            cards.forEach(card => {
+                const status = card.dataset.estatus;
+                const matches = filter === 'all' || status === filter;
+                card.style.display = matches ? '' : 'none';
+                if (matches && firstVisibleIndex === null) {
+                    firstVisibleIndex = parseInt(card.dataset.orderIndex, 10);
+                }
+            });
+
+            if (firstVisibleIndex !== null) {
+                const card = Array.from(cards).find(c => parseInt(c.dataset.orderIndex, 10) === firstVisibleIndex);
+                if (card) {
+                    selectOrder(card, firstVisibleIndex);
+                }
+            } else {
+                const container = document.getElementById('order-details-container');
+                if (container) {
+                    container.innerHTML = '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
+                }
+            }
+        }
+
+        async function cancelCurrentOrder() {
+            const order = orders[currentOrderIndex];
+            if (!order) {
+                return;
+            }
+
+            const btn = document.getElementById('cancelOrderBtn');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/pharmacy/orders/cancel/${order.folio}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.message || 'Error al cancelar el pedido');
+                }
+
+                location.reload();
+            } catch (e) {
+                btn.disabled = false;
+            }
+        }
+
+        async function marcarComoSurtido() {
+            const order = orders[currentOrderIndex];
+            if (!order) return;
+
+            const btn = document.getElementById('startPreparingBtn');
+            btn.disabled = true;
+            btn.textContent = 'Marcando...';
+
+            try {
+                const res = await fetch(`/pharmacy/orders/mark-surtido/${order.folio}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.error || err?.message || 'No se pudo marcar como surtido');
+                }
+
+                alert('Pedido marcado como surtido y notificación enviada al paciente.');
+                location.reload();
+            } catch (e) {
+                alert(e.message || 'No se pudo marcar como surtido. Intenta de nuevo.');
+                btn.disabled = false;
+                btn.textContent = 'Marcar como surtido';
+            }
+        }
+
+        // Inicializar con el primer pedido
+        document.addEventListener('DOMContentLoaded', function() {
+            renderOrderDetails();
+            
+            // Marcar el primer pedido como seleccionado
+            const firstCard = document.querySelector('.order-card');
+            if (firstCard) {
+                firstCard.classList.add('bg-background-light', 'dark:bg-background-dark');
+            }
+
+            // Agregar evento al botón cancelar
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', cancelCurrentOrder);
+            }
+            const startBtn = document.getElementById('startPreparingBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', marcarComoSurtido);
+            }
+
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', applyStatusFilter);
+            }
+            applyStatusFilter();
+        });
+    </script>
 </body>
 
 </html>

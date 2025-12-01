@@ -2,7 +2,18 @@
 
 <?php $__env->startSection('spa-content'); ?>
 <div class="max-w-7xl mx-auto">
-    <!-- Header with Back Button -->
+    <!-- Success Banner -->
+    <?php if(session('order_success')): ?>
+        <div class="mb-6 rounded-lg border border-success/30 bg-success/10 text-success px-4 py-3 flex items-center gap-3">
+            <span class="material-symbols-outlined text-xl">check_circle</span>
+            <div class="flex flex-col">
+                <strong class="text-sm">¡Pedido realizado con éxito!</strong>
+                <span class="text-sm text-success/90">Te avisaremos cuando esté listo para recolección. A continuación los detalles de tu pedido.</span>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Header -->
     <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
         <div class="flex flex-col gap-1">
             <h1 class="text-body-text dark:text-body-text-dark text-3xl font-black leading-tight tracking-[-0.033em]">
@@ -230,5 +241,17 @@
     </section>
 </div>
 <?php $__env->stopSection(); ?>
+
+<?php if(session('order_success')): ?>
+<?php $__env->startPush('scripts'); ?>
+<script>
+  // Previene navegar hacia atrás inmediatamente después de confirmar
+  history.pushState(null, '', location.href);
+  window.addEventListener('popstate', function () {
+    history.pushState(null, '', location.href);
+  });
+</script>
+<?php $__env->stopPush(); ?>
+<?php endif; ?>
 
 <?php echo $__env->make('layouts.patient-spa', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Users/jesusarturo/Desktop/mvc/Te-Acerco-Salud/resources/views/patient/order-detail.blade.php ENDPATH**/ ?>
