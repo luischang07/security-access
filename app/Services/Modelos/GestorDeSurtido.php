@@ -129,7 +129,6 @@ class GestorDeSurtido
       $pedido->calcularTotales();
 
       $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($pedido->getPacienteId());
-      info("Monto penalización aplicada: $montoPenalizacion");
       $pedido->setMontoPenalizacion((float) $montoPenalizacion);
       $this->guardarPedido($pedido);
       $this->dataBase->commitTransaccion();
@@ -173,6 +172,7 @@ class GestorDeSurtido
       $pedidoBD = $this->dataBase->guardarPedido($pedido);
 
       $folioPedido = $pedidoBD->folio_pedido;
+      $this->notificarSucursalesParticipantes($pedido->getRuta(), $folioPedido);
 
       $pedido->asignarFolio($folioPedido);
 
@@ -200,6 +200,14 @@ class GestorDeSurtido
         ]);
       }
     });
+  }
+
+  private function notificarSucursalesParticipantes($ruta,$folioPedido)
+  {
+    foreach ($ruta as $sucursal) {
+      $this->sucursalService->notificarNuevoPedido($sucursal, $folioPedido);
+    }
+
   }
 
 }

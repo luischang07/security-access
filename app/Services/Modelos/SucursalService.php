@@ -3,6 +3,7 @@
 namespace App\Services\Modelos;
 use App\Repositories\BaseDatos;
 use App\Domain\Sucursal;
+use App\Domain\Notificacion;
 
 class SucursalService
 {
@@ -41,4 +42,10 @@ class SucursalService
     }
 
 
+    public function notificarNuevoPedido(Sucursal $sucursal, $folioPedido)
+    {
+        $notificacion = Notificacion::crear("Se ha asignado nuevo pedido: " . $folioPedido ,now(), false);
+        $sucursal->agregarNotificacion($notificacion);
+        $this->dataBase->guardarNotificacionSucursal($sucursal, $folioPedido, $notificacion);
+    }
 }

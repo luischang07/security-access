@@ -9,6 +9,7 @@ class Sucursal
   private $calle, $numero_exterior, $numero_interior, $ciudad, $colonia;
   private $latitud, $longitud, $distancia;
   private $inventario;
+  private $notificaciones;
 
   public function __construct($cadena_id, $sucursal_id, $nombre, $calle, $numero_exterior, $numero_interior, $ciudad, $colonia, $latitud, $longitud, $distancia)
   {
@@ -24,6 +25,7 @@ class Sucursal
     $this->longitud = $longitud;
     $this->distancia = $distancia;
     $this->inventario = array();
+    $this->notificaciones = collect();
   }
   public static function crear($data)
   {
@@ -110,6 +112,11 @@ class Sucursal
   public function setLongitud($longitud)
   {
     $this->longitud = $longitud;
+  }
+
+  public function agregarNotificacion($notificacion)
+  {
+      $this->notificaciones->push($notificacion);
   }
 
   public function getDireccion()

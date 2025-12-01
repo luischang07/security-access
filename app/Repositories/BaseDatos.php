@@ -28,6 +28,7 @@ use App\Domain\LineaPedido as DomainLineaPedido;
 use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
 
 use App\Models\Notificacion;
+use App\Models\Empleado;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -159,6 +160,23 @@ class BaseDatos
       'fecha_hora' => $notificacion->getFechaEnvio(),
       'leida' => $notificacion->esLeida(),
     ]);
+  }
+
+  public function guardarNotificacionSucursal($sucursal, $folio_pedido, $notificacion)
+  {
+    //Obtener los user_id de la sucursal
+    $users_ids = Empleado::where('cadena_id', $sucursal->getCadenaId())
+      ->where('sucursal_id', $sucursal->getSucursalId())
+      ->pluck('user_id');
+    foreach ($users_ids as $user_id) {
+      Notificacion::create([
+        'user_id' => $user_id,
+        'folio_pedido' => $folio_pedido,
+        'mensaje' => $notificacion->getMensaje(),
+        'fecha_hora' => $notificacion->getFechaEnvio(),
+        'leida' => $notificacion->esLeida(),
+      ]);
+    }
   }
 
   public function guardarPedido(DomainPedido $pedido): Pedido
