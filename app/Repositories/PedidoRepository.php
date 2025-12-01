@@ -41,7 +41,7 @@ class PedidoRepository
   }
 
   /**
-   * Obtener historial de pedidos de un paciente (entregados o cancelados)
+   * Obtener historial de pedidos de un paciente (completados o cancelados)
    *
    * @param int $patientId
    * @param int $perPage
@@ -50,7 +50,7 @@ class PedidoRepository
   public function getOrderHistoryForPatient(int $patientId, int $perPage = 15): LengthAwarePaginator
   {
     return Pedido::forPatient($patientId)
-      ->whereIn('estatus', ['entregado', 'cancelado'])
+      ->whereIn('estatus', [Pedido::ESTATUS_COMPLETADO, Pedido::ESTATUS_CANCELADO])
       ->with(['lineasPedidos'])
       ->latest('fecha_pedido')
       ->paginate($perPage);
@@ -101,7 +101,7 @@ class PedidoRepository
   public function getCompletedOrdersCount(int $patientId): int
   {
     return Pedido::forPatient($patientId)
-      ->where('estatus', 'entregado')
+      ->where('estatus', Pedido::ESTATUS_COMPLETADO)
       ->count();
   }
 
@@ -119,7 +119,7 @@ class PedidoRepository
   }
 
   /**
-   * Obtener historial reciente de pedidos (entregados o cancelados)
+   * Obtener historial reciente de pedidos (completados o cancelados)
    *
    * @param int $patientId
    * @param int $limit
@@ -128,7 +128,7 @@ class PedidoRepository
   public function getRecentHistory(int $patientId, int $limit = 3): Collection
   {
     return Pedido::forPatient($patientId)
-      ->whereIn('estatus', ['entregado', 'cancelado'])
+      ->whereIn('estatus', [Pedido::ESTATUS_COMPLETADO, Pedido::ESTATUS_CANCELADO])
       ->latest('fecha_pedido')
       ->take($limit)
       ->get();

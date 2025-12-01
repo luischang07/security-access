@@ -62,7 +62,7 @@ return [
       'ready_for_pickup' => 'Listo para Recoger',
       'in_transit' => 'En Tránsito',
       'in_process' => 'En Proceso',
-      'delivered' => 'Entregado',
+      'delivered' => 'Completado',
       'no_orders' => 'No tienes pedidos activos en este momento',
     ],
     'recent_history' => [
@@ -72,7 +72,7 @@ return [
       'cancelled' => 'Cancelado',
       'no_history' => 'No tienes historial de pedidos',
       'status' => [
-        'delivered' => 'Entregado',
+        'delivered' => 'Completado',
         'cancelled' => 'Cancelado',
       ],
     ],
@@ -133,7 +133,7 @@ return [
       'confirmed' => 'Confirmado',
       'processing' => 'Procesando',
       'in_transit' => 'En Tránsito',
-      'delivered' => 'Entregado',
+      'delivered' => 'Completado',
       'cancelled' => 'Cancelado',
     ],
   ],

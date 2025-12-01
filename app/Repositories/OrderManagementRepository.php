@@ -67,7 +67,7 @@ class OrderManagementRepository
   {
     $totalOrders = Pedido::count();
     $pendingOrders = Pedido::where('estatus', 'pendiente')->count();
-    $completedToday = Pedido::where('estatus', 'entregado')
+    $completedToday = Pedido::where('estatus', Pedido::ESTATUS_COMPLETADO)
       ->whereDate('fecha_recoleccion', now())
       ->count();
 
