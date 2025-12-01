@@ -21,6 +21,8 @@ class Pedido
     private $costo_Total;
     private $faltantes;
 
+    private $montoPenalizacion;
+
     private $ruta;
 
     private function __construct()
@@ -223,8 +225,12 @@ class Pedido
     public function setMontoPenalizacion($monto)
     {
         $this->costo_Total = $this->costo_Total + $monto;
+        $this->montoPenalizacion = $monto;
+    }
 
-        info('monto final: ', [$this->costo_Total]);
+    public function getMontoPenalizacion()
+    {
+        return $this->montoPenalizacion;
     }
 
     public function getFechaRecoleccion()
@@ -302,6 +308,10 @@ class Pedido
             }
         }
         $pedido->lineas_pedido = $lineasPedidoCollection;
+
+        if ($pedidoModel->penalizacion) {
+            $pedido->montoPenalizacion = $pedidoModel->penalizacion->monto;
+        }
 
         return $pedido;
     }

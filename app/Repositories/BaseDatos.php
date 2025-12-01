@@ -29,6 +29,7 @@ use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
 
 use App\Models\Notificacion;
 
+use App\Models\PedidoPenalizacion;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -214,7 +215,7 @@ class BaseDatos
 
   public function getPedidos($user_id)
   {
-    $pedidos = Pedido::where('paciente_id', $user_id)->with("lineasPedidos")->get();
+    $pedidos = Pedido::where('paciente_id', $user_id)->with('lineasPedidos', 'penalizacion')->get();
 
     $pedidos = $pedidos->map(function ($pedido) {
       return DomainPedido::crear($pedido);
@@ -225,7 +226,7 @@ class BaseDatos
 
   public function getPedidoByFolio($folio)
   {
-    $pedido = Pedido::where('folio_pedido', $folio)->with('lineasPedidos')->first();
+    $pedido = Pedido::where('folio_pedido', $folio)->with('lineasPedidos', 'penalizacion')->first();
     if (!$pedido) {
       return null;
     }
@@ -238,7 +239,7 @@ class BaseDatos
   {
     $pedidos = Pedido::where('cadena_id', $cadena_id)
       ->where('sucursal_id', $sucursal_id)
-      ->with('lineasPedidos')
+      ->with('lineasPedidos', 'penalizacion')
       ->get();
 
     $pedidos = $pedidos->map(function ($pedido) {
@@ -260,5 +261,13 @@ class BaseDatos
   public function cancelarTransaccion()
   {
     DB::rollBack();
+  }
+
+  public function guardarMontoPenalizacion($folio, $monto)
+  {
+    PedidoPenalizacion::create([
+      'folio_pedido' => $folio,
+      'monto' => $monto,
+    ]);
   }
 }

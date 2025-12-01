@@ -62,10 +62,10 @@
 
             <div class="flex flex-1 overflow-hidden">
                 <?php echo $__env->make('components.sidebar', [
-                    'user' => auth()->user(),
-                    'type' => 'pharmacy',
-                    'currentRoute' => 'pharmacy.orders',
-                ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    'user' => auth()->user(),
+    'type' => 'pharmacy',
+    'currentRoute' => 'pharmacy.orders',
+], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
                 <div class="flex flex-1">
                     <!-- Order List Panel -->
@@ -138,9 +138,8 @@
                                         <span>Subtotal:</span>
                                         <span id="subtotal" class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span>Tarifa de servicio:</span>
-                                        <span id="serviceFee" class="font-medium text-body-text dark:text-body-text-dark">$1.00</span>
+                                    <div id="penalty-row" class="flex justify-between items-center hidden"> <span>Penalización</span>
+                                        <span id="serviceFee" class="fon    t-medium text-danger">$0.00</span> 
                                     </div>
                                     <div class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
                                         <span class="font-bold">Total estimado:</span>
@@ -171,30 +170,31 @@
     </div>
 
     <?php
-        $ordersData = [];
-        foreach ($pedidos as $p) {
-            $lineas_array = [];
-            foreach ($p->getLineasPedidos() as $linea) {
-                $detalles_array = [];
-                foreach ($linea->getDetalles() as $detalle) {
-                    $detalles_array[] = [
-                        'cantidad' => $detalle->getCantidadSurtida(),
-                        'precio' => $detalle->getPrecio(),
-                        'sucursal' => $detalle->getSucursal()->getNombre(),
-                    ];
-                }
-                $lineas_array[] = [
-                    'medicamento' => $linea->getMedicamento()->getNombre(),
-                    'detalles' => $detalles_array,
-                ];
-            }
-            $ordersData[] = [
-                'folio' => $p->getFolio(),
-                'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
-                'estatus' => $p->getEstatus(),
-                'lineas' => $lineas_array,
+$ordersData = [];
+foreach ($pedidos as $p) {
+    $lineas_array = [];
+    foreach ($p->getLineasPedidos() as $linea) {
+        $detalles_array = [];
+        foreach ($linea->getDetalles() as $detalle) {
+            $detalles_array[] = [
+                'cantidad' => $detalle->getCantidadSurtida(),
+                'precio' => $detalle->getPrecio(),
+                'sucursal' => $detalle->getSucursal()->getNombre(),
             ];
         }
+        $lineas_array[] = [
+            'medicamento' => $linea->getMedicamento()->getNombre(),
+            'detalles' => $detalles_array,
+        ];
+    }
+    $ordersData[] = [
+        'folio' => $p->getFolio(),
+        'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
+        'estatus' => $p->getEstatus(),
+        'lineas' => $lineas_array,
+        'penalizacion' => $p->getMontoPenalizacion() ? (float) $p->getMontoPenalizacion() : 0,
+    ];
+}
     ?>
 
     <script>
@@ -202,7 +202,6 @@
         const orders = <?php echo json_encode($ordersData, 15, 512) ?>;
         const csrfToken = '<?php echo e(csrf_token()); ?>';
         let currentOrderIndex = 0;
-        const serviceFeeFixed = 1.00;
 
         function selectOrder(element, index) {
             // Remover selección anterior
@@ -306,24 +305,36 @@
             container.innerHTML = html;
 
             // Actualizar resumen de precios
-            updatePriceSummary(subtotal);
+            const penalizacion = order.penalizacion || 0;
+            updatePriceSummary(subtotal, penalizacion);
         }
 
-        function updatePriceSummary(subtotal) {
+        function updatePriceSummary(subtotal, penalizacion) {
             const subtotalEl = document.getElementById('subtotal');
             const serviceFeeEl = document.getElementById('serviceFee');
+            const penaltyRowEl = document.getElementById('penalty-row');
             const estimatedEl = document.getElementById('estimatedTotal');
             const priceSummary = document.getElementById('price-summary');
             
             if (subtotalEl && serviceFeeEl && estimatedEl) {
-                const total = subtotal + serviceFeeFixed;
+                const total = subtotal + penalizacion;
                 subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-                serviceFeeEl.textContent = `$${serviceFeeFixed.toFixed(2)}`;
+                estimatedEl.textContent = `$${total.toFixed(2)}`;
+                serviceFeeEl.textContent = `$${penalizacion.toFixed(2)}`; 
                 estimatedEl.textContent = `$${total.toFixed(2)}`;
                 
                 // Mostrar resumen si hay líneas
                 if (priceSummary) {
                     priceSummary.classList.toggle('hidden', subtotal === 0);
+                }
+                if (penaltyRowEl) {
+                    if (penalizacion > 0) {
+                        penaltyRowEl.classList.remove('hidden');
+                        penaltyRowEl.classList.add('flex');
+                    } else {
+                        penaltyRowEl.classList.add('hidden');
+                        penaltyRowEl.classList.remove('flex');
+                    }
                 }
             }
         }

@@ -184,6 +184,17 @@
                                             </td>
                                         </tr>
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    <?php if($pedido->getMontoPenalizacion() && $pedido->getMontoPenalizacion() > 0): ?>
+                                    <tr>
+                                        <td colspan="3" class="py-4 pl-4 pr-3 text-sm text-right font-medium text-red-600 sm:pl-0">
+                                            Penalización 
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-medium text-red-600">
+                                            <?php echo e('$' . number_format($pedido->getMontoPenalizacion(), 2)); ?>
+
+                                        </td>
+                                    </tr>
+                                    <?php endif; ?>
                                     <tr class="border-t-2 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark">
                                         <td colspan="3" class="py-4 pl-4 pr-3 text-sm text-right font-bold text-body-text dark:text-body-text-dark sm:pl-0">
                                             <?php echo e(__('patient.order_detail.total')); ?>

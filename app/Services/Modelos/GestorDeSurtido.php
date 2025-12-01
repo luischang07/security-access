@@ -120,7 +120,6 @@ class GestorDeSurtido
     $pedido->calcularTotales();
 
     $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($pedido->getPacienteId());
-    info("Monto penalización aplicada: $montoPenalizacion");
     $pedido->setMontoPenalizacion((float) $montoPenalizacion);
     $this->guardarPedido($pedido);
     return $pedido;
@@ -188,6 +187,8 @@ class GestorDeSurtido
           'orden' => $orden++,
         ]);
       }
+
+      $this->dataBase->guardarMontoPenalizacion($pedido->getFolio(), $pedido->getMontoPenalizacion());
     });
   }
 
