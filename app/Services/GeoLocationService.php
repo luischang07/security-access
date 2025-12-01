@@ -11,11 +11,9 @@ class GeoLocationService
 {
   protected RoutingServiceInterface $routingService;
 
-  public function __construct(?RoutingServiceInterface $routingService = null)
+  public function __construct(RoutingServiceInterface $routingService)
   {
-    // Optional injection to avoid breaking existing tests/instantiations immediately
-    // In a real app, we'd bind this in a ServiceProvider
-    $this->routingService = $routingService ?? new \App\Services\Routing\OsrmRoutingService();
+    $this->routingService = $routingService;
   }
 
   /**
