@@ -26,7 +26,7 @@ class Pedido
 
   private Collection $ruta;
   private $routeGeometry = null;
-  private $montoPenalizacion;
+  private float $montoPenalizacion;
 
 
   private function __construct()
@@ -234,13 +234,8 @@ class Pedido
   {
     return $this->cedulaProfesional;
   }
-  public function setMontoPenalizacion($monto)
-  {
-    $this->costoTotal = $this->costoTotal + $monto;
-    $this->montoPenalizacion = $monto;
-  }
 
-  public function getMontoPenalizacion()
+  public function getMontoPenalizacion(): float
   {
     return $this->montoPenalizacion;
   }
@@ -248,8 +243,7 @@ class Pedido
   public function sumarMontoPenalizacion(float $monto): void
   {
     $this->costoTotal = $this->costoTotal + $monto;
-
-    info('monto final: ', [$this->costoTotal]);
+    $this->montoPenalizacion = $monto;
   }
 
   public function getFechaRecoleccion(): ?Carbon
