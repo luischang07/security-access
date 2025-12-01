@@ -55,6 +55,13 @@
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark text-body-text dark:text-body-text-dark">
+
+    @php
+        $empleado = auth()->user()->empleado;
+        $currentCadenaId = $empleado->cadena_id;
+        $currentSucursalId = $empleado->sucursal_id;
+    @endphp
+
     <div class="relative flex h-screen w-full flex-col overflow-hidden">
         <div class="layout-container flex h-full grow flex-col">
 
@@ -62,13 +69,12 @@
 
             <div class="flex flex-1 overflow-hidden">
                 @include('components.sidebar', [
-    'user' => auth()->user(),
-    'type' => 'pharmacy',
-    'currentRoute' => 'pharmacy.orders',
-])
+                    'user' => auth()->user(),
+                    'type' => 'pharmacy',
+                    'currentRoute' => 'pharmacy.orders',
+                ])
 
                 <div class="flex flex-1">
-                    <!-- Order List Panel -->
                     <div
                         class="w-full md:w-96 lg:w-[28rem] flex flex-col border-r border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark overflow-hidden">
                         <div class="p-6 border-b border-border-light dark:border-border-dark">
@@ -76,8 +82,10 @@
                                 {{ __('pharmacy.orders.title') }}</h1>
 
                             <div class="space-y-2">
-                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark" for="statusFilter">Filtrar por estatus</label>
-                                <select id="statusFilter" class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
+                                <label class="text-sm text-neutral-text dark:text-neutral-text-dark"
+                                    for="statusFilter">Filtrar por estatus</label>
+                                <select id="statusFilter"
+                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50 text-sm">
                                     <option value="all">Todos</option>
                                     <option value="confirmado">Confirmados</option>
                                     <option value="surtido">Surtidos</option>
@@ -86,12 +94,16 @@
                             </div>
                         </div>
 
-                        <!-- Order Cards List -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-4" id="orders-list">
                             @forelse ($pedidos as $index => $pedido)
-                                @php $estatusLower = strtolower($pedido->getEstatus()); @endphp
-                                <div
-                                    onclick="selectOrder(this, {{ $index }})"
+                                @php
+                                    $estatusLower = strtolower($pedido->getEstatus());
+                                    $sucursalPedido = $pedido->getSucursal();
+                                    $esHostVisual =
+                                        $sucursalPedido->getCadenaId() == $currentCadenaId &&
+                                        $sucursalPedido->getSucursalId() == $currentSucursalId;
+                                @endphp
+                                <div onclick="selectOrder(this, {{ $index }})"
                                     class="order-card p-4 rounded-lg border border-transparent hover:bg-background-light dark:hover:bg-background-dark cursor-pointer transition-colors {{ $index === 0 ? 'bg-background-light dark:bg-background-dark' : '' }}"
                                     data-order-index="{{ $index }}"
                                     data-folio="{{ $pedido->getFolio() }}"
@@ -103,20 +115,31 @@
                                             <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
                                                 {{ __('pharmacy.orders.order_number') }} #{{ $pedido->getFolio() }}</p>
                                         </div>
-                                        <span
-                                            class="material-symbols-outlined text-lg text-neutral-text dark:text-neutral-text-dark">storefront</span>
+
+                                        @if ($esHostVisual)
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                Sucursal Host
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
+                                                Sucursal Participante
+                                            </span>
+                                        @endif
                                     </div>
                                     <div class="mt-3 flex items-center justify-between">
                                         <span
                                             class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                            @if($estatusLower === 'surtido') bg-secondary text-white
+                                            @if ($estatusLower === 'surtido') bg-secondary text-white
                                             @elseif($estatusLower === 'cancelado') bg-danger text-white
                                             @elseif($estatusLower === 'confirmado') bg-success text-white
                                             @else bg-neutral-200 text-neutral-text @endif">
                                             {{ $pedido->getEstatus() }}
                                         </span>
                                         <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                            {{ $pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A' }}</p>
+                                            {{ $pedido->getFechaPedido()?->translatedFormat('d M Y H:i') ?? 'N/A' }}
+                                        </p>
                                     </div>
                                 </div>
                             @empty
@@ -127,47 +150,46 @@
                         </div>
                     </div>
 
-                    <!-- Order Detail Panel -->
                     <div class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
                         <div class="flex-1 overflow-y-auto p-6 space-y-6">
                             @if ($pedidos->isNotEmpty())
                                 <div id="order-details-container">
-                                    <!-- Detalles del pedido se mostrarán aquí con JavaScript -->
                                 </div>
                             @else
-                                <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
+                                <div
+                                    class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6 text-center text-neutral-text dark:text-neutral-text-dark">
                                     {{ __('pharmacy.orders.no_orders') }}
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Footer Actions -->
-                        <div class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                        <div
+                            class="border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                             <div class="flex flex-col gap-4">
-                                <!-- Price Summary -->
-                                <div id="price-summary" class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                <div id="price-summary"
+                                    class="flex flex-col gap-2 text-sm text-neutral-text dark:text-neutral-text-dark">
                                     <div class="flex justify-between items-center">
                                         <span>Subtotal:</span>
-                                        <span id="subtotal" class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
+                                        <span id="subtotal"
+                                            class="font-medium text-body-text dark:text-body-text-dark">$0.00</span>
                                     </div>
-                                    <div id="penalty-row" class="flex justify-between items-center hidden"> <span>Penalización</span>
-                                        <span id="serviceFee" class="fon    t-medium text-danger">$0.00</span> 
+                                    <div id="penalty-row" class="flex justify-between items-center hidden">
+                                        <span>Penalización</span>
+                                        <span id="serviceFee" class="font-medium text-danger">$0.00</span>
                                     </div>
-                                    <div class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
+                                    <div
+                                        class="flex justify-between items-center pt-2 border-t border-border-light dark:border-border-dark">
                                         <span class="font-bold">Total estimado:</span>
                                         <span id="estimatedTotal" class="font-bold text-primary text-lg">$0.00</span>
                                     </div>
                                 </div>
 
-                                <!-- Actions -->
                                 <div class="flex items-center gap-2 w-full">
-                                    <button
-                                        id="cancelOrderBtn"
+                                    <button id="cancelOrderBtn"
                                         class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-medium hover:brightness-90 transition flex-1">
                                         Cancelar
                                     </button>
-                                    <button
-                                        id="startPreparingBtn"
+                                    <button id="startPreparingBtn"
                                         class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition flex-1">
                                         Marcar como surtido
                                     </button>
@@ -181,52 +203,79 @@
     </div>
 
     @php
-$ordersData = [];
-foreach ($pedidos as $p) {
-    $lineas_array = [];
-    foreach ($p->getLineasPedidos() as $linea) {
-        $detalles_array = [];
-        foreach ($linea->getDetalles() as $detalle) {
-            $detalles_array[] = [
-                'cantidad' => $detalle->getCantidadSurtida(),
-                'precio' => $detalle->getPrecio(),
-                'sucursal' => $detalle->getSucursal()->getNombre(),
+        $ordersData = [];
+
+        foreach ($pedidos as $p) {
+            $sucursalPedido = $p->getSucursal();
+            $esHost =
+                $sucursalPedido->getCadenaId() == $currentCadenaId &&
+                $sucursalPedido->getSucursalId() == $currentSucursalId;
+
+            $lineas_array = [];
+            foreach ($p->getLineasPedidos() as $linea) {
+                $detalles_array = [];
+                foreach ($linea->getDetalles() as $detalle) {
+                    if ($esHost) {
+                        $detalles_array[] = [
+                            'cantidad' => $detalle->getCantidadSurtida(),
+                            'precio' => $detalle->getPrecio(),
+                            'sucursal' => $detalle->getSucursal()->getNombre(),
+                            'sucursal_id' => $detalle->getSucursal()->getSucursalId(),
+                        ];
+                        continue;
+                    }
+
+                    $sucursalDetalle = $detalle->getSucursal();
+                    if (
+                        $sucursalDetalle->getCadenaId() == $currentCadenaId &&
+                        $sucursalDetalle->getSucursalId() == $currentSucursalId
+                    ) {
+                        $detalles_array[] = [
+                            'cantidad' => $detalle->getCantidadSurtida(),
+                            'precio' => $detalle->getPrecio(),
+                            'sucursal' => $sucursalDetalle->getNombre(),
+                            'sucursal_id' => $sucursalDetalle->getSucursalId(),
+                        ];
+                    }
+                }
+
+                if (!empty($detalles_array)) {
+                    $lineas_array[] = [
+                        'medicamento' => $linea->getMedicamento()->getNombre(),
+                        'detalles' => $detalles_array,
+                    ];
+                }
+            }
+
+            $ordersData[] = [
+                'folio' => $p->getFolio(),
+                'sucursal_host_id' => $sucursalPedido->getSucursalId(),
+                'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
+                'estatus' => $p->getEstatus(),
+                'lineas' => $lineas_array,
+                'penalizacion' => $p->getMontoPenalizacion() ? (float) $p->getMontoPenalizacion() : 0,
+                'es_host' => $esHost,
             ];
         }
-        $lineas_array[] = [
-            'medicamento' => $linea->getMedicamento()->getNombre(),
-            'detalles' => $detalles_array,
-        ];
-    }
-    $ordersData[] = [
-        'folio' => $p->getFolio(),
-        'fecha_pedido' => $p->getFechaPedido()?->format('d/m/Y H:i') ?? 'N/A',
-        'estatus' => $p->getEstatus(),
-        'lineas' => $lineas_array,
-        'penalizacion' => $p->getMontoPenalizacion() ? (float) $p->getMontoPenalizacion() : 0,
-    ];
-}
     @endphp
 
     <script>
-        // Data de los pedidos
         const orders = @json($ordersData);
         const csrfToken = '{{ csrf_token() }}';
+        const currentSucursalId = "{{ $currentSucursalId }}";
         let currentOrderIndex = 0;
-        let errorMessage = null; // Variable para almacenar mensaje de error
+        let errorMessage = null;
 
         function selectOrder(element, index) {
-            // Remover selección anterior
             document.querySelectorAll('.order-card').forEach(card => {
                 card.classList.remove('bg-background-light', 'dark:bg-background-dark');
                 card.classList.add('border-transparent');
             });
 
-            // Marcar el nuevo seleccionado
             element.classList.add('bg-background-light', 'dark:bg-background-dark');
-            
+
             currentOrderIndex = index;
-            errorMessage = null; // Limpiar error anterior
+            errorMessage = null;
             renderOrderDetails();
         }
 
@@ -236,7 +285,6 @@ foreach ($pedidos as $p) {
 
             let html = ``;
 
-            // Mostrar alert de error si existe
             if (errorMessage) {
                 html += `
                     <div class="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/15 mb-4">
@@ -252,7 +300,6 @@ foreach ($pedidos as $p) {
             }
 
             html += `
-                <!-- Patient Info Card -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
@@ -270,7 +317,6 @@ foreach ($pedidos as $p) {
                     </div>
                 </div>
 
-                <!-- Prescription Details -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
@@ -299,20 +345,27 @@ foreach ($pedidos as $p) {
                 order.lineas.forEach(linea => {
                     if (linea.detalles && linea.detalles.length > 0) {
                         linea.detalles.forEach(detalle => {
-                            const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.cantidad) || 0);
-                            subtotal += lineTotal;
-                            html += `
-                                <tr>
-                                    <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                        ${linea.medicamento}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        ${detalle.cantidad}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        $${parseFloat(detalle.precio).toFixed(2)}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                        ${detalle.sucursal}</td>
-                                </tr>
-                            `;
+
+                            const soyHost = order.es_host;
+                            const esMiDetalle = detalle.sucursal_id == currentSucursalId;
+
+                            if (soyHost || esMiDetalle) {
+                                const lineTotal = (parseFloat(detalle.precio) || 0) * (parseInt(detalle.
+                                    cantidad) || 0);
+                                subtotal += lineTotal;
+                                html += `
+                                    <tr>
+                                        <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
+                                            ${linea.medicamento}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            ${detalle.cantidad}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            $${parseFloat(detalle.precio).toFixed(2)}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                            ${detalle.sucursal}</td>
+                                    </tr>
+                                `;
+                            }
                         });
                     }
                 });
@@ -334,7 +387,6 @@ foreach ($pedidos as $p) {
 
             container.innerHTML = html;
 
-            // Actualizar resumen de precios
             const penalizacion = order.penalizacion || 0;
             updatePriceSummary(subtotal, penalizacion);
         }
@@ -349,15 +401,13 @@ foreach ($pedidos as $p) {
             const startBtn = document.getElementById('startPreparingBtn');
             const order = orders[currentOrderIndex];
             const status = order?.estatus ? order.estatus.toLowerCase() : '';
-            
+
             if (subtotalEl && serviceFeeEl && estimatedEl) {
                 const total = subtotal + penalizacion;
                 subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
                 estimatedEl.textContent = `$${total.toFixed(2)}`;
-                serviceFeeEl.textContent = `$${penalizacion.toFixed(2)}`; 
-                estimatedEl.textContent = `$${total.toFixed(2)}`;
-                
-                // Mostrar resumen si hay líneas
+                serviceFeeEl.textContent = `$${penalizacion.toFixed(2)}`;
+
                 if (priceSummary) {
                     priceSummary.classList.toggle('hidden', subtotal === 0);
                 }
@@ -372,7 +422,6 @@ foreach ($pedidos as $p) {
                 }
             }
 
-            // Habilitar/deshabilitar botones según estatus
             if (cancelBtn && startBtn) {
                 let cancelDisabled = false;
                 let startDisabled = false;
@@ -427,7 +476,8 @@ foreach ($pedidos as $p) {
             } else {
                 const container = document.getElementById('order-details-container');
                 if (container) {
-                    container.innerHTML = '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
+                    container.innerHTML =
+                        '<div class="p-4 text-center text-neutral-text dark:text-neutral-text-dark">No hay pedidos para este filtro.</div>';
                 }
             }
         }
@@ -455,16 +505,15 @@ foreach ($pedidos as $p) {
 
                 if (!res.ok) {
                     errorMessage = data?.message || 'Error al cancelar el pedido';
-                    renderOrderDetails(); // Re-render para mostrar el error
+                    renderOrderDetails();
                     btn.disabled = false;
                     return;
                 }
 
-                // Éxito: actualizar orden
                 order.estatus = 'Cancelado';
                 errorMessage = null;
                 renderOrderDetails();
-                updatePriceSummary(0);
+                updatePriceSummary(0, 0);
 
             } catch (e) {
                 errorMessage = 'Error en la solicitud: ' + e.message;
@@ -505,17 +554,14 @@ foreach ($pedidos as $p) {
             }
         }
 
-        // Inicializar con el primer pedido
         document.addEventListener('DOMContentLoaded', function() {
             renderOrderDetails();
-            
-            // Marcar el primer pedido como seleccionado
+
             const firstCard = document.querySelector('.order-card');
             if (firstCard) {
                 firstCard.classList.add('bg-background-light', 'dark:bg-background-dark');
             }
 
-            // Agregar evento al botón cancelar
             const cancelBtn = document.getElementById('cancelOrderBtn');
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', cancelCurrentOrder);
