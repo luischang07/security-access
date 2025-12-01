@@ -19,7 +19,7 @@ class PharmacyManagementRepository
       ->select(
         'cadena_id',
         'sucursal_id',
-        DB::raw('COUNT(DISTINCT pedido_id) as total_orders')
+        DB::raw('COUNT(DISTINCT folio_pedido) as total_orders')
       )
       ->groupBy('cadena_id', 'sucursal_id');
 
@@ -92,8 +92,8 @@ class PharmacyManagementRepository
       ->count(DB::raw('CONCAT(sucursales.cadena_id, "-", sucursales.sucursal_id)'));
 
     // Calculate average days to delivery
-    $avgFulfillmentDays = Pedido::whereNotNull('fecha_entrega')
-      ->selectRaw('AVG(DATEDIFF(fecha_entrega, fecha_pedido)) as avg_days')
+    $avgFulfillmentDays = Pedido::whereNotNull('fecha_recoleccion')
+      ->selectRaw('AVG(DATEDIFF(fecha_recoleccion, fecha_pedido)) as avg_days')
       ->value('avg_days') ?? 0;
 
     return [

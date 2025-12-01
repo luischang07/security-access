@@ -25,7 +25,7 @@ class MedicamentoFactory extends Factory
       ]),
       'descripcion' => $this->faker->sentence(8),
       'unidad_medida' => $this->faker->randomElement(['mg', 'ml', 'g', 'unidades']),
-      'unidades' => $this->faker->randomElement(['comprimidos', 'cápsulas', 'jarabe', 'inyectable', 'gotas']),
+      'unidades' => $this->faker->randomNumber(2),
     ];
   }
 }

@@ -8,18 +8,17 @@ return new class extends Migration {
   public function up(): void
   {
     Schema::create('detalle_lineas_pedidos', function (Blueprint $table) {
-      $table->String('folio_pedido');
-      $table->unsignedBigInteger('id_linea_pedido');
+      $table->unsignedBigInteger('folio_pedido');
       $table->string('cadena_id', 50);
       $table->string('sucursal_id', 50);
+      $table->unsignedBigInteger('medicamento_id');
       $table->decimal('precio_unitario', 10, 2);
       $table->integer('cantidad_surtida');
-      $table->integer('estatus')->default(0);
 
-      $table->primary(['folio_pedido', 'id_linea_pedido'], 'detalle_lineas_pedidos_primary');
+      $table->primary(['folio_pedido', 'cadena_id', 'sucursal_id', 'medicamento_id'], 'detalle_lineas_pedidos_primary');
 
-      $table->foreign(['folio_pedido', 'id_linea_pedido'])
-        ->references(['folio_pedido', 'id_linea_pedido'])
+      $table->foreign(['folio_pedido', 'medicamento_id'])
+        ->references(['folio_pedido', 'medicamento_id'])
         ->on('lineas_pedidos');
 
       $table->foreign(['cadena_id', 'sucursal_id'])

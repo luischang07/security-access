@@ -8,14 +8,11 @@ return new class extends Migration {
   public function up(): void
   {
     Schema::create('lineas_pedidos', function (Blueprint $table) {
-      $table->String('folio_pedido');
-      $table->unsignedBigInteger('id_linea_pedido');
+      $table->unsignedBigInteger('folio_pedido');
       $table->unsignedBigInteger('medicamento_id');
       $table->integer('cantidad');
 
-      $table->primary(['folio_pedido', 'id_linea_pedido']);
-
-      $table->unique(['folio_pedido', 'medicamento_id']);
+      $table->primary(['folio_pedido', 'medicamento_id']);
 
       $table->foreign('folio_pedido')
         ->references('folio_pedido')

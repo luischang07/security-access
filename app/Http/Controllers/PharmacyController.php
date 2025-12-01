@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pedido;
 use App\Repositories\InventarioRepository;
 use App\Repositories\PedidoRepository;
+use App\Services\Modelos\PedidoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,6 +17,7 @@ class PharmacyController extends Controller
   private const BRANCH_INFO_NOT_FOUND = 'No se encontró información de la sucursal del empleado.';
 
   public function __construct(
+    private readonly PedidoService $pedidoService,
     private readonly PedidoRepository $pedidoRepository,
     private readonly InventarioRepository $inventarioRepository
   ) {
@@ -59,19 +62,11 @@ class PharmacyController extends Controller
    */
   public function orders()
   {
-    // ✅ SEGURIDAD: Solo pedidos de la sucursal del empleado
-    /** @var \App\Models\User $user */
+
     $user = Auth::user();
     $branchIds = $user->getBranchIds();
 
-    if (!$branchIds) {
-      abort(403, self::BRANCH_INFO_NOT_FOUND);
-    }
-
-    $pedidos = $this->pedidoRepository->getPaginatedOrdersForBranch(
-      $branchIds['cadena_id'],
-      $branchIds['sucursal_id']
-    );
+    $pedidos = $this->pedidoService->getPedidosSucursal($branchIds['cadena_id'], $branchIds['sucursal_id']);
 
     return view('pharmacy.orders', compact('pedidos'));
   }
@@ -104,5 +99,72 @@ class PharmacyController extends Controller
   public function reports()
   {
     return view('pharmacy.reports');
+  }
+  /**
+   * Show the route for a specific order
+   */
+  public function showOrderRoute($folio)
+  {
+    $user = Auth::user();
+    $branchIds = $user->getBranchIds();
+
+    if (!$branchIds) {
+      abort(403, self::BRANCH_INFO_NOT_FOUND);
+    }
+
+    $pedido = Pedido::where('folio_pedido', $folio)
+      ->where('cadena_id', $branchIds['cadena_id'])
+      ->where('sucursal_id', $branchIds['sucursal_id'])
+      ->with([
+        'rutaRecoleccion.sucursal.cadena',
+        'lineasPedidos.medicamento',
+        'lineasPedidos.detalles.sucursal'
+      ])
+      ->firstOrFail();
+
+    return view('pharmacy.order-route', compact('pedido'));
+  }
+
+  public function marcarComoSurtido($folio)
+  {
+    $pedido = $this->pedidoService->getPedidoPorFolio($folio);
+    if (!$pedido) {
+      return response()->json(['error' => 'Pedido no encontrado.'], 404);
+    }
+
+    try {
+      $this->pedidoService->marcarPedidoComoSurtido($pedido);
+      return response()->json(['success' => true, 'message' => 'Pedido marcado como surtido y notificación enviada.']);
+    } catch (\Throwable $e) {
+      return response()->json(['error' => $e->getMessage()], 400);
+    }
+  }
+
+  public function deshacerSurtido($folio)
+  {
+    $pedido = $this->pedidoService->getPedidoPorFolio($folio);
+    if (!$pedido) {
+      return response()->json(['error' => 'Pedido no encontrado.'], 404);
+    }
+
+    try {
+      $this->pedidoService->deshacerSurtido($pedido);
+      return response()->json(['success' => true, 'message' => 'Estado del pedido revertido correctamente.']);
+    } catch (\Throwable $e) {
+      return response()->json(['error' => $e->getMessage()], 400);
+    }
+  }
+
+  public function profile()
+  {
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $empleado = $user->empleado;
+
+    if (!$empleado) {
+      abort(403, 'No se encontró información del empleado.');
+    }
+
+    return view('pharmacy.profile', compact('user', 'empleado'));
   }
 }

@@ -11,7 +11,11 @@ class AppServiceProvider extends ServiceProvider
 {
   public function register(): void
   {
-    // No application services to register at this time.
+    // Bind RoutingServiceInterface to OsrmRoutingService
+    $this->app->bind(
+      \App\Services\Routing\RoutingServiceInterface::class,
+      \App\Services\Routing\OsrmRoutingService::class
+    );
   }
 
   public function boot(): void

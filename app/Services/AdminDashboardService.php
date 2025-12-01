@@ -120,10 +120,10 @@ class AdminDashboardService
    */
   protected function getAverageFulfillmentTime(): float
   {
-    $pedidos = \App\Models\Pedido::whereNotNull('fecha_entrega')
-      ->where('estatus', 'entregado')
-      ->whereDate('fecha_entrega', '>=', now()->subDays(30))
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_entrega)) as avg_hours')
+    $pedidos = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
+      ->where('estatus', 'completado')
+      ->whereDate('fecha_recoleccion', '>=', now()->subDays(30))
+      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
       ->first();
 
     return $pedidos->avg_hours ? round($pedidos->avg_hours, 1) : 0.0;
@@ -136,17 +136,17 @@ class AdminDashboardService
    */
   protected function getFulfillmentTrend(): float
   {
-    $currentWeek = \App\Models\Pedido::whereNotNull('fecha_entrega')
-      ->where('estatus', 'entregado')
-      ->whereDate('fecha_entrega', '>=', now()->subWeek())
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_entrega)) as avg_hours')
+    $currentWeek = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
+      ->where('estatus', 'completado')
+      ->whereDate('fecha_recoleccion', '>=', now()->subWeek())
+      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
       ->first();
 
-    $lastWeek = \App\Models\Pedido::whereNotNull('fecha_entrega')
-      ->where('estatus', 'entregado')
-      ->whereDate('fecha_entrega', '>=', now()->subWeeks(2))
-      ->whereDate('fecha_entrega', '<', now()->subWeek())
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_entrega)) as avg_hours')
+    $lastWeek = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
+      ->where('estatus', 'completado')
+      ->whereDate('fecha_recoleccion', '>=', now()->subWeeks(2))
+      ->whereDate('fecha_recoleccion', '<', now()->subWeek())
+      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
       ->first();
 
     $current = $currentWeek->avg_hours ?? 0;
