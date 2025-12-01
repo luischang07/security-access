@@ -82,8 +82,6 @@
                                     <option value="confirmado">Confirmados</option>
                                     <option value="surtido">Surtidos</option>
                                     <option value="cancelado">Cancelados</option>
-                                    <option value="pendiente">Pendientes</option>
-                                    <option value="en_proceso">En proceso</option>
                                 </select>
                             </div>
                         </div>
