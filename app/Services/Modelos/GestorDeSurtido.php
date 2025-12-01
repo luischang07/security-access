@@ -40,6 +40,7 @@ class GestorDeSurtido
     $ldp = $pedido->getLineasPedidos();
 
     foreach ($ldp as $lineaPedido) {
+      /** @var LineaPedido $lineaPedido */
       $cantidadSurtida = 0;
       $ldi = $this->sucursalService->getLineaInventario($sucSeleccionada->getCadenaId(), $sucSeleccionada->getSucursalId(), $lineaPedido->getMedicamentoId());
       if (!$ldi) {

@@ -51,8 +51,14 @@ class GeoLocationService
    * @param float $maxRadiusKm Maximum search radius in kilometers (default: 50km).
    * @return Collection<Sucursal>
    */
-  public function findNearestBranchesWithStock(array $medicamentoIds, float $userLat, float $userLng, ?string $excludeCadenaId = null, ?string $excludeSucursalId = null, float $maxRadiusKm): Collection
-  {
+  public function findNearestBranchesWithStock(
+    array $medicamentoIds,
+    float $userLat,
+    float $userLng,
+    ?string $excludeCadenaId = null,
+    ?string $excludeSucursalId = null,
+    float $maxRadiusKm
+  ): Collection {
     $driver = DB::connection()->getDriverName();
     $strategy = \App\Services\Geo\GeoStrategyFactory::make($driver);
 

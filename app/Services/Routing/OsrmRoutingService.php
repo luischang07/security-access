@@ -17,9 +17,7 @@ class OsrmRoutingService implements RoutingServiceInterface
   public function getRouteDetails(float $originLat, float $originLng, float $destLat, float $destLng): ?array
   {
     try {
-      // OSRM expects {longitude},{latitude}
       $coordinates = "{$originLng},{$originLat};{$destLng},{$destLat}";
-      // Request full overview to get the geometry
       $url = "{$this->baseUrl}/{$coordinates}?overview=full";
 
       $response = Http::get($url);
@@ -29,7 +27,7 @@ class OsrmRoutingService implements RoutingServiceInterface
         if (isset($data['routes'][0])) {
           return [
             'duration' => (int) $data['routes'][0]['duration'],
-            'geometry' => $data['routes'][0]['geometry'] // Encoded polyline
+            'geometry' => $data['routes'][0]['geometry']
           ];
         }
       }
