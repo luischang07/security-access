@@ -60,8 +60,6 @@ class GestorDeSurtido
     }
 
     if ($this->sinStock->count() > 0) {
-      // Use GeoLocationService to find nearest branches with stock using Hybrid Algorithm
-      // We need to pass the list of missing medications
       $medicamentoIds = $this->sinStock->map(function ($linea) {
         return $linea->getMedicamentoId();
       })->toArray();
@@ -69,8 +67,7 @@ class GestorDeSurtido
       $lat = $sucSeleccionada->getLatitud();
       $lng = $sucSeleccionada->getLongitud();
 
-      // Find branches using Hybrid Algorithm (OSRM + Spatial)
-      $sucCercanasWithRouteInfo = $this->geoLocationService->buscarSucursalesPorTiempoDeViaje(
+      $sucCercanas = $this->geoLocationService->buscarSucursalesPorTiempoDeViaje(
         $medicamentoIds,
         $lat,
         $lng,
@@ -78,36 +75,8 @@ class GestorDeSurtido
         $sucSeleccionada->getSucursalId()
       );
 
-      // Extract only Sucursal objects from the enriched data
-      $sucCercanasObjects = $sucCercanasWithRouteInfo->map(function ($item) {
-        return $item['sucursal'];
-      });
+      $this->calculaFaltantes($this->sinStock, $sucCercanas, $pedido);
 
-      $this->calculaFaltantes($this->sinStock, $sucCercanasObjects, $pedido);
-
-      // Calculate optimal route for all branches involved (Source + Collection Points)
-      $ruta = $pedido->getRuta();
-      if ($ruta->isNotEmpty()) {
-        $coordinates = [];
-
-        $coordinates[] = [
-          'lat' => $sucSeleccionada->getLatitud(),
-          'lng' => $sucSeleccionada->getLongitud()
-        ];
-
-        foreach ($ruta as $sucursal) {
-          $coordinates[] = [
-            'lat' => $sucursal->getLatitud(),
-            'lng' => $sucursal->getLongitud()
-          ];
-        }
-
-        $tripDetails = $this->geoLocationService->getRoutingService()->getOptimalTrip($coordinates);
-
-        if ($tripDetails) {
-          $pedido->setRouteGeometry($tripDetails['geometry']);
-        }
-      }
     }
 
     $pedido->setFaltantes($this->sinStock);
@@ -210,19 +179,13 @@ class GestorDeSurtido
         $lat = $sucSeleccionada->getLatitud();
         $lng = $sucSeleccionada->getLongitud();
 
-        // Find branches using Hybrid Algorithm (OSRM + Spatial)
-        $sucCercanasWithRouteInfo = $this->geoLocationService->buscarSucursalesPorTiempoDeViaje(
+        $sucCercanas = $this->geoLocationService->buscarSucursalesPorTiempoDeViaje(
           $medicamentoIds,
           $lat,
           $lng,
           $sucSeleccionada->getCadenaId(),
           $sucSeleccionada->getSucursalId()
         );
-
-        // Extract only Sucursal objects from the enriched data
-        $sucCercanas = $sucCercanasWithRouteInfo->map(function ($item) {
-          return $item['sucursal'];
-        });
 
         $this->calculaFaltantesWithUpdate($this->sinStock, $sucCercanas, $pedido);
       }
@@ -236,7 +199,7 @@ class GestorDeSurtido
       $pedido->setEstatus(PedidoModel::ESTATUS_CONFIRMADO);
       $pedido->calcularTotales();
 
-      // Calculate optimal route for all branches involved (Source + Collection Points)
+      // Calculate optimal route for all branches (Source + Collection Points)
       $ruta = $pedido->getRuta();
       if ($ruta->isNotEmpty()) {
         $sucSeleccionada = $pedido->getSucursal();
