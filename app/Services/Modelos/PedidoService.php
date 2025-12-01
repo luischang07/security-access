@@ -6,25 +6,39 @@ use App\Domain\DetalleLineaPedido;
 use App\Domain\LineaPedido;
 use App\Repositories\BaseDatos;
 use App\Domain\Pedido;
+use App\Models\Pedido as ModelsPedido;
 use App\Domain\Sucursal;
 use App\Domain\Paciente;
 use App\Domain\Notificacion;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
+use App\Services\Modelos\PacienteService;
+use Exception;
+use function PHPUnit\Framework\throwException;
 
 class PedidoService
 {
   private Sucursal $sucursal;
+  private PacienteService $pacienteService;
   private BaseDatos $dataBase;
 
   public function __construct()
   {
     $this->dataBase = new BaseDatos();
+    $this->pacienteService = new PacienteService();
   }
 
-  public function nuevoPedido(int $paciente_id): Pedido
+  public function nuevoPedido($paciente_id)
   {
-    return Pedido::createPedido($paciente_id);
+    $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+    $pedidos = $this->dataBase->getPedidos($paciente_id);
+    $pedidosActivos = $this->pacienteService->getPedidosActivos($pedidos);
+    if ($montoPenalizacion > 0 && $pedidosActivos != 0) {
+      throw new Exception("No puedes realizar pedidos mientras tengas una penalización pendiente y un pedido activo");
+    }
+    $pedido = Pedido::createPedido($paciente_id);
+
+    return $pedido;
   }
 
   public function reiniciarParaCaptura(Pedido $pedido): Pedido
@@ -53,13 +67,11 @@ class PedidoService
 
   public function eliminarMedicamento(int $medId, Pedido $pedido): Pedido
   {
-
     if (!$pedido) {
       throw new \RuntimeException('No hay pedido en captura para eliminar un medicamento.');
     }
 
     $pedido->eliminarMedicamento($medId);
-
     return $pedido;
   }
 
@@ -69,7 +81,7 @@ class PedidoService
 
     $this->dataBase->iniciarTransaccion();
     try {
-      $pedido->cambiarEstatus('CANCELADO');
+      $pedido->cambiarEstatus(ModelsPedido::STATUS_CANCELED);
       $this->dataBase->cancelarPedido($pedido);
 
       foreach ($dlp as $detalle) {
@@ -96,7 +108,7 @@ class PedidoService
 
     $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
     $cantidadPenalizacion = $pedido->getCostoTotal() * 0.5;
-    $paciente->setMontoPenalizacion($cantidadPenalizacion);
+    $paciente->sumarMontoPenalizacion($cantidadPenalizacion);
     $mensaje = "Su pedido {$pedido->getFolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidadPenalizacion} a su cuenta.";
     $notificacion = Notificacion::crear($mensaje, Carbon::now());
     $paciente->agregarNotificacion($notificacion);
@@ -160,8 +172,37 @@ class PedidoService
     return $this->dataBase->getPedidosPorSucursal($cadenaId, $sucursalId);
   }
 
-  public function sumarMontoPenalizacion(float $monto, Pedido $pedido): void
+
+  public function obtenerPedidoPorFolio($folio)
   {
-    $pedido->setMontoPenalizacion($monto);
+    return $this->dataBase->getPedidoByFolio($folio);
+  }
+
+  public function sumarMontoPenalizacion($monto, Pedido $pedido)
+  {
+    $pedido->sumarMontoPenalizacion($monto);
+  }
+
+  public function marcarPedidoComoSurtido(Pedido $pedido)
+  {
+    if (strtolower($pedido->getEstatus()) !== 'confirmado') {
+      throw new \RuntimeException('Solo se pueden marcar como surtidos los pedidos con estatus Confirmado.');
+    }
+    $this->dataBase->iniciarTransaccion();
+    try {
+      $pedido->cambiarEstatus('Surtido');
+      $this->dataBase->guardarCambioEstatusPedido($pedido);
+      $mensaje = "Su pedido {$pedido->getfolio()} está listo para ser recogido. Tienes 48 horas para recogerlo en la sucursal {$pedido->getSucursal()->getNombre()}.";
+      $notificacion = Notificacion::crear($mensaje, now());
+      $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
+      $paciente->agregarNotificacion($notificacion);
+      $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
+      $this->dataBase->commitTransaccion();
+    } catch (\Exception $e) {
+      $this->dataBase->cancelarTransaccion();
+      throw $e;
+    }
+
+    return $pedido;
   }
 }

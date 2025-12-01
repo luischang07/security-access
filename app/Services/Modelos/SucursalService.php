@@ -6,6 +6,7 @@ use App\Domain\LineaInventario;
 use App\Repositories\BaseDatos;
 use App\Domain\Sucursal;
 use Illuminate\Support\Collection;
+use App\Domain\Notificacion;
 
 class SucursalService
 {
@@ -34,5 +35,11 @@ class SucursalService
   public function actualizarInventario($ldi): void
   {
     $this->dataBase->actualizarInventario($ldi);
+  }
+  public function notificarNuevoPedido(Sucursal $sucursal, $folioPedido)
+  {
+    $notificacion = Notificacion::crear("Se ha asignado nuevo pedido: " . $folioPedido, now(), false);
+    $sucursal->agregarNotificacion($notificacion);
+    $this->dataBase->guardarNotificacionSucursal($sucursal, $folioPedido, $notificacion);
   }
 }

@@ -124,4 +124,19 @@ class PharmacyController extends Controller
 
     return view('pharmacy.order-route', compact('pedido'));
   }
+
+  public function marcarComoSurtido($folio)
+  {
+    $pedido = $this->pedidoService->obtenerPedidoPorFolio($folio);
+    if (!$pedido) {
+      return response()->json(['error' => 'Pedido no encontrado.'], 404);
+    }
+
+    try {
+      $this->pedidoService->marcarPedidoComoSurtido($pedido);
+      return response()->json(['success' => true, 'message' => 'Pedido marcado como surtido y notificación enviada.']);
+    } catch (\Throwable $e) {
+      return response()->json(['error' => $e->getMessage()], 400);
+    }
+  }
 }

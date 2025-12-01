@@ -21,6 +21,7 @@ class Sucursal
 
   /** @var array|Collection LineaInventario[] */
   private $inventario;
+  private $notificaciones;
 
   public function __construct(
     string $cadenaId,
@@ -45,6 +46,7 @@ class Sucursal
     $this->latitud = $latitud;
     $this->longitud = $longitud;
     $this->inventario = array();
+    $this->notificaciones = collect();
   }
   public static function crear(object $data): self
   {
@@ -113,7 +115,12 @@ class Sucursal
     return $this->longitud;
   }
 
-  public function getDireccion(): string
+  public function agregarNotificacion($notificacion)
+  {
+    $this->notificaciones->push($notificacion);
+  }
+
+  public function getDireccion()
   {
     $direccion = $this->calle . ' ' . $this->numeroExterior;
     if (!empty($this->numeroInterior)) {

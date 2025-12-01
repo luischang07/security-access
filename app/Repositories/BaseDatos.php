@@ -29,6 +29,7 @@ use App\Domain\DetalleLineaPedido as DomainDetalleLineaPedido;
 
 use App\Models\Notificacion;
 use App\Domain\Notificacion as DomainNotificacion;
+use App\Models\Empleado;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -142,6 +143,23 @@ class BaseDatos
     ]);
   }
 
+  public function guardarNotificacionSucursal($sucursal, $folio_pedido, $notificacion)
+  {
+    //Obtener los user_id de la sucursal
+    $users_ids = Empleado::where('cadena_id', $sucursal->getCadenaId())
+      ->where('sucursal_id', $sucursal->getSucursalId())
+      ->pluck('user_id');
+    foreach ($users_ids as $user_id) {
+      Notificacion::create([
+        'user_id' => $user_id,
+        'folio_pedido' => $folio_pedido,
+        'mensaje' => $notificacion->getMensaje(),
+        'fecha_hora' => $notificacion->getFechaEnvio(),
+        'leida' => $notificacion->esLeida(),
+      ]);
+    }
+  }
+
   public function guardarPedido(DomainPedido $pedido): Pedido
   {
     $pedidoModel = Pedido::create([
@@ -159,7 +177,7 @@ class BaseDatos
     return $pedidoModel;
   }
 
-  public function cancelarPedido(DomainPedido $pedido)
+  public function guardarCambioEstatusPedido(DomainPedido $pedido)
   {
     Pedido::where('folio_pedido', $pedido->getFolio())->update(['estatus' => $pedido->getEstatus()]);
   }

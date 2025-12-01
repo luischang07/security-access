@@ -37,43 +37,24 @@ class GestionPedidoController extends Controller
   public function nuevoPedido(Request $request)
   {
     $paciente_id = Auth::user()->user_id;
+    try {
+      $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+      $pedido = Session::has('pedido_temporal') ? unserialize(Session::get('pedido_temporal')) : null;
+      if (!$pedido || $request->boolean('reset')) {
+        $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+      } else {
+        // Reutiliza lo que el paciente ya capturó pero limpia detalles/ruta para volver a surtir
+        $pedido = $this->pedidoService->reiniciarParaCaptura($pedido);
+      }
 
-    $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
-    $pedidos = $this->pacienteService->getPedidosPorPaciente($paciente_id);
-    $pedidosActivos = $this->pacienteService->getPedidosActivos($pedidos);
-    if ($montoPenalizacion > 0 && $pedidosActivos != 0) {
+      Session::put('pedido_temporal', serialize($pedido));
+
+      $cadenas = $this->cadenaService->getCadenas();
+
+      return view('prescription.upload-step1', compact('cadenas', 'pedido'));
+    } catch (\Throwable $e) {
       return redirect()->route('patient.dashboard')->with('error', 'No puedes realizar pedidos mientras tengas una penalización pendiente y un pedido activo');
     }
-
-    $pedido = $this->pedidoService->nuevoPedido($paciente_id);
-
-    Session::put('pedido_temporal', serialize($pedido));
-
-    $cadenas = $this->cadenaService->getCadenas();
-    $pedidoInicial = $this->preparePedidoInicial($pedido);
-
-    return view('prescription.upload-step1', compact('cadenas', 'pedido', 'pedidoInicial'));
-  }
-
-  private function preparePedidoInicial(Pedido $pedido): array
-  {
-    $pedidoInicial = [
-      'cadena_id' => optional($pedido->getSucursal())->getCadenaId(),
-      'sucursal_id' => optional($pedido->getSucursal())->getSucursalId(),
-      'cedula_profesional' => $pedido->getCedulaProfesional(),
-      'medications' => [],
-    ];
-
-    $lineas = $pedido->getLineasPedidos() ?? collect();
-    foreach ($lineas as $linea) {
-      $pedidoInicial['medications'][] = [
-        'id' => $linea->getMedicamentoId(),
-        'name' => $linea->getMedicamento()->getNombre(),
-        'quantity' => (int) $linea->getCantidad(),
-      ];
-    }
-
-    return $pedidoInicial;
   }
 
   public function seleccionarSucursal(Request $request)

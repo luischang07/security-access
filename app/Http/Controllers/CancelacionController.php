@@ -24,9 +24,14 @@ class CancelacionController extends Controller
   {
     $pedido = $this->pedidoService->getPedidoPorFolio($folio);
     if (!$pedido) {
-      return response()->json(['error' => 'Pedido no encontrado.'], 404);
+      return response()->json(['message' => 'Pedido no encontrado.'], 404);
     }
-    $this->pedidoService->cancelarPedido($pedido);
-    return response()->json(['success' => true]);
+    try {
+      $this->pedidoService->cancelarPedido($pedido);
+      return response()->json(['message' => 'Pedido cancelado correctamente.', 'success' => true], 200);
+    } catch (\Throwable $e) {
+      return response()->json(['message' => $e->getMessage()], 400);
+    }
+
   }
 }
