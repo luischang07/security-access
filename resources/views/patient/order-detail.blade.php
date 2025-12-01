@@ -79,7 +79,7 @@
                             @php
                                 $fechaReco = $pedido->getFechaRecoleccion();
                                 if ($fechaReco instanceof \Carbon\Carbon) {
-                                    echo $fechaReco->translatedFormat('l, j \de F Y') . ' alas ' . $fechaReco->format('H:i');
+                                    echo $fechaReco->translatedFormat('l, j \de F Y') ;
                                 }
                             @endphp
                         </p>

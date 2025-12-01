@@ -39,8 +39,6 @@ class GestionPedidoController extends Controller
     {
         $paciente_id = Auth::user()->user_id;
         try {
-            $pedido = $this->pedidoService->nuevoPedido($paciente_id);
-            $pedido = $this->pedidoService->nuevoPedido($paciente_id);
             $pedido = Session::has('pedido_temporal') ? unserialize(Session::get('pedido_temporal')) : null;
             if (!$pedido || $request->boolean('reset')) {
                 $pedido = $this->pedidoService->nuevoPedido($paciente_id);

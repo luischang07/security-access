@@ -79,33 +79,40 @@ class PedidoService
         if(strtolower($pedido->getEstatus()) !== 'surtido'){
             throw new Exception("Solo puedes cancelar pedidos si el pedido ya esta surtido");
         }
-        $pedido->cambiarEstatus('Cancelado');
-        $this->dataBase->guardarCambioEstatusPedido($pedido);
-        $dlp = $pedido->obtenerDetallesLineas();
-        foreach ($dlp as $detalle) {
-            $this->dataBase->iniciarTransaccion();
-            $inventario = $this->dataBase->obtenerInventario(
-                $pedido->getSucursal()->getCadenaId(),
-                $pedido->getSucursal()->getSucursalId(),
-                $detalle->getMedicamentoId()
-            );
-            if ($inventario) {
+        $this->dataBase->iniciarTransaccion();
+        try {
+            $pedido->cambiarEstatus('Cancelado');
+            $this->dataBase->guardarCambioEstatusPedido($pedido);
+
+            $dlp = $pedido->obtenerDetallesLineas();
+            foreach ($dlp as $detalle) {
+                $inventario = $this->dataBase->obtenerInventario(
+                    $pedido->getSucursal()->getCadenaId(),
+                    $pedido->getSucursal()->getSucursalId(),
+                    $detalle->getMedicamentoId()
+                );
+                if (!$inventario) {
+                    throw new \RuntimeException('No se encontró inventario para el medicamento a reintegrar.');
+                }
                 $inventario->aumentarStock($detalle->getCantidadSurtida());
                 $this->dataBase->actualizarInventarioCancelacion($inventario);
-                $this->dataBase->commitTransaccion();
-            } else {
-                $this->dataBase->cancelarTransaccion();
             }
+
+            $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
+            $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
+            $paciente->setMontoPenalizacion($cantidad_penalizacion);
+            $this->dataBase->actualizarPaciente($paciente);
+            $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidad_penalizacion} a su cuenta.";
+            $notificacion = Notificacion::crear($mensaje, now());
+            $paciente->agregarNotificacion($notificacion);
+            $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
+
+            $this->dataBase->commitTransaccion();
+            return $pedido;
+        } catch (\Throwable $e) {
+            $this->dataBase->cancelarTransaccion();
+            throw $e;
         }
-        $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
-        $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
-        $paciente->setMontoPenalizacion($cantidad_penalizacion);
-        $this->dataBase->actualizarPaciente($paciente);
-        $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidad_penalizacion} a su cuenta.";
-        $notificacion = Notificacion::crear($mensaje, now());
-        $paciente->agregarNotificacion($notificacion);
-        $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
-        return $pedido;
     }
 
     public function obtenerSucursal($cadena_id, $sucursal_id)
