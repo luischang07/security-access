@@ -26,8 +26,6 @@ return [
     'medication_name' => 'Medication Name',
     'medications' => 'Medications',
     'medication_name_placeholder' => 'e.g., Amoxicillin',
-    'dosage' => 'Dosage',
-    'dosage_placeholder' => 'e.g., 500mg',
     'quantity' => 'Quantity',
     'quantity_placeholder' => 'e.g., 30',
     'add_medication' => 'Add Another Medication',

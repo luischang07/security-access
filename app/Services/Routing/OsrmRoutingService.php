@@ -38,6 +38,27 @@ class OsrmRoutingService implements RoutingServiceInterface
     return null;
   }
 
+  public function getTravelDuration(float $originLat, float $originLng, float $destLat, float $destLng): ?float
+  {
+    try {
+      $coordinates = "{$originLng},{$originLat};{$destLng},{$destLat}";
+      $url = "{$this->baseUrl}/{$coordinates}?overview=false";
+
+      $response = Http::get($url);
+
+      if ($response->successful()) {
+        $data = $response->json();
+        if (isset($data['routes'][0]['duration'])) {
+          return (float) $data['routes'][0]['duration'];
+        }
+      }
+    } catch (\Exception $e) {
+      Log::error("OSRM Duration Error: " . $e->getMessage());
+    }
+
+    return null;
+  }
+
   public function getOptimalTrip(array $coordinates): ?array
   {
     if (empty($coordinates)) {

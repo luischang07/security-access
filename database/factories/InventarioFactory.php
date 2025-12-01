@@ -8,10 +8,11 @@ class InventarioFactory extends Factory
 {
   public function definition(): array
   {
+    $minimo = $this->faker->numberBetween(5, 20);
     return [
       'stock_disponible' => $this->faker->numberBetween(0, 500),
-      'minimo' => $this->faker->numberBetween(5, 20),
-      'maximo' => $this->faker->numberBetween(5, 20),
+      'minimo' => $minimo,
+      'maximo' => $this->faker->numberBetween($minimo + 1, 100),
       'precio_unitario' => $this->faker->numberBetween(10, 1000),
     ];
   }

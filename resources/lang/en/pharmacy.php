@@ -102,6 +102,21 @@ return [
       'cancel_btn' => 'No, go back',
       'confirm_btn' => 'Yes, cancel order',
     ],
+    'route' => [
+      'page_title' => 'Collection Route - Te Acerco Salud',
+      'title' => 'Collection Route',
+      'back_to_orders' => 'Back to Orders',
+      'order_summary' => 'Order Summary',
+      'collection_date' => 'Collection Date',
+      'map_title' => 'Route Map',
+      'route_details' => 'Route Details',
+      'stop' => 'Stop',
+      'stops' => 'Stops',
+      'medications_to_collect' => 'Medications to Collect',
+      'no_route_info' => 'No route information available for this order.',
+      'cost_summary' => 'Cost Summary',
+      'total_order' => 'Order Total',
+    ],
   ],
 
   // Inventory Management
@@ -130,6 +145,7 @@ return [
     'medication' => 'Medication',
     'quantity' => 'Quantity',
     'unit' => 'Unit',
+    'units' => 'Units',
     'expiry_date' => 'Expiry Date',
     'stock_status' => [
       'in_stock' => 'In Stock',

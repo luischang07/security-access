@@ -31,9 +31,12 @@ use App\Models\Notificacion;
 use App\Domain\Notificacion as DomainNotificacion;
 use App\Models\Empleado;
 
+use App\Services\Geo\GeoStrategyFactory;
+
 use App\Models\PedidoPenalizacion;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+
 
 class BaseDatos
 {
@@ -279,5 +282,77 @@ class BaseDatos
       'folio_pedido' => $folio,
       'monto' => $monto,
     ]);
+  }
+
+  /**
+   * Calculate the distance between two points in meters using Spatial functions.
+   * 
+   * @return float Distance in meters
+   */
+  public function calculateDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
+  {
+    $driver = DB::connection()->getDriverName();
+    $strategy = GeoStrategyFactory::make($driver);
+
+    $sql = $strategy->getDistanceSql();
+
+    $result = DB::selectOne($sql, [$lng1, $lat1, $lng2, $lat2]);
+
+    return $result->distance;
+  }
+
+  /**
+   * Find the nearest branches that have stock for the given medications.
+   * 
+   * @param array $medicamentoIds List of medication IDs to check stock for.
+   * @param float $originLat Origin branch latitude.
+   * @param float $originLng Origin branch longitude.
+   * @param string|null $excludeCadenaId Cadena ID of the branch to exclude.
+   * @param string|null $excludeSucursalId Sucursal ID of the branch to exclude.
+   * @param float $maxRadiusKm Maximum search radius in kilometers.
+   * @return Collection<DomainSucursal>
+   */
+  public function buscarSucursalesCercanasConStock(
+    array $medicamentoIds,
+    float $originLat,
+    float $originLng,
+    ?string $excludeCadenaId = null,
+    ?string $excludeSucursalId = null,
+    float $maxRadiusKm
+  ): Collection {
+    $driver = DB::connection()->getDriverName();
+    $strategy = GeoStrategyFactory::make($driver);
+
+    $distanceSql = $strategy->getDistanceColumnSql();
+    $maxDistanceMeters = $maxRadiusKm * 1000;
+
+    $branches = DB::table('sucursales')
+      ->join('inventarios', function ($join) {
+        $join->on('sucursales.cadena_id', '=', 'inventarios.cadena_id')
+          ->on('sucursales.sucursal_id', '=', 'inventarios.sucursal_id');
+      })
+      ->whereIn('inventarios.medicamento_id', $medicamentoIds)
+      ->where('inventarios.stock_disponible', '>', 0)
+      ->where(function ($query) use ($excludeCadenaId, $excludeSucursalId) {
+        if ($excludeCadenaId && $excludeSucursalId) {
+          $query->whereNot(function ($q) use ($excludeCadenaId, $excludeSucursalId) {
+            $q->where('sucursales.cadena_id', '=', $excludeCadenaId)
+              ->where('sucursales.sucursal_id', '=', $excludeSucursalId);
+          });
+        }
+      })
+      ->select(
+        'sucursales.*',
+        DB::raw("$distanceSql as distancia")
+      )
+      ->having('distancia', '<=', $maxDistanceMeters)
+      ->orderBy('distancia', 'ASC')
+      ->distinct()
+      ->setBindings([$originLng, $originLat], 'select')
+      ->get();
+
+    return $branches->map(function ($branch) {
+      return DomainSucursal::crear($branch);
+    });
   }
 }
