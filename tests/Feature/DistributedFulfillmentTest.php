@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\DB;
 
 class DistributedFulfillmentTest extends TestCase
 {
-  // use RefreshDatabase; // Be careful with RefreshDatabase on existing DBs
+  // Do NOT use RefreshDatabase here because this test may run against an existing (non-test) database.
+  // Instead, we manually wrap the test in a transaction (see DB::beginTransaction/rollBack) to ensure changes are rolled back.
 
   public function test_finds_nearest_branch_with_stock()
   {
