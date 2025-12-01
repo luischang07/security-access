@@ -58,7 +58,7 @@ class BaseDatos
 
     return new LineaInventario($data->cadena_id, $data->sucursal_id, $data->medicamento_id, $data->stock_disponible, $data->precio_unitario);
   }
-  
+
   public function obtenerCadenas()
   {
     return CadenaFarmaceutica::select('cadena_id', 'nombre')->orderBy('nombre')->get();
@@ -120,7 +120,7 @@ class BaseDatos
       ->get(['id', 'nombre', 'unidad_medida', 'unidades']);
   }
 
-  
+
   public function actualizarInventario($ldi)
   {
     Inventario::where('cadena_id', $ldi->getCadenaId())
@@ -180,7 +180,7 @@ class BaseDatos
 
   public function guardarCambioEstatusPedido(DomainPedido $pedido)
   {
-    Pedido::where('folio_pedido',$pedido->getFolio())->update(['estatus'=>$pedido->getEstatus()]);
+    Pedido::where('folio_pedido', $pedido->getFolio())->update(['estatus' => $pedido->getEstatus()]);
   }
 
   public function guardarLineaPedido(DomainLineaPedido $ldp, $folio_pedido): LineaPedido
@@ -238,9 +238,17 @@ class BaseDatos
 
   public function obtenerPedidosPorSucursal($cadena_id, $sucursal_id)
   {
-    $pedidos = Pedido::where('cadena_id', $cadena_id)
-      ->where('sucursal_id', $sucursal_id)
-      ->with('lineasPedidos', 'penalizacion')
+    $pedidos = Pedido::query()
+      ->where(function ($q) use ($cadena_id, $sucursal_id) {
+        $q->where('cadena_id', $cadena_id)
+          ->where('sucursal_id', $sucursal_id);
+      })
+      ->orWhereHas('lineasPedidos.detalles', function ($q) use ($cadena_id, $sucursal_id) {
+        $q->where('cadena_id', $cadena_id)
+          ->where('sucursal_id', $sucursal_id);
+      })
+      ->with(['penalizacion', 'lineasPedidos.detalles.sucursal'])
+      ->orderBy('fecha_pedido', 'desc')
       ->get();
 
     $pedidos = $pedidos->map(function ($pedido) {

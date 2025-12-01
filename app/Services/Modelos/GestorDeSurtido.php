@@ -197,8 +197,9 @@ class GestorDeSurtido
           'orden' => $orden++,
         ]);
       }
-
-      $this->dataBase->guardarMontoPenalizacion($pedido->getFolio(), $pedido->getMontoPenalizacion());
+      if ($pedido->getMontoPenalizacion() > 0) {
+        $this->dataBase->guardarMontoPenalizacion($pedido->getFolio(), $pedido->getMontoPenalizacion());
+      }
     });
   }
 
