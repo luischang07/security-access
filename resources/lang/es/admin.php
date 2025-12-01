@@ -139,8 +139,7 @@ return [
     'branch_number' => 'Sucursal :number',
     'items' => 'artículos',
     'status' => [
-      'pending' => 'Pendiente',
-      'in_progress' => 'En Proceso',
+      'confirmed' => 'Confirmado',
       'ready' => 'Listo',
       'completed' => 'Completado',
       'cancelled' => 'Cancelado',

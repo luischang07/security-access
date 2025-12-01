@@ -2,131 +2,182 @@
 
 namespace App\Domain;
 
+use Illuminate\Support\Collection;
+
 class Sucursal
 {
+  private string $cadenaId;
+  private string $sucursalId;
+  private string $nombre;
 
-  private $cadena_id, $sucursal_id, $nombre;
-  private $calle, $numero_exterior, $numero_interior, $ciudad, $colonia;
-  private $latitud, $longitud, $distancia;
+  private string $calle;
+  private string $numeroExterior;
+  private ?string $numeroInterior;
+  private ?string $ciudad;
+  private string $colonia;
+
+  private float $latitud;
+  private float $longitud;
+
+  /** @var array|Collection LineaInventario[] */
   private $inventario;
   private $notificaciones;
 
-  public function __construct($cadena_id, $sucursal_id, $nombre, $calle, $numero_exterior, $numero_interior, $ciudad, $colonia, $latitud, $longitud, $distancia)
-  {
-    $this->cadena_id = $cadena_id;
-    $this->sucursal_id = $sucursal_id;
+  public function __construct(
+    string $cadenaId,
+    string $sucursalId,
+    string $nombre,
+    string $calle,
+    string $numeroExterior,
+    ?string $numeroInterior,
+    ?string $ciudad,
+    string $colonia,
+    float $latitud,
+    float $longitud,
+  ) {
+    $this->cadenaId = $cadenaId;
+    $this->sucursalId = $sucursalId;
     $this->nombre = $nombre;
     $this->calle = $calle;
-    $this->numero_exterior = $numero_exterior;
-    $this->numero_interior = $numero_interior;
+    $this->numeroExterior = $numeroExterior;
+    $this->numeroInterior = $numeroInterior;
     $this->ciudad = $ciudad;
     $this->colonia = $colonia;
     $this->latitud = $latitud;
     $this->longitud = $longitud;
-    $this->distancia = $distancia;
     $this->inventario = array();
     $this->notificaciones = collect();
   }
-  public static function crear($data)
+  public static function crear(object $data): self
   {
-    return new self($data->cadena_id, $data->sucursal_id, $data->nombre, $data->calle, $data->numero_ext, $data->numero_int, $data->ciudad, $data->colonia, $data->latitud, $data->longitud, $data->distancia);
+    return new self(
+      $data->cadena_id,
+      $data->sucursal_id,
+      $data->nombre,
+      $data->calle,
+      $data->numero_ext,
+      $data->numero_int,
+      $data->ciudad,
+      $data->colonia,
+      $data->latitud,
+      $data->longitud,
+    );
   }
 
-  //Getters y Setters
-  public function getCadenaId()
+  //Getters
+  public function getCadenaId(): string
   {
-    return $this->cadena_id;
+    return $this->cadenaId;
   }
-  public function getSucursalId()
+
+  public function getSucursalId(): string
   {
-    return $this->sucursal_id;
+    return $this->sucursalId;
   }
-  public function getNombre()
+
+  public function getNombre(): string
   {
     return $this->nombre;
   }
-  public function getCalle()
+
+  public function getCalle(): string
   {
     return $this->calle;
   }
-  public function getNumeroExterior()
+
+  public function getNumeroExterior(): string
   {
-    return $this->numero_exterior;
+    return $this->numeroExterior;
   }
-  public function getNumeroInterior()
+
+  public function getNumeroInterior(): ?string
   {
-    return $this->numero_interior;
+    return $this->numeroInterior;
   }
-  public function getCiudad()
+
+  public function getCiudad(): ?string
   {
     return $this->ciudad;
   }
-  public function getColonia()
+
+  public function getColonia(): string
   {
     return $this->colonia;
   }
-  public function getLatitud()
+
+  public function getLatitud(): float
   {
     return $this->latitud;
   }
-  public function getLongitud()
+
+  public function getLongitud(): float
   {
     return $this->longitud;
-  }
-  public function setCadenaId($cadena_id)
-  {
-    $this->cadena_id = $cadena_id;
-  }
-  public function setSucursalId($sucursal_id)
-  {
-    $this->sucursal_id = $sucursal_id;
-  }
-  public function setNombre($nombre)
-  {
-    $this->nombre = $nombre;
-  }
-  public function setCalle($calle)
-  {
-    $this->calle = $calle;
-  }
-  public function setNumeroExterior($numero_exterior)
-  {
-    $this->numero_exterior = $numero_exterior;
-  }
-  public function setNumeroInterior($numero_interior)
-  {
-    $this->numero_interior = $numero_interior;
-  }
-  public function setCiudad($ciudad)
-  {
-    $this->ciudad = $ciudad;
-  }
-  public function setColonia($colonia)
-  {
-    $this->colonia = $colonia;
-  }
-  public function setLatitud($latitud)
-  {
-    $this->latitud = $latitud;
-  }
-  public function setLongitud($longitud)
-  {
-    $this->longitud = $longitud;
   }
 
   public function agregarNotificacion($notificacion)
   {
-      $this->notificaciones->push($notificacion);
+    $this->notificaciones->push($notificacion);
   }
 
   public function getDireccion()
   {
-    $direccion = $this->calle . ' ' . $this->numero_exterior;
-    if (!empty($this->numero_interior)) {
-      $direccion .= ', Int. ' . $this->numero_interior;
+    $direccion = $this->calle . ' ' . $this->numeroExterior;
+    if (!empty($this->numeroInterior)) {
+      $direccion .= ', Int. ' . $this->numeroInterior;
     }
     $direccion .= ', ' . $this->colonia . ', ' . $this->ciudad;
     return $direccion;
   }
 
+  //Setters
+  public function setCadenaId(string $cadenaId): void
+  {
+    $this->cadenaId = $cadenaId;
+  }
+
+  public function setSucursalId(string $sucursalId): void
+  {
+    $this->sucursalId = $sucursalId;
+  }
+
+  public function setNombre(string $nombre): void
+  {
+    $this->nombre = $nombre;
+  }
+
+  public function setCalle(string $calle): void
+  {
+    $this->calle = $calle;
+  }
+
+  public function setNumeroExterior(string $numeroExterior): void
+  {
+    $this->numeroExterior = $numeroExterior;
+  }
+
+  public function setNumeroInterior(?string $numeroInterior): void
+  {
+    $this->numeroInterior = $numeroInterior;
+  }
+
+  public function setCiudad(?string $ciudad): void
+  {
+    $this->ciudad = $ciudad;
+  }
+
+  public function setColonia(string $colonia): void
+  {
+    $this->colonia = $colonia;
+  }
+
+  public function setLatitud(float $latitud): void
+  {
+    $this->latitud = $latitud;
+  }
+
+  public function setLongitud(float $longitud): void
+  {
+    $this->longitud = $longitud;
+  }
 }

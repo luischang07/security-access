@@ -33,6 +33,19 @@ return [
     'special_instructions_placeholder' => 'Agrega cualquier instrucción especial para la farmacia aquí...',
     'submit' => 'Enviar Receta',
     'dashboard' => 'Panel',
+    // New translations for hardcoded text
+    'error_title' => 'No pudimos confirmar el pedido. Intenta de nuevo.',
+    'search_medication' => 'Buscar medicamento',
+    'search_placeholder' => 'Ingresa el nombre del medicamento',
+    'search_hint' => 'Escribe al menos 2 caracteres para buscar y selecciona un resultado de la lista.',
+    'selected_item' => 'Elemento seleccionado',
+    'change_selection' => 'Cambiar selección',
+    'add_button' => 'Agregar',
+    'medications_added' => 'Medicamentos agregados',
+    'medications_count' => ':count seleccionados',
+    'medication_column' => 'Medicamento',
+    'quantity_column' => 'Cantidad',
+    'empty_medications' => 'Aún no has agregado medicamentos.',
   ],
 
   // Prescription Upload Step 2

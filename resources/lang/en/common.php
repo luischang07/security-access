@@ -15,6 +15,7 @@ return [
     'logout' => 'Log Out',
     'dashboard' => 'Dashboard',
     'profile' => 'Profile',
+    'settings' => 'Settings',
   ],
 
   // Footer

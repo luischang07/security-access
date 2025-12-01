@@ -9,7 +9,7 @@ class PedidoFactory extends Factory
   public function definition(): array
   {
     $fechaPedido = $this->faker->dateTimeBetween('-3 months', 'now');
-    $estado = $this->faker->randomElement(['pendiente', 'en_proceso', 'completado', 'cancelado']);
+    $estado = $this->faker->randomElement(['confirmado', 'listo', 'completado', 'cancelado']);
 
     return [
       'fecha_pedido' => $fechaPedido,

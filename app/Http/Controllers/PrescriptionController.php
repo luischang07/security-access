@@ -35,8 +35,9 @@ class PrescriptionController extends Controller
   public function uploadStep1()
   {
     // Only load cadenas for the initial page; branches will be requested on demand
-    $cadenas = $this->dataBase->obtenerCadenas();
-    return view('prescription.upload-step1', compact('cadenas'));
+    $cadenas = $this->dataBase->getCadenas();
+    $pedidoInicial = null; // No existing prescription data for new forms
+    return view('prescription.upload-step1', compact('cadenas', 'pedidoInicial'));
   }
 
   /**
@@ -44,7 +45,7 @@ class PrescriptionController extends Controller
    */
   public function sucursalesPorCadena($cadena_id)
   {
-    $sucursales = $this->dataBase->obtenerSucursalesPorCadena($cadena_id);
+    $sucursales = $this->dataBase->getSucursalesPorCadena($cadena_id);
     return response()->json($sucursales);
   }
 

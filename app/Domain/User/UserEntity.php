@@ -61,11 +61,6 @@ class UserEntity
     return $this->correo;
   }
 
-  public function getDireccion(): string
-  {
-    return $this->direccion;
-  }
-
   public function getSessionToken(): ?string
   {
     return $this->sessionToken;
@@ -190,7 +185,6 @@ class UserEntity
       'nombre' => $this->nombre,
       'apellido' => $this->apellido,
       'correo' => $this->correo,
-      'direccion' => $this->direccion,
       'session_token' => $this->sessionToken,
       'session_expires_at' => $this->sessionExpiresAt,
       'ultimo_login' => $this->ultimoLogin,

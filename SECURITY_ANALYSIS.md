@@ -324,7 +324,7 @@ class AdminController extends Controller
 ```php
 // ✅ Dashboard: Solo pedidos activos del paciente
 $pedidosActivos = Pedido::forPatient(auth()->id())
-  ->whereIn('estado', ['pendiente', 'en_proceso'])
+  ->whereIn('estado', ['confirmado'])
   ->get();
 
 // ✅ Orders: Solo pedidos del paciente

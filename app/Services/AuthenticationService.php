@@ -83,16 +83,13 @@ class AuthenticationService
 
     $request->session()->regenerate();
 
-    // Guardar el session_token DESPUÉS de regenerar la sesión
     $request->session()->put('session_token', $sessionToken);
-
-    // ✅ RBAC: Redirigir según el rol del usuario
     $role = $userModel->getRole();
 
     return match ($role) {
       'admin' => redirect()->route('admin.dashboard')->with('status', __('Bienvenido de nuevo, Administrador.')),
       'pharmacy' => redirect()->route('pharmacy.dashboard')->with('status', __('Bienvenido de nuevo.')),
-      'patient' => redirect()->route('patient.dashboard')->with('status', __('Bienvenido de nuevo.')),
+      'patient' => redirect()->route('prescription.pharmacy-map')->with('status', __('Bienvenido de nuevo.')),
       default => redirect()->route('landing')->with('status', __('Bienvenido de nuevo.')),
     };
   }

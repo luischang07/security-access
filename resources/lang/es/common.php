@@ -15,6 +15,7 @@ return [
     'logout' => 'Cerrar Sesión',
     'dashboard' => 'Panel',
     'profile' => 'Perfil',
+    'settings' => 'Configuración',
   ],
 
   // Footer

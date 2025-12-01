@@ -1,55 +1,59 @@
 <?php
 
 namespace App\Domain;
+
 use Illuminate\Support\Collection;
 use App\Models\User as UserModel;
 use App\Models\Paciente as PacienteModel;
 use App\Domain\User\UserEntity;
 use App\Domain\Notificacion;
+
 class Paciente
 {
-    private $user;
-    private $notificaciones;
-    private $monto_penalizacion = 0;
+  private UserEntity $user;
+  private float $montoPenalizacion = 0;
 
-    public function __construct(PacienteModel $paciente, UserModel $user, $notificaciones = null)
-    {
-        $this->user = new UserEntity($user);
-        $this->monto_penalizacion = $paciente->monto_penalizacion;
-        $this->notificaciones = collect();
-        if ($notificaciones) {
-            foreach ($notificaciones as $notificacion) {
-                $this->notificaciones->push(new Notificacion($notificacion));
-            }
-        }
-    }
+  /** @var Collection|Notificacion[] */
+  private Collection $notificaciones;
 
-    public function getUser()
-    {
-        return $this->user;
+  public function __construct(PacienteModel $paciente, UserModel $user, ?iterable $notificaciones = null)
+  {
+    $this->user = new UserEntity($user);
+    $this->montoPenalizacion = (float) $paciente->monto_penalizacion;
+    $this->notificaciones = collect();
+    if ($notificaciones) {
+      foreach ($notificaciones as $notificacion) {
+        $this->notificaciones->push(new Notificacion($notificacion));
+      }
     }
-    public function getMontoPenalizacion()
-    {
-        return $this->monto_penalizacion;
-    }
-    public function setMontoPenalizacion($monto)
-    {
-        $this->monto_penalizacion += $monto;
-    }
-    public function reducirPenalizacion($monto)
-    {
-        $this->monto_penalizacion -= $monto;
-        if ($this->monto_penalizacion < 0) {
-            $this->monto_penalizacion = 0;
-        }
-    }
-    public function agregarNotificacion($notificacion)
-    {
-        $this->notificaciones->push($notificacion);
-    }
+  }
 
-    public function getNotificaciones()
-    {
-        return $this->notificaciones;
+  public function getUser(): UserEntity
+  {
+    return $this->user;
+  }
+  public function getMontoPenalizacion(): float
+  {
+    return $this->montoPenalizacion;
+  }
+  public function sumarMontoPenalizacion(float $monto): void
+  {
+    $this->montoPenalizacion += $monto;
+  }
+  public function reducirPenalizacion(float $monto): void
+  {
+    $this->montoPenalizacion -= $monto;
+    if ($this->montoPenalizacion < 0.0) {
+      $this->montoPenalizacion = 0.0;
     }
+  }
+  public function agregarNotificacion(Notificacion $notificacion): void
+  {
+    $this->notificaciones->push($notificacion);
+  }
+
+  public function getNotificaciones(): Collection
+  {
+    return $this->notificaciones;
+  }
 }

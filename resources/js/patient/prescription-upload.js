@@ -25,7 +25,8 @@ function initializePrescriptionForm() {
   });
 
   setupMedicationSearch();
-  hydrateInitialMedications(window.initialMedications || []);
+  const medicationsToLoad = (window.formData && window.formData.medications) || window.initialMedications || [];
+  hydrateInitialMedications(medicationsToLoad);
   validateForm();
 }
 
