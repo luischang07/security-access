@@ -247,7 +247,6 @@ class GestorDeSurtido
           $this->dataBase->guardarDetalleLineaPedido(
             $detallelinea,
             $folioPedido,
-            $idLinea
           );
         }
       }

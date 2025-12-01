@@ -47,7 +47,7 @@ class BaseDatos
     return $sucursales;
   }
 
-  public function getSucursal($cadena_id, $sucursal_id): ?DomainSucursal
+  public function getSucursal(string $cadena_id, string $sucursal_id): ?DomainSucursal
   {
     $sucursal = Sucursal::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->first();
     $sucursal = DomainSucursal::crear($sucursal);
@@ -58,7 +58,7 @@ class BaseDatos
    * This method needs to be executed within a database transaction.
    * All operations performed inside this method are atomic and will be committed or rolled back as a single unit.
    */
-  public function getInventario($cadena_id, $sucursal_id, $medId): ?LineaInventario
+  public function getInventario(string $cadena_id, string $sucursal_id, int $medId): ?LineaInventario
   {
     $data = Inventario::where('cadena_id', $cadena_id)->where('sucursal_id', $sucursal_id)->where('medicamento_id', $medId)->lockForUpdate()->first();
 
@@ -74,7 +74,7 @@ class BaseDatos
     return CadenaFarmaceutica::select('cadena_id', 'nombre')->orderBy('nombre')->get();
   }
 
-  public function getSucursalesPorCadena($cadena_id): Collection
+  public function getSucursalesPorCadena(string $cadena_id): Collection
   {
     return Sucursal::select([
       'cadena_id',
@@ -106,7 +106,7 @@ class BaseDatos
   }
 
 
-  public function actualizarInventario($ldi)
+  public function actualizarInventario(LineaInventario $ldi)
   {
     Inventario::where('cadena_id', $ldi->getCadenaId())
       ->where('sucursal_id', $ldi->getSucursalId())
@@ -147,7 +147,7 @@ class BaseDatos
     ]);
   }
 
-  public function guardarNotificacionSucursal($sucursal, $folio_pedido, $notificacion)
+  public function guardarNotificacionSucursal(DomainSucursal $sucursal, int $folio_pedido, DomainNotificacion $notificacion)
   {
     //Obtener los user_id de la sucursal
     $users_ids = Empleado::where('cadena_id', $sucursal->getCadenaId())
@@ -195,7 +195,7 @@ class BaseDatos
     ]);
   }
 
-  public function guardarDetalleLineaPedido(DomainDetalleLineaPedido $dlp, $folio_pedido, $id_lineapedido): DetalleLineaPedido
+  public function guardarDetalleLineaPedido(DomainDetalleLineaPedido $dlp, int $folio_pedido): DetalleLineaPedido
   {
     return DetalleLineaPedido::create([
       'folio_pedido' => $folio_pedido,
@@ -239,7 +239,7 @@ class BaseDatos
     return DomainPedido::crear($pedido);
   }
 
-  public function getPedidosPorSucursal($cadena_id, $sucursal_id)
+  public function getPedidosPorSucursal(string $cadena_id, string $sucursal_id): Collection
   {
     $pedidos = Pedido::query()
       ->where(function ($q) use ($cadena_id, $sucursal_id) {
@@ -276,7 +276,7 @@ class BaseDatos
     DB::rollBack();
   }
 
-  public function guardarMontoPenalizacion($folio, $monto)
+  public function guardarMontoPenalizacion(int $folio, float $monto): void
   {
     PedidoPenalizacion::create([
       'folio_pedido' => $folio,
