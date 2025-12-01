@@ -102,6 +102,21 @@ return [
       'cancel_btn' => 'No, volver',
       'confirm_btn' => 'Sí, cancelar pedido',
     ],
+    'route' => [
+      'page_title' => 'Ruta de Recolección - Te Acerco Salud',
+      'title' => 'Ruta de Recolección',
+      'back_to_orders' => 'Volver a Pedidos',
+      'order_summary' => 'Resumen del Pedido',
+      'collection_date' => 'Fecha de Recolección',
+      'map_title' => 'Mapa de la Ruta',
+      'route_details' => 'Detalles de la Ruta',
+      'stop' => 'Parada',
+      'stops' => 'Paradas',
+      'medications_to_collect' => 'Medicamentos a Recoger',
+      'no_route_info' => 'No hay información de ruta disponible para este pedido.',
+      'cost_summary' => 'Resumen del Costo',
+      'total_order' => 'Total del Pedido',
+    ],
   ],
 
   // Inventory Management
@@ -130,11 +145,13 @@ return [
     'medication' => 'Medicamento',
     'quantity' => 'Cantidad',
     'unit' => 'Unidad',
+    'units' => 'Unidades',
     'expiry_date' => 'Fecha de Vencimiento',
     'stock_status' => [
       'in_stock' => 'En Stock',
       'low_stock' => 'Stock Bajo',
       'out_of_stock' => 'Sin Stock',
     ],
+    'delete_confirmation' => '¿Estás seguro de que deseas eliminar este medicamento del inventario?',
   ],
 ];

@@ -9,6 +9,7 @@ use App\Services\Modelos\PedidoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 /**
  * @method void middleware(\Closure|string $middleware)
  */
@@ -63,6 +64,7 @@ class PharmacyController extends Controller
   public function orders()
   {
 
+    /** @var \App\Models\User $user */
     $user = Auth::user();
     $branchIds = $user->getBranchIds();
 
@@ -74,7 +76,10 @@ class PharmacyController extends Controller
   /**
    * Show the pharmacy inventory management
    */
-  public function inventory()
+  /**
+   * Show the pharmacy inventory management
+   */
+  public function inventory(Request $request)
   {
     // ✅ SEGURIDAD: Solo inventario de la sucursal del empleado
     /** @var \App\Models\User $user */
@@ -85,12 +90,72 @@ class PharmacyController extends Controller
       abort(403, self::BRANCH_INFO_NOT_FOUND);
     }
 
+    $search = $request->input('search');
+
     $inventario = $this->inventarioRepository->getPaginatedInventoryForBranch(
       $branchIds['cadena_id'],
-      $branchIds['sucursal_id']
+      $branchIds['sucursal_id'],
+      20,
+      $search
     );
 
-    return view('pharmacy.inventory', compact('inventario'));
+    return view('pharmacy.inventory', compact('inventario', 'search'));
+  }
+
+  /**
+   * Delete an item from the inventory
+   */
+  public function deleteInventoryItem($medicamentoId)
+  {
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $branchIds = $user->getBranchIds();
+
+    if (!$branchIds) {
+      abort(403, self::BRANCH_INFO_NOT_FOUND);
+    }
+
+    $this->inventarioRepository->deleteInventoryItem(
+      $branchIds['cadena_id'],
+      $branchIds['sucursal_id'],
+      $medicamentoId
+    );
+
+    return redirect()->route('pharmacy.inventory')->with('success', 'Medicamento eliminado del inventario correctamente.');
+  }
+
+  /**
+   * Update the specified inventory item.
+   */
+  public function update(Request $request, $medicamentoId)
+  {
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $branchIds = $user->getBranchIds();
+
+    if (!$branchIds) {
+      abort(403, self::BRANCH_INFO_NOT_FOUND);
+    }
+
+    $request->validate([
+      'stock_disponible' => 'required|integer|min:0',
+      'precio_unitario' => 'required|numeric|min:0',
+      'minimo' => 'nullable|integer|min:0',
+      'maximo' => 'nullable|integer|min:0|gte:minimo',
+    ]);
+
+    $updated = $this->inventarioRepository->updateInventoryItem(
+      $branchIds['cadena_id'],
+      $branchIds['sucursal_id'],
+      $medicamentoId,
+      $request->only(['stock_disponible', 'precio_unitario', 'minimo', 'maximo'])
+    );
+
+    if (!$updated) {
+      return redirect()->route('pharmacy.inventory')->with('error', 'No se pudo actualizar el inventario. Verifique que el item exista.');
+    }
+
+    return redirect()->route('pharmacy.inventory')->with('success', 'Inventario actualizado correctamente.');
   }
 
   /**
@@ -105,6 +170,7 @@ class PharmacyController extends Controller
    */
   public function showOrderRoute($folio)
   {
+    /** @var \App\Models\User $user */
     $user = Auth::user();
     $branchIds = $user->getBranchIds();
 

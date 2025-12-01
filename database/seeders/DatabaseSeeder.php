@@ -161,12 +161,13 @@ class DatabaseSeeder extends Seeder
 
     foreach ($sucursales as $sucursal) {
       foreach ($medicamentosIds as $medId) {
+        $minimo = rand(5, 20);
         DB::table('inventarios')->insert([
           'cadena_id' => $sucursal->cadena_id,
           'sucursal_id' => $sucursal->sucursal_id,
           'medicamento_id' => $medId,
-          'minimo' => rand(5, 20),
-          'maximo' => rand(5, 20),
+          'minimo' => $minimo,
+          'maximo' => rand($minimo + 1, 30),
           'precio_unitario' => rand(10, 1000),
           'stock_disponible' => rand(5, 20),
         ]);

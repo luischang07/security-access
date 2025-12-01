@@ -84,63 +84,50 @@ class GestorDeSurtido
     return $pedido;
   }
 
-  public function calculaFaltantes(Collection $sinStock, Collection $sucCercanas, Pedido $pedido, array $stockComprometido = []): void
+  public function calculaFaltantes(Collection $sinStock, Collection $sucCercanas, Pedido $pedido, array $stockComprometido = [], bool $applyUpdate = false): void
   {
     foreach ($sucCercanas as $sucursal) {
       /** @var Sucursal $sucursal */
       foreach ($sinStock as $ldp) {
-        $this->allocateFromSucursal($sucursal, $ldp, $stockComprometido, false, null);
+        $ldi = $this->sucursalService->getLineaInventario($sucursal->getCadenaId(), $sucursal->getSucursalId(), $ldp->getMedicamentoId());
+        if (!$ldi) {
+          continue;
+        }
+
+        $cantFaltante = $ldp->getCantidadFaltante();
+        if ($cantFaltante <= 0) {
+          continue;
+        }
+
+        $key = $sucursal->getCadenaId() . '-' . $sucursal->getSucursalId() . '-' . $ldp->getMedicamentoId();
+        $committed = $stockComprometido[$key] ?? 0;
+        $stockReal = $ldi->getStockDisponible() - $committed;
+        if ($stockReal <= 0) {
+          continue;
+        }
+
+        if ($applyUpdate) {
+          // when applying updates, use inventory's own logic to decide how much it can supply
+          $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
+          // decrement and persist
+          $ldi->disminuirStock($cantidadSurtida);
+          $this->sucursalService->actualizarInventario($ldi);
+          if ($pedido) {
+            $pedido->anadirARuta($sucursal);
+          }
+        } else {
+          $cantidadSurtida = min($cantFaltante, $stockReal);
+        }
+
+        $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucursal, $ldp->getMedicamentoId());
+
+        if ($cantidadSurtida == $cantFaltante) {
+          $this->sinStock = $this->sinStock->reject(function ($item) use ($ldp) {
+            return $item === $ldp;
+          });
+        }
       }
     }
-  }
-
-  /**
-   * Try allocate stock for a single line from a single sucursal.
-   * If $applyUpdate is true it will decrement inventory and add route to $pedido.
-   * Returns true if the line was fully satisfied and removed from sinStock.
-   */
-  private function allocateFromSucursal(Sucursal $sucursal, LineaPedido $ldp, array $stockComprometido = [], bool $applyUpdate = false, ?Pedido $pedido = null): bool
-  {
-    $ldi = $this->sucursalService->getLineaInventario($sucursal->getCadenaId(), $sucursal->getSucursalId(), $ldp->getMedicamentoId());
-    if (!$ldi) {
-      return false;
-    }
-
-    $cantFaltante = $ldp->getCantidadFaltante();
-    if ($cantFaltante <= 0) {
-      return false;
-    }
-
-    $key = $sucursal->getCadenaId() . '-' . $sucursal->getSucursalId() . '-' . $ldp->getMedicamentoId();
-    $committed = $stockComprometido[$key] ?? 0;
-    $stockReal = $ldi->getStockDisponible() - $committed;
-    if ($stockReal <= 0) {
-      return false;
-    }
-
-    if ($applyUpdate) {
-      // when applying updates, use inventory's own logic to decide how much it can supply
-      $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
-      // decrement and persist
-      $ldi->disminuirStock($cantidadSurtida);
-      $this->sucursalService->actualizarInventario($ldi);
-      if ($pedido) {
-        $pedido->anadirARuta($sucursal);
-      }
-    } else {
-      $cantidadSurtida = min($cantFaltante, $stockReal);
-    }
-
-    $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucursal, $ldp->getMedicamentoId());
-
-    if ($cantidadSurtida == $cantFaltante) {
-      $this->sinStock = $this->sinStock->reject(function ($item) use ($ldp) {
-        return $item === $ldp;
-      });
-      return true;
-    }
-
-    return false;
   }
 
   public function confirmarPedido(Pedido $pedido): Pedido
@@ -160,7 +147,9 @@ class GestorDeSurtido
             $this->sucursalService->actualizarInventario($ldi);
             $pedido->anadirARuta($dlp->getSucursal());
           } else {
-            $this->sinStock->push($linea);
+            if (!$this->sinStock->contains($linea)) {
+              $this->sinStock->push($linea);
+            }
             $pedido->eliminarDetalle($dlp);
           }
         }
@@ -187,7 +176,7 @@ class GestorDeSurtido
           $sucSeleccionada->getSucursalId()
         );
 
-        $this->calculaFaltantesWithUpdate($this->sinStock, $sucCercanas, $pedido);
+        $this->calculaFaltantes($this->sinStock, $sucCercanas, $pedido, [], true);
       }
 
       if ($pedido->calcularPorcentajeSurtido() < 0.5) {
@@ -234,16 +223,6 @@ class GestorDeSurtido
     } catch (\Throwable $e) {
       $this->dataBase->cancelarTransaccion();
       throw $e;
-    }
-  }
-
-  private function calculaFaltantesWithUpdate(Collection $sinStock, Collection $sucCercanas, Pedido $pedido): void
-  {
-    foreach ($sucCercanas as $suc) {
-      foreach ($sinStock as $ldp) {
-        // Try to allocate and apply updates (decrement inventory, add route)
-        $this->allocateFromSucursal($suc, $ldp, [], true, $pedido);
-      }
     }
   }
 
