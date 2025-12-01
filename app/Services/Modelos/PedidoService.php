@@ -196,4 +196,15 @@ class PedidoService
 
         return $pedido;
     }
+
+    public function buscarPorFolio($folio_pedido, $cadena_id, $sucursal_id)
+    {
+        $pedido = $this->dataBase->getPedidoByFoliosCompletos($folio_pedido, $cadena_id, $sucursal_id);
+
+        if (!$pedido) {
+            return null;
+        }
+
+        return $pedido;
+    }
 }

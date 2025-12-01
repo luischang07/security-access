@@ -297,4 +297,11 @@ class BaseDatos
       'monto' => $monto,
     ]);
   }
+
+  public function getPedidoByFoliosCompletos($folio_pedido, $cadena_id, $sucursal_id){
+    return Pedido::where('folio_pedido', $folio_pedido)
+            ->where('cadena_id', $cadena_id)
+            ->where('sucursal_id', $sucursal_id)
+            ->first();
+  }
 }
