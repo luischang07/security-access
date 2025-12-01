@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pedido;
 use App\Repositories\InventarioRepository;
 use App\Repositories\PedidoRepository;
 use App\Services\Modelos\PedidoService;
@@ -65,7 +66,7 @@ class PharmacyController extends Controller
     $user = Auth::user();
     $branchIds = $user->getBranchIds();
 
-    $pedidos = $this->pedidoService->obtenerPedidosSucursal($branchIds['cadena_id'], $branchIds['sucursal_id']);
+    $pedidos = $this->pedidoService->getPedidosSucursal($branchIds['cadena_id'], $branchIds['sucursal_id']);
 
     return view('pharmacy.orders', compact('pedidos'));
   }
@@ -111,9 +112,14 @@ class PharmacyController extends Controller
       abort(403, self::BRANCH_INFO_NOT_FOUND);
     }
 
-    $pedido = \App\Models\Pedido::where('folio_pedido', $folio)
+    $pedido = Pedido::where('folio_pedido', $folio)
       ->where('cadena_id', $branchIds['cadena_id'])
       ->where('sucursal_id', $branchIds['sucursal_id'])
+      ->with([
+        'rutaRecoleccion',
+        'lineasPedidos.medicamento',
+        'lineasPedidos.detalles'
+      ])
       ->firstOrFail();
 
     return view('pharmacy.order-route', compact('pedido'));

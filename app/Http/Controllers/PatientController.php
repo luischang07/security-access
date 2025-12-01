@@ -179,24 +179,19 @@ class PatientController extends Controller
   private function getOrderProgress(string $estatus): array
   {
     return match ($estatus) {
-      'pendiente' => [
-        'width' => '25%',
+      'confirmado' => [
+        'width' => '33%',
         'color' => 'bg-yellow-400',
         'label' => __('patient.dashboard.active_orders.awaiting_confirmation'),
       ],
-      'en_proceso' => [
-        'width' => '50%',
-        'color' => 'bg-blue-500',
-        'label' => __('patient.dashboard.active_orders.in_process'),
-      ],
       'listo' => [
-        'width' => '75%',
-        'color' => 'bg-green-500',
+        'width' => '66%',
+        'color' => 'bg-blue-500',
         'label' => __('patient.dashboard.active_orders.ready_for_pickup'),
       ],
-      'entregado' => [
+      'completado' => [
         'width' => '100%',
-        'color' => 'bg-green-600',
+        'color' => 'bg-green-500',
         'label' => __('patient.dashboard.active_orders.delivered'),
       ],
       default => [

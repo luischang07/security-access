@@ -57,12 +57,10 @@ return [
     'order_details' => 'Order Details',
     'prescription' => 'Prescription',
     'status' => [
-      'new' => 'New',
-      'pending' => 'Pending',
-      'in_progress' => 'In Progress',
-      'processing' => 'Processing',
+      'confirmed' => 'Confirmed',
       'ready' => 'Ready',
       'completed' => 'Completed',
+      'cancelled' => 'Cancelled',
     ],
     'actions' => [
       'accept' => 'Accept Order',

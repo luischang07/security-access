@@ -82,8 +82,7 @@
         <select name="status" x-model="filters.status"
           class="w-full px-4 py-2 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark text-body-text dark:text-body-text-dark focus:outline-none focus:ring-2 focus:ring-primary">
           <option value="">{{ __('common.filters.all') }}</option>
-          <option value="pendiente">{{ __('admin.orders.status.pending') }}</option>
-          <option value="en_proceso">{{ __('admin.orders.status.in_progress') }}</option>
+          <option value="confirmado">{{ __('admin.orders.status.confirmed') }}</option>
           <option value="listo">{{ __('admin.orders.status.ready') }}</option>
           <option value="completado">{{ __('admin.orders.status.completed') }}</option>
           <option value="cancelado">{{ __('admin.orders.status.cancelled') }}</option>

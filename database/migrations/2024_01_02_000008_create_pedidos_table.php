@@ -19,7 +19,7 @@ return new class extends Migration {
       $table->string('cedula_profesional', 50);
       $table->date('fecha_pedido');
       $table->date('fecha_recoleccion')->nullable();
-      $table->string('estatus', 50);
+      $table->string('estatus', 50)->check("estatus IN ('confirmado', 'listo', 'completado', 'cancelado')");
       $table->decimal('costo_total', 10, 2);
 
 

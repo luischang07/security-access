@@ -64,12 +64,10 @@ return [
     'order_details' => 'Detalles del Pedido',
     'prescription' => 'Receta',
     'status' => [
-      'new' => 'Nuevo',
-      'pending' => 'Pendiente',
-      'in_progress' => 'En Progreso',
-      'processing' => 'Procesando',
+      'confirmed' => 'Confirmado',
       'ready' => 'Listo',
       'completed' => 'Completado',
+      'cancelled' => 'Cancelado',
     ],
     'actions' => [
       'accept' => 'Aceptar Pedido',

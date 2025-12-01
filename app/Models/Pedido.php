@@ -10,6 +10,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 class Pedido extends Model
 {
   use HasRelationships;
+
+  public const ESTATUS_CONFIRMADO = 'confirmado';
+  public const ESTATUS_COMPLETADO = 'completado';
+  public const ESTATUS_LISTO = 'listo';
+  public const ESTATUS_CANCELADO = 'cancelado';
+
   protected $table = 'pedidos';
   protected $primaryKey = 'folio_pedido';
   public $incrementing = true;

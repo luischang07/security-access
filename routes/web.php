@@ -68,6 +68,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   Route::prefix('pharmacy')->name('pharmacy.')->group(function () {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard'])->name('dashboard');
     Route::get('/orders', [PharmacyController::class, 'orders'])->name('orders');
+    Route::get('/orders/{folio}/route', [PharmacyController::class, 'showOrderRoute'])->name('orders.route');
     Route::post('/orders/cancel/{folio}', [CancelacionController::class, 'cancelarPorFolio'])->name('cancelarOrdenPorFolio');
     Route::get('/inventory', [PharmacyController::class, 'inventory'])->name('inventory');
     Route::get('/reports', [PharmacyController::class, 'reports'])->name('reports');

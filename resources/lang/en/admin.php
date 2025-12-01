@@ -139,8 +139,7 @@ return [
     'branch_number' => 'Branch :number',
     'items' => 'items',
     'status' => [
-      'pending' => 'Pending',
-      'in_progress' => 'In Progress',
+      'confirmed' => 'Confirmed',
       'ready' => 'Ready',
       'completed' => 'Completed',
       'cancelled' => 'Cancelled',

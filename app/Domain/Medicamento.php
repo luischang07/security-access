@@ -3,29 +3,50 @@
 
 namespace App\Domain;
 
-class Medicamento{
+class Medicamento
+{
+  private int $id;
+  private string $nombre;
+  private ?string $descripcion;
+  private ?string $unidadDeMedida;
+  private ?int $unidades;
 
+  public function __construct(
+    int $id,
+    string $nombre,
+    ?string $descripcion,
+    ?string $unidadDeMedida,
+    ?int $unidades
+  ) {
+    $this->id = $id;
+    $this->nombre = $nombre;
+    $this->descripcion = $descripcion;
+    $this->unidadDeMedida = $unidadDeMedida;
+    $this->unidades = $unidades;
+  }
 
-    private $id,$nombre,$descripcion,$unidad_Medida,$unidades;
+  public function getId(): int
+  {
+    return $this->id;
+  }
 
-    public function __construct($id,$nombre,$descripcion,$unidad_Medida,$unidades){
-        $this->id=$id;
-        $this->nombre=$nombre;
-        $this->descripcion=$descripcion;
-        $this->unidad_Medida=$unidad_Medida;
-        $this->unidades=$unidades;
-    }
+  public function getNombre(): string
+  {
+    return $this->nombre;
+  }
 
-    public function getNombre(){
-        return $this->nombre;
-    }
-    public function getDescripcion(){
-        return $this->descripcion;
-    }
-    public function getUnidadMedida(){
-        return $this->unidad_Medida;
-    }
-    public function getUnidades(){
-        return $this->unidades;
-    }
+  public function getDescripcion(): ?string
+  {
+    return $this->descripcion;
+  }
+
+  public function getUnidadMedida(): ?string
+  {
+    return $this->unidadDeMedida;
+  }
+
+  public function getUnidades(): ?int
+  {
+    return $this->unidades;
+  }
 }

@@ -99,6 +99,25 @@
 
                             </p>
                         </div>
+                        <?php if(method_exists($pedido, 'tieneFaltantes') && $pedido->tieneFaltantes()): ?>
+                            <div class="mx-4 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning dark:border-warning/30 dark:bg-warning/15">
+                                <div class="flex gap-3">
+                                    <span class="material-symbols-outlined text-xl mt-0.5">warning</span>
+                                    <div class="flex flex-col gap-1">
+                                        <p class="font-semibold  ">Algunos medicamentos no están disponibles en sucursales cercanas.</p>
+                                        <ul class="list-disc pl-5 space-y-1 text-body-text dark:text-body-text-dark">
+                                            <?php $__currentLoopData = $pedido->getFaltantes(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $faltante): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <li>
+                                                    <?php echo e($faltante->getMedicamento()->getNombre()); ?>
+
+                                                    — solicitaste <?php echo e($faltante->getCantidad()); ?>, faltan <?php echo e($faltante->getCantidadFaltante()); ?>.
+                                                </li>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
 
                         <!-- Order Summary Card -->
                         <div class="flex flex-col gap-8 p-4 md:p-6 bg-card-light dark:bg-card-dark rounded-xl">
@@ -190,28 +209,33 @@
                                                 </thead>
                                                 <tbody class="divide-y divide-border-light dark:divide-border-dark">
                                                     <?php
-                                                      $lineas = $pedido->getLineasPedidos();
-                                                      $subtotal = 0;
-                                                      $serviceFee = 1.00; // tarifa de servicio fija
+                                                        $lineas = $pedido->getLineasPedidos();
+                                                        $lineasConDetalles = collect($lineas ?? [])->filter(function ($linea) {
+                                                            $detalles = method_exists($linea, 'getDetalleLineaPedido')
+                                                                ? $linea->getDetalleLineaPedido()
+                                                                : collect();
+                                                            return $detalles->count() > 0;
+                                                        });
+                                                        $subtotal = 0;
+                                                        $serviceFee = 1.00; // tarifa de servicio fija
                                                     ?>
                                                          
-                                                    <?php if($lineas && count($lineas) > 0): ?>
+                                                    <?php if($lineasConDetalles->count() > 0): ?>
 
-                                                        <?php $__currentLoopData = $lineas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $linea): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                        <?php $__currentLoopData = $lineasConDetalles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $linea): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                             <?php
-                                                                // 1. Obtener la colección (Corregí el method_exists para que coincida con lo que llamas)
                                                                 $detalles = method_exists($linea, 'getDetalleLineaPedido')
                                                                     ? $linea->getDetalleLineaPedido()
                                                                     : collect();
 
                                                                 $lineTotal = 0;
+                                                                $cantidadTotalSurtida = 0;
                                                             ?>
 
-                                                            
                                                             <?php $__currentLoopData = $detalles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $detalle): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                                 <?php
-                                                                    // Calcular el total de esta línea específica
                                                                     $lineTotal += $detalle->getPrecio() * $detalle->getCantidadSurtida();
+                                                                    $cantidadTotalSurtida += $detalle->getCantidadSurtida();
                                                                 ?>
 
                                                                 <div class="font-medium text-body-text dark:text-body-text-dark">
@@ -236,7 +260,7 @@
                                                                         <?php echo e(__('prescription.upload_step2.capsules')); ?></div>
                                                                 </td>
                                                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                                    <?php echo e($linea->getCantidad()); ?></td>
+                                                                    <?php echo e($cantidadTotalSurtida); ?></td>
                                                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark text-right">
                                                                     <?php echo e('$' . number_format($lineTotal, 2)); ?></td>
                                                             </tr>
@@ -255,7 +279,7 @@
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <!-- Price Summary -->
                             <div
                                 class="flex flex-col items-end gap-2 border-t border-border-light dark:border-border-dark pt-6">
@@ -263,13 +287,18 @@
                                     <span class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e(__('prescription.upload_step2.subtotal')); ?></span>
                                     <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format($subtotal, 2)); ?></span>
                                 </div>
+                                <?php
+                                    if($montoPenalizacion){
+                                    $subtotal+=$montoPenalizacion;
+                                    }
+                                ?>
                                 <div class="flex justify-between w-full max-w-xs">
                                     <span class="text-sm text-neutral-text dark:text-neutral-text-dark">Monto penalización </span>
-                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format(0, 2)); ?></span>
+                                    <span class="text-sm font-medium text-body-text dark:text-body-text-dark"><?php echo e('$' . number_format($montoPenalizacion, 2)); ?></span>
                                 </div>
                                 <div class="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-dashed border-border-light dark:border-border-dark">
                                     <span class="text-lg font-bold text-body-text dark:text-body-text-dark"><?php echo e(__('prescription.upload_step2.estimated_total')); ?></span>
-                                    <span class="text-lg font-bold text-primary"><?php echo e('$' . number_format($subtotal , 2)); ?></span>
+                                    <span class="text-lg font-bold text-primary"><?php echo e('$' . number_format($subtotal, 2)); ?></span>
                                 </div>
                                 <p
                                     class="text-xs text-neutral-text dark:text-neutral-text-dark mt-1 text-right max-w-xs">
@@ -282,11 +311,11 @@
                         <!-- Action Buttons -->
                         <form action="/prescription/upload/step2" method="POST" class="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 p-4 mt-2 w-full">
                             <?php echo csrf_field(); ?>
-                            <button type="button" onclick="window.history.back()"
+                            <a href="<?php echo e(route('prescription.upload.step1')); ?>"
                                 class="flex items-center justify-center gap-2 rounded-lg h-12 px-8 text-neutral-text dark:text-neutral-text-dark text-base font-bold tracking-wide hover:bg-background-light dark:hover:bg-background-dark transition">
                                 <span class="material-symbols-outlined">arrow_back</span>
                                 <span><?php echo e(__('prescription.upload_step2.edit_prescription')); ?></span>
-                            </button>
+                            </a>
                             <button type="submit"
                                 class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg h-12 px-8 bg-primary text-white text-base font-bold tracking-wide hover:bg-primary/90 transition">
                                 <span><?php echo e(__('prescription.upload_step2.confirm_order')); ?></span>
@@ -302,4 +331,5 @@
 </html>
 
 <script>
-</script><?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/prescription/upload-step2.blade.php ENDPATH**/ ?>
+</script>
+<?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/prescription/upload-step2.blade.php ENDPATH**/ ?>

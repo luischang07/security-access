@@ -11,9 +11,7 @@ return new class extends Migration {
   public function up(): void
   {
     Schema::table('pedidos', function (Blueprint $table) {
-      // We use TEXT to store the encoded polyline string (or JSON if preferred)
-      // Encoded polyline is efficient for storage.
-      $table->text('route_geometry')->nullable()->after('estatus');
+      $table->longText('route_geometry')->nullable()->after('estatus');
     });
   }
 

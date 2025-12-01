@@ -59,7 +59,7 @@
       <div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
         <div class="layout-content-container flex flex-col w-full max-w-4xl flex-1">
 
-                    
+
           <!-- Top Navigation Bar -->
           <header
             class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-4 sm:px-10 py-3 bg-card-light dark:bg-card-dark rounded-xl mb-8">
@@ -108,7 +108,8 @@
               </div>
             </div>
             <?php if($errors->any()): ?>
-              <div class="mx-4 rounded-lg border border-red-300/60 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/50 dark:bg-red-900/20 dark:text-red-100">
+              <div
+                class="mx-4 rounded-lg border border-red-300/60 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/50 dark:bg-red-900/20 dark:text-red-100">
                 <div class="flex gap-3">
                   <span class="material-symbols-outlined text-xl mt-0.5">error</span>
                   <div class="flex flex-col gap-1">
@@ -203,88 +204,97 @@
                     <?php echo e(__('prescription.upload_step1.medications')); ?>
 
                   </h3>
-                  <div class="p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark space-y-4">
-                        <div class="flex flex-col gap-2">
-                            <label class="text-sm font-medium text-body-text dark:text-body-text-dark" for="medication-search">
-                                Buscar medicamento
-                            </label>
-                            <div class="relative">
-                                <input id="medication-search" type="text"
-                                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
-                                    placeholder="Ingresa el nombre del medicamento" autocomplete="off" />
-                                <div id="medication-suggestions"
-                                    class="absolute left-0 right-0 mt-1 z-20 hidden rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-lg max-h-56 overflow-y-auto">
-                                </div>
-                            </div>
-                            <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
-                                Escribe al menos 2 caracteres para buscar y selecciona un resultado de la lista.
-                            </p>
+                  <div
+                    class="p-4 border border-border-light dark:border-border-dark rounded-lg bg-card-light dark:bg-card-dark space-y-4">
+                    <div class="flex flex-col gap-2">
+                      <label class="text-sm font-medium text-body-text dark:text-body-text-dark"
+                        for="medication-search">
+                        Buscar medicamento
+                      </label>
+                      <div class="relative">
+                        <input id="medication-search" type="text"
+                          class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50"
+                          placeholder="Ingresa el nombre del medicamento" autocomplete="off" />
+                        <div id="medication-suggestions"
+                          class="absolute left-0 right-0 mt-1 z-20 hidden rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-lg max-h-56 overflow-y-auto">
                         </div>
-
-                        <div id="selected-medication-panel"
-                            class="hidden rounded-lg border border-dashed border-primary/40 bg-primary/5 dark:bg-primary/10 p-4 space-y-3">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center gap-2 text-primary font-semibold">
-                                    <span class="material-symbols-outlined text-xl">check_circle</span>
-                                    <span>Elemento seleccionado</span>
-                                </div>
-                                <button type="button" id="clear-selected-medication"
-                                    class="text-sm text-neutral-text dark:text-neutral-text-dark hover:text-red-500 transition">
-                                    Cambiar selección
-                                </button>
-                            </div>
-                            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
-                                <div class="flex-1">
-                                    <p class="text-base font-bold text-body-text dark:text-body-text-dark" id="selected-medication-name">
-                                        --
-                                    </p>
-                                    <p class="text-xs text-neutral-text dark:text-neutral-text-dark" id="selected-medication-meta"></p>
-                                </div>
-                                <div class="sm:w-36">
-                                    <label
-                                        class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
-                                        for="selected-quantity">
-                                        Cantidad
-                                    </label>
-                                    <input id="selected-quantity" type="number" min="1" value="1"
-                                        class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50" />
-                                </div>
-                                <button type="button" id="add-selected-medication"
-                                    class="flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition">
-                                    <span class="material-symbols-outlined text-xl">add_circle</span>
-                                    <span>Agregar</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col gap-3">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-base font-semibold text-body-text dark:text-body-text-dark">Medicamentos agregados</h4>
-                                <span id="medications-count"
-                                    class="rounded-full bg-background-light dark:bg-background-dark px-3 py-1 text-xs font-semibold text-neutral-text dark:text-neutral-text-dark">
-                                    0 seleccionados
-                                </span>
-                            </div>
-                            <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark">
-                                <table class="min-w-full divide-y divide-border-light dark:divide-border-dark text-sm">
-                                    <thead class="bg-background-light/60 dark:bg-background-dark/60">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left font-semibold text-body-text dark:text-body-text-dark">Medicamento</th>
-                                            <th class="px-4 py-3 text-left font-semibold text-body-text dark:text-body-text-dark">Cantidad</th>
-                                            <th class="px-4 py-3 text-right font-semibold text-body-text dark:text-body-text-dark"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="medications-table-body" class="divide-y divide-border-light dark:divide-border-dark">
-                                        <tr id="medications-empty-state">
-                                            <td colspan="3" class="px-4 py-4 text-neutral-text dark:text-neutral-text-dark text-center">
-                                                Aún no has agregado medicamentos.
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                      </div>
+                      <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
+                        Escribe al menos 2 caracteres para buscar y selecciona un resultado de la lista.
+                      </p>
                     </div>
+
+                    <div id="selected-medication-panel"
+                      class="hidden rounded-lg border border-dashed border-primary/40 bg-primary/5 dark:bg-primary/10 p-4 space-y-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 text-primary font-semibold">
+                          <span class="material-symbols-outlined text-xl">check_circle</span>
+                          <span>Elemento seleccionado</span>
+                        </div>
+                        <button type="button" id="clear-selected-medication"
+                          class="text-sm text-neutral-text dark:text-neutral-text-dark hover:text-red-500 transition">
+                          Cambiar selección
+                        </button>
+                      </div>
+                      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+                        <div class="flex-1">
+                          <p class="text-base font-bold text-body-text dark:text-body-text-dark"
+                            id="selected-medication-name">
+                            --
+                          </p>
+                          <p class="text-xs text-neutral-text dark:text-neutral-text-dark"
+                            id="selected-medication-meta"></p>
+                        </div>
+                        <div class="sm:w-36">
+                          <label class="block text-sm font-medium text-body-text dark:text-body-text-dark mb-1.5"
+                            for="selected-quantity">
+                            Cantidad
+                          </label>
+                          <input id="selected-quantity" type="number" min="1" value="1"
+                            class="w-full rounded-lg border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary focus:ring-primary/50" />
+                        </div>
+                        <button type="button" id="add-selected-medication"
+                          class="flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition">
+                          <span class="material-symbols-outlined text-xl">add_circle</span>
+                          <span>Agregar</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-center justify-between">
+                        <h4 class="text-base font-semibold text-body-text dark:text-body-text-dark">Medicamentos
+                          agregados</h4>
+                        <span id="medications-count"
+                          class="rounded-full bg-background-light dark:bg-background-dark px-3 py-1 text-xs font-semibold text-neutral-text dark:text-neutral-text-dark">
+                          0 seleccionados
+                        </span>
+                      </div>
+                      <div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark">
+                        <table class="min-w-full divide-y divide-border-light dark:divide-border-dark text-sm">
+                          <thead class="bg-background-light/60 dark:bg-background-dark/60">
+                            <tr>
+                              <th class="px-4 py-3 text-left font-semibold text-body-text dark:text-body-text-dark">
+                                Medicamento</th>
+                              <th class="px-4 py-3 text-left font-semibold text-body-text dark:text-body-text-dark">
+                                Cantidad</th>
+                              <th class="px-4 py-3 text-right font-semibold text-body-text dark:text-body-text-dark">
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody id="medications-table-body"
+                            class="divide-y divide-border-light dark:divide-border-dark">
+                            <tr id="medications-empty-state">
+                              <td colspan="3"
+                                class="px-4 py-4 text-neutral-text dark:text-neutral-text-dark text-center">
+                                Aún no has agregado medicamentos.
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                   <div id="medications-hidden-inputs" class="hidden"></div>
                 </div>
               </div>
@@ -306,40 +316,20 @@
   </div>
 </body>
 
-<?php
-    $pedidoInicial = null;
-    if (isset($pedido)) {
-        $pedidoInicial = [
-            'cadena_id' => optional($pedido->getSucursal())->getCadenaId(),
-            'sucursal_id' => optional($pedido->getSucursal())->getSucursalId(),
-            'cedula_profesional' => $pedido->getCedulaProfesional(),
-            'medications' => [],
-        ];
 
-        $lineas = $pedido->getLineasPedidos() ?? collect();
-        foreach ($lineas as $linea) {
-            $pedidoInicial['medications'][] = [
-                'id' => $linea->getMedicamentoId(),
-                'name' => $linea->getMedicamento()->getNombre(),
-                'quantity' => (int) $linea->getCantidad(),
-            ];
-        }
-    }
-?>
 
 <script>
-    window.initialPrescription = <?php echo json_encode($pedidoInicial, 15, 512) ?>;
-    window.prescriptionTranslations = <?php echo json_encode([
-        'select_option' => __('prescription.upload_step1.select_option'), ], 512) ?>;
-    window.routes = {
-        sucursalesByCadena: "<?php echo e(route('prescription.sucursales.by_cadena', ['cadena_id' => '%%CADENA%%'])); ?>",
-        medicationsSearch: "<?php echo e(route('prescription.medications.search')); ?>",
-        medicationsAdd: "<?php echo e(route('prescription.medications.add')); ?>",
-        medicationsRemove: "<?php echo e(route('prescription.medications.remove')); ?>"
-    };
-    window.initialMedications = <?php echo json_encode(old('medications', []), 512) ?>;
+  window.initialPrescription = <?php echo json_encode($pedidoInicial, 15, 512) ?>;
+  window.prescriptionTranslations = <?php echo json_encode([
+    'select_option' => __('prescription.upload_step1.select_option'), ], 512) ?>;
+  window.routes = {
+    sucursalesByCadena: "<?php echo e(route('prescription.sucursales.by_cadena', ['cadena_id' => '%%CADENA%%'])); ?>",
+    medicationsSearch: "<?php echo e(route('prescription.medications.search')); ?>",
+    medicationsAdd: "<?php echo e(route('prescription.medications.add')); ?>",
+    medicationsRemove: "<?php echo e(route('prescription.medications.remove')); ?>"
+  };
+  window.initialMedications = <?php echo json_encode(old('medications', []), 512) ?>;
 </script>
 <?php echo app('Illuminate\Foundation\Vite')(['resources/js/patient/prescription-upload.js']); ?>
 
-</html>
-<?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/prescription/upload-step1.blade.php ENDPATH**/ ?>
+</html><?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/prescription/upload-step1.blade.php ENDPATH**/ ?>

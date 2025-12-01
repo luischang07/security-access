@@ -1,155 +1,167 @@
 <?php
 
 namespace App\Services\Modelos;
+
+use App\Domain\DetalleLineaPedido;
+use App\Domain\LineaPedido;
 use App\Repositories\BaseDatos;
 use App\Domain\Pedido;
 use App\Domain\Sucursal;
 use App\Domain\Paciente;
 use App\Domain\Notificacion;
+use Illuminate\Support\Collection;
+use Carbon\Carbon;
 
 class PedidoService
 {
+  private Sucursal $sucursal;
+  private BaseDatos $dataBase;
 
-    private Sucursal $sucursal;
-    private BaseDatos $dataBase;
+  public function __construct()
+  {
+    $this->dataBase = new BaseDatos();
+  }
 
-    public function __construct()
-    {
-        $this->dataBase = new BaseDatos();
+  public function nuevoPedido(int $paciente_id): Pedido
+  {
+    return Pedido::createPedido($paciente_id);
+  }
+
+  public function reiniciarParaCaptura(Pedido $pedido): Pedido
+  {
+    $pedido->reiniciarParaCaptura();
+    return $pedido;
+  }
+
+  public function asociarSucursalAPedido(Sucursal $sucursal, Pedido $pedido): Pedido
+  {
+    $pedido->setSucursal($sucursal);
+    info("pedidoooo", [$pedido->getSucursal()->getNombre()]);
+    return $pedido;
+  }
+
+  public function agregarMedicamento(int $medId, int $cantidad, Pedido $pedido): Pedido
+  {
+    if (!$pedido) {
+      throw new \RuntimeException('No hay pedido en captura para agregar medicamento.');
+    }
+    $medicamento = $this->dataBase->getMedicamento($medId);
+    $pedido->agregarMedicamento($medId, $cantidad, $medicamento);
+
+    return $pedido;
+  }
+
+  public function eliminarMedicamento(int $medId, Pedido $pedido): Pedido
+  {
+
+    if (!$pedido) {
+      throw new \RuntimeException('No hay pedido en captura para eliminar un medicamento.');
     }
 
-    public function nuevoPedido($paciente_id)
-    {
-        $pedido = Pedido::createPedido($paciente_id);
+    $pedido->eliminarMedicamento($medId);
 
-        return $pedido;
-    }
+    return $pedido;
+  }
 
-    public function reiniciarParaCaptura(Pedido $pedido): Pedido
-    {
-        $pedido->reiniciarParaCaptura();
-        return $pedido;
-    }
+  public function cancelarPedido(Pedido $pedido): Pedido
+  {
+    $dlp = $pedido->getAllDetalles();
 
+    $this->dataBase->iniciarTransaccion();
+    try {
+      $pedido->cambiarEstatus('CANCELADO');
+      $this->dataBase->cancelarPedido($pedido);
 
-    public function asociarSucursalAPedido($sucursal, Pedido $pedido)
-    {
+      foreach ($dlp as $detalle) {
+        /** @var DetalleLineaPedido $detalle */
+        $inventario = $this->dataBase->getInventario(
+          $pedido->getSucursal()->getCadenaId(),
+          $pedido->getSucursal()->getSucursalId(),
+          $detalle->getMedicamentoId()
+        );
 
-        $pedido->asociarSucursalAPedido($sucursal);
-        info("pedidoooo", [$pedido->getSucursal()->getNombre()]);
-        return $pedido;
-    }
-
-    public function agregarMedicamento($medId, $cantidad, $pedido)
-    {
-        if (!$pedido) {
-            throw new \RuntimeException('No hay pedido en captura para agregar medicamento.');
-        }
-        $medicamento = $this->dataBase->obtenerMedicamento($medId);
-        $pedido->agregarMedicamento($medId, $cantidad, $medicamento);
-
-        return $pedido;
-    }
-
-    public function eliminarMedicamento($medId, $pedido)
-    {
-
-        if (!$pedido) {
-            throw new \RuntimeException('No hay pedido en captura para eliminar un medicamento.');
-        }
-
-        $pedido->eliminarMedicamento($medId);
-
-        return $pedido;
-    }
-
-    public function cancelarPedido($pedido)
-    {
-        $pedido->cambiarEstatus('CANCELADO');
-        $this->dataBase->cancelarPedido($pedido);
-        $dlp = $pedido->obtenerDetallesLineas();
-        foreach ($dlp as $detalle) {
-            $this->dataBase->iniciarTransaccion();
-            $inventario = $this->dataBase->obtenerInventario(
-                $pedido->getSucursal()->getCadenaId(),
-                $pedido->getSucursal()->getSucursalId(),
-                $detalle->getMedicamentoId()
-            );
-            if ($inventario) {
-                $inventario->aumentarStock($detalle->getCantidadSurtida());
-                $this->dataBase->actualizarInventarioCancelacion($inventario);
-                $this->dataBase->commitTransaccion();
-            } else {
-                $this->dataBase->cancelarTransaccion();
-            }
-        }
-        $paciente = $this->dataBase->obtenerPaciente($pedido->getPacienteId());
-        $cantidad_penalizacion = $pedido->getCostoTotal() * 0.5;
-        $paciente->setMontoPenalizacion($cantidad_penalizacion);
-        $this->dataBase->actualizarPaciente($paciente);
-        $mensaje = "Su pedido {$pedido->getfolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidad_penalizacion} a su cuenta.";
-        $notificacion = Notificacion::crear($mensaje, now());
-        $paciente->agregarNotificacion($notificacion);
-        $this->dataBase->guardarNotificacion($notificacion, $pedido->getfolio(), $paciente->getUser()->getId());
-        return $pedido;
-    }
-
-    public function obtenerSucursal($cadena_id, $sucursal_id)
-    {
-        $this->sucursal = $this->dataBase->obtenerSucursal($cadena_id, $sucursal_id);
-        return $this->sucursal;
-    }
-
-    public function obtenerLineasPedidoActuales($pedido): array
-    {
-
-        if (!$pedido) {
-            return [];
+        if (!$inventario) {
+          throw new \RuntimeException('Inventario no encontrado para medicamento ' . $detalle->getMedicamentoId());
         }
 
-        $lineas = $pedido->getLineasPedidos();
+        $inventario->aumentarStock($detalle->getCantidadSurtida());
+        $this->dataBase->actualizarInventarioCancelacion($inventario);
+      }
 
-        return $lineas->map(function ($linea) {
-
-            return [
-                'id' => $linea->getMedicamentoId(),
-                'name' => $linea->getMedicamento()->getNombre(),
-                'quantity' => (int) $linea->getCantidad(),
-            ];
-        })->values()->all();
+      $this->dataBase->commitTransaccion();
+    } catch (\Throwable $e) {
+      $this->dataBase->cancelarTransaccion();
+      throw $e;
     }
 
-    public function obtenerPedid($id)
-    {
-        $pedidos = $this->dataBase->getPedidos($id);
-    }
-    public function setCedulaProfesional($cedula, Pedido $pedido)
-    {
-        $pedido->setCedulaProfesional($cedula);
-        return $pedido;
-    }
-    public function obtenerPedidosPorPacienteId($paciente_id)
-    {
-        return $this->dataBase->getPedidos($paciente_id);
+    $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
+    $cantidadPenalizacion = $pedido->getCostoTotal() * 0.5;
+    $paciente->setMontoPenalizacion($cantidadPenalizacion);
+    $mensaje = "Su pedido {$pedido->getFolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidadPenalizacion} a su cuenta.";
+    $notificacion = Notificacion::crear($mensaje, Carbon::now());
+    $paciente->agregarNotificacion($notificacion);
+    $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getFolio());
+
+    return $pedido;
+  }
+
+  public function getSucursal(string $cadenaId, string $sucursalId): Sucursal
+  {
+    $this->sucursal = $this->dataBase->getSucursal($cadenaId, $sucursalId);
+    return $this->sucursal;
+  }
+
+  public function getLineasPedidoActuales(?Pedido $pedido): array
+  {
+    if (!$pedido) {
+      return [];
     }
 
-    public function obtenerPedidoPorFolio($folio)
-    {
-        return $this->dataBase->getPedidoByFolio($folio);
-    }
-    public function asignarFechaRecoleccion($pedido)
-    {
-        $pedido->asignarFechaPedido();
-        $pedido->asignarFechaRecoleccion();
-        return $pedido;
-    }
+    $lineas = $pedido->getLineasPedidos();
 
-    public function obtenerPedidosSucursal($cadena_id, $sucursal_id)
-    {
-        return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
-    }
-    public function sumarMontoPenalizacion($monto, $pedido)
-    {
-        $pedido->setMontoPenalizacion($monto);
-    }
+    return $lineas->map(function (LineaPedido $linea) {
+      return [
+        'id' => $linea->getMedicamentoId(),
+        'name' => $linea->getMedicamento()->getNombre(),
+        'quantity' => (int) $linea->getCantidad(),
+      ];
+    })->values()->all();
+  }
+
+  public function getPedidoId(int $id): Collection
+  {
+    return $this->dataBase->getPedidos($id);
+  }
+
+  public function setCedulaProfesional(string $cedula, Pedido $pedido): Pedido
+  {
+    $pedido->setCedulaProfesional($cedula);
+    return $pedido;
+  }
+
+  public function getPedidosPorPacienteId(int $paciente_id): Collection
+  {
+    return $this->dataBase->getPedidos($paciente_id);
+  }
+
+  public function getPedidoPorFolio(string $folio): ?Pedido
+  {
+    return $this->dataBase->getPedidoByFolio($folio);
+  }
+  public function asignarFechaRecoleccion(Pedido $pedido): Pedido
+  {
+    $pedido->asignarFechaPedido();
+    $pedido->asignarFechaRecoleccion();
+    return $pedido;
+  }
+
+  public function getPedidosSucursal(string $cadenaId, string $sucursalId): Collection
+  {
+    return $this->dataBase->getPedidosPorSucursal($cadenaId, $sucursalId);
+  }
+
+  public function sumarMontoPenalizacion(float $monto, Pedido $pedido): void
+  {
+    $pedido->setMontoPenalizacion($monto);
+  }
 }

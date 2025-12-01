@@ -39,4 +39,39 @@ class OsrmRoutingService implements RoutingServiceInterface
 
     return null;
   }
+
+  public function getOptimalTrip(array $coordinates): ?array
+  {
+    if (empty($coordinates)) {
+      return null;
+    }
+
+    $coordsString = implode(';', array_map(function ($coord) {
+      return "{$coord['lng']},{$coord['lat']}";
+    }, $coordinates));
+
+    $urlParts = parse_url($this->baseUrl);
+    $host = $urlParts['scheme'] . '://' . $urlParts['host'] . (isset($urlParts['port']) ? ':' . $urlParts['port'] : '');
+
+    $tripUrl = "{$host}/trip/v1/driving/{$coordsString}?overview=full&source=first&roundtrip=true";
+
+    try {
+      $response = Http::get($tripUrl);
+
+      if ($response->successful()) {
+        $data = $response->json();
+        if (isset($data['trips'][0])) {
+          return [
+            'duration' => (int) $data['trips'][0]['duration'],
+            'geometry' => $data['trips'][0]['geometry'],
+            'waypoints' => $data['waypoints'] ?? []
+          ];
+        }
+      }
+    } catch (\Exception $e) {
+      Log::error("OSRM Trip Error: " . $e->getMessage());
+    }
+
+    return null;
+  }
 }

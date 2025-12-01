@@ -5,75 +5,83 @@ namespace App\Domain;
 
 class LineaInventario
 {
-    private $cadena_id, $sucursal_id;
-    private $medicamento_id;
-    private $stock_disponible;
-    private $precio_unitario;
+  private string $cadenaId;
+  private string $sucursalId;
+  private int $medicamentoId;
+  private int $stockDisponible;
+  private float $precioUnitario;
 
-    public function __construct($cadena_id, $sucursal_id, $medicamento_id, $stock_disponible, $precio_unitario)
-    {
-        $this->cadena_id = $cadena_id;
-        $this->sucursal_id = $sucursal_id;
-        $this->medicamento_id = $medicamento_id;
-        $this->stock_disponible = $stock_disponible;
-        $this->precio_unitario = $precio_unitario;
-    }
+  public function __construct(string $cadenaId, string $sucursalId, int $medicamentoId, int $stockDisponible, float $precioUnitario)
+  {
+    $this->cadenaId = $cadenaId;
+    $this->sucursalId = $sucursalId;
+    $this->medicamentoId = $medicamentoId;
+    $this->stockDisponible = $stockDisponible;
+    $this->precioUnitario = $precioUnitario;
+  }
 
-    public function getMedicamentoId()
-    {
-        return $this->medicamento_id;
-    }
-    public function getStockDisponible()
-    {
-        return $this->stock_disponible;
-    }
-    public function setCantidad($cantidad)
-    {
-        $this->cantidad = $cantidad;
-    }
-    public function setMedicamentoId($medicamentoId)
-    {
-        $this->medicamentoId = $medicamentoId;
-    }
-    public function setStockDisponible($stock_disponible)
-    {
-        $this->stock_disponible = $stock_disponible;
-    }
-    public function getPrecioUnitario()
-    {
-        return $this->precio_unitario;
-    }
+  public function getMedicamentoId(): int
+  {
+    return $this->medicamentoId;
+  }
 
-    public function setPrecioUnitario($precio_unitario)
-    {
-        $this->precio_unitario = $precio_unitario;
-    }
-    public function disminuirStock($cantidad)
-    {
-        $this->stock_disponible -= $cantidad;
-    }
-    public function aumentarStock($cantidad)
-    {
-        $this->stock_disponible += $cantidad;
-    }
+  public function getStockDisponible(): int
+  {
+    return $this->stockDisponible;
+  }
 
-    public function hayStockDisponible()
-    {
-        return $this->stock_disponible > 0 ? true : false;
-    }
+  public function setCantidad(int $cantidad): void
+  {
+    $this->stockDisponible = $cantidad;
+  }
 
-    public function cantidadPuedeSurtir($cantidadSolicitada)
-    {
-        return $this->stock_disponible >= $cantidadSolicitada ? $cantidadSolicitada : $this->stock_disponible;
-    }
+  public function setMedicamentoId(int $medicamentoId): void
+  {
+    $this->medicamentoId = $medicamentoId;
+  }
 
-    public function getCadenaId()
-    {
-        return $this->cadena_id;
-    }
+  public function setStockDisponible(int $stockDisponible): void
+  {
+    $this->stockDisponible = $stockDisponible;
+  }
 
-    public function getSucursalId()
-    {
-        return $this->sucursal_id;
-    }
+  public function getPrecioUnitario(): float
+  {
+    return $this->precioUnitario;
+  }
+
+  public function setPrecioUnitario(float $precioUnitario): void
+  {
+    $this->precioUnitario = $precioUnitario;
+  }
+
+  public function disminuirStock(int $cantidad): void
+  {
+    $this->stockDisponible -= $cantidad;
+  }
+
+  public function aumentarStock(int $cantidad): void
+  {
+    $this->stockDisponible += $cantidad;
+  }
+
+  public function hayStockDisponible(): bool
+  {
+    return $this->stockDisponible > 0;
+  }
+
+  public function cantidadPuedeSurtir(int $cantidadSolicitada): int
+  {
+    return $this->stockDisponible >= $cantidadSolicitada ? $cantidadSolicitada : $this->stockDisponible;
+  }
+
+  public function getCadenaId(): string
+  {
+    return $this->cadenaId;
+  }
+
+  public function getSucursalId(): string
+  {
+    return $this->sucursalId;
+  }
 }

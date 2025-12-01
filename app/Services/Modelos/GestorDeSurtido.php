@@ -1,27 +1,25 @@
 <?php
 
 namespace App\Services\Modelos;
+
+use App\Domain\LineaPedido;
 use App\Domain\Pedido;
 use App\Domain\Sucursal;
-use App\Domain\DetalleLineaPedido;
-use App\Domain\LineaPedido;
-use App\Domain\LineaInventario;
-use App\Services\Modelos\PacienteService;
+use App\Models\Pedido as PedidoModel;
 use App\Services\Modelos\PedidoService;
 use App\Services\Modelos\SucursalService;
 use App\Services\GeoLocationService;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Collection;
 use App\Repositories\BaseDatos;
-use DB;
-
+use App\Services\Modelos\PacienteService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class GestorDeSurtido
 {
   private SucursalService $sucursalService;
   private PedidoService $pedidoService;
   private GeoLocationService $geoLocationService;
-  private $SinStock;
+  private Collection $sinStock;
   private BaseDatos $dataBase;
 
   public function __construct(SucursalService $sucursalService, PedidoService $pedidoService, GeoLocationService $geoLocationService)
@@ -29,111 +27,150 @@ class GestorDeSurtido
     $this->sucursalService = $sucursalService;
     $this->pedidoService = $pedidoService;
     $this->geoLocationService = $geoLocationService;
-    $this->SinStock = collect();
+    $this->sinStock = collect();
     $this->dataBase = new BaseDatos();
   }
 
-  public function surtir(Pedido $pedido)
+  public function surtir(Pedido $pedido): Pedido
   {
-    $this->SinStock = collect();
+    $this->sinStock = collect();
 
-    $sucsel = $pedido->getSucursal();
+    $sucSeleccionada = $pedido->getSucursal();
 
     $ldp = $pedido->getLineasPedidos();
 
     foreach ($ldp as $lineaPedido) {
       $cantidadSurtida = 0;
-      $ldi = $this->sucursalService->getLineaInventario($sucsel->getCadenaId(), $sucsel->getSucursalId(), $lineaPedido->getMedicamentoId());
+      $ldi = $this->sucursalService->getLineaInventario($sucSeleccionada->getCadenaId(), $sucSeleccionada->getSucursalId(), $lineaPedido->getMedicamentoId());
       if (!$ldi) {
-        $this->SinStock->push($lineaPedido);
+        $this->sinStock->push($lineaPedido);
         continue;
       }
       if ($ldi->hayStockDisponible()) {
         $cantidadSurtida = $ldi->cantidadPuedeSurtir($lineaPedido->getCantidad());
 
-        $lineaPedido->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucsel, $lineaPedido->getMedicamentoId());
+        $lineaPedido->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucSeleccionada, $lineaPedido->getMedicamentoId());
       }
       if ($cantidadSurtida < $lineaPedido->getCantidad()) {
-        $this->SinStock->push($lineaPedido);
+        $this->sinStock->push($lineaPedido);
       }
     }
 
-    if ($this->SinStock->count() > 0) {
-      // Use GeoLocationService to find nearest branches with stock
+    if ($this->sinStock->count() > 0) {
+      // Use GeoLocationService to find nearest branches with stock using Hybrid Algorithm
       // We need to pass the list of missing medications
-      $medicamentoIds = $this->SinStock->map(function ($linea) {
+      $medicamentoIds = $this->sinStock->map(function ($linea) {
         return $linea->getMedicamentoId();
       })->toArray();
 
-      // Assuming sucursal has location, otherwise fallback to lat/long
-      // For now we pass lat/long as fallback or primary if location not yet migrated
-      $lat = $sucsel->getLatitud(); // Ensure these getters exist or use direct access if model
-      $lng = $sucsel->getLongitud();
+      $lat = $sucSeleccionada->getLatitud();
+      $lng = $sucSeleccionada->getLongitud();
 
-      // Find branches excluding the current one
-      // Note: We need to handle the case where we need multiple branches for different meds
-      // The service returns a list of branches that have *some* of the meds.
-      // We might need to iterate or call it per medication if we want specific optimization per item,
-      // but the requirement says "nearest branches".
-
-      // Let's get a pool of nearest branches that have ANY of the missing items
-      $sucCercanas = $this->geoLocationService->findNearestBranchesWithStock(
+      // Find branches using Hybrid Algorithm (OSRM + Spatial)
+      $sucCercanasWithRouteInfo = $this->geoLocationService->findNearestBranchesHybrid(
         $medicamentoIds,
         $lat,
         $lng,
-        $sucsel->getSucursalId()
+        $sucSeleccionada->getCadenaId(),
+        $sucSeleccionada->getSucursalId()
       );
 
-      // Convert stdClass results from DB to Domain\Sucursal objects if needed
-      // The service returns DB rows. We need to convert them.
-      $sucCercanasObjects = collect();
-      foreach ($sucCercanas as $sucRow) {
-        // We need a way to hydrate the domain object. 
-        // Assuming SucursalService or BaseDatos has a way, or we manually map.
-        // For now, let's use the existing sucursalService->obtenerSucursal logic or similar
-        // But that might be N+1. Better to hydrate from row.
-        // Let's assume we can create it.
-        // DomainSucursal::crear expects a Model.
-        $sucModel = new \App\Models\Sucursal((array) $sucRow);
-        $sucCercanasObjects->push(\App\Domain\Sucursal::crear($sucModel));
-      }
+      // Extract only Sucursal objects from the enriched data
+      $sucCercanasObjects = $sucCercanasWithRouteInfo->map(function ($item) {
+        return $item['sucursal'];
+      });
 
-      $this->CalculaFaltantes($this->SinStock, $sucCercanasObjects, $pedido);
+      $this->calculaFaltantes($this->sinStock, $sucCercanasObjects, $pedido);
+
+      // Calculate optimal route for all branches involved (Source + Collection Points)
+      $ruta = $pedido->getRuta();
+      if ($ruta->isNotEmpty()) {
+        $coordinates = [];
+
+        $coordinates[] = [
+          'lat' => $sucSeleccionada->getLatitud(),
+          'lng' => $sucSeleccionada->getLongitud()
+        ];
+
+        foreach ($ruta as $sucursal) {
+          $coordinates[] = [
+            'lat' => $sucursal->getLatitud(),
+            'lng' => $sucursal->getLongitud()
+          ];
+        }
+
+        $tripDetails = $this->geoLocationService->getRoutingService()->getOptimalTrip($coordinates);
+
+        if ($tripDetails) {
+          $pedido->setRouteGeometry($tripDetails['geometry']);
+        }
+      }
     }
     return $pedido;
   }
 
-  public function CalculaFaltantes($SinStock, $sucCercanas, $pedido, $stockComprometido = [])
+  public function calculaFaltantes(Collection $sinStock, Collection $sucCercanas, Pedido $pedido, array $stockComprometido = []): void
   {
-
-    foreach ($sucCercanas as $suc) {
-      foreach ($SinStock as $ldp) {
-        $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
-        $cantFaltante = $ldp->getCantidadFaltante();
-        $cantidadSurtida = 0;
-
-        // Check committed stock if passed
-        $key = $suc->getCadenaId() . '-' . $suc->getSucursalId() . '-' . $ldp->getMedicamentoId();
-        $committed = $stockComprometido[$key] ?? 0;
-        $stockReal = $ldi->getStockDisponible() - $committed;
-
-        if ($stockReal > 0 && $cantFaltante > 0) {
-          $cantidadSurtida = $ldp->getCantidad() - $stockReal <= 0 ? $ldp->getCantidad() : $stockReal;
-
-          $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $suc, $ldp->getMedicamentoId());
-
-          if ($cantidadSurtida == $cantFaltante) {
-            $this->SinStock = $this->SinStock->reject(function ($item) use ($ldp) {
-              return $item === $ldp; // Elimina si es el mismo objeto
-            });
-          }
-        }
+    foreach ($sucCercanas as $sucursal) {
+      /** @var Sucursal $sucursal */
+      foreach ($sinStock as $ldp) {
+        $this->allocateFromSucursal($sucursal, $ldp, $stockComprometido, false, null);
       }
     }
   }
-  public function confirmarPedido($pedido)
+
+  /**
+   * Try allocate stock for a single line from a single sucursal.
+   * If $applyUpdate is true it will decrement inventory and add route to $pedido.
+   * Returns true if the line was fully satisfied and removed from sinStock.
+   */
+  private function allocateFromSucursal(Sucursal $sucursal, LineaPedido $ldp, array $stockComprometido = [], bool $applyUpdate = false, ?Pedido $pedido = null): bool
   {
-    $this->SinStock = collect();
+    $ldi = $this->sucursalService->getLineaInventario($sucursal->getCadenaId(), $sucursal->getSucursalId(), $ldp->getMedicamentoId());
+    if (!$ldi) {
+      return false;
+    }
+
+    $cantFaltante = $ldp->getCantidadFaltante();
+    if ($cantFaltante <= 0) {
+      return false;
+    }
+
+    $key = $sucursal->getCadenaId() . '-' . $sucursal->getSucursalId() . '-' . $ldp->getMedicamentoId();
+    $committed = $stockComprometido[$key] ?? 0;
+    $stockReal = $ldi->getStockDisponible() - $committed;
+    if ($stockReal <= 0) {
+      return false;
+    }
+
+    if ($applyUpdate) {
+      // when applying updates, use inventory's own logic to decide how much it can supply
+      $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
+      // decrement and persist
+      $ldi->disminuirStock($cantidadSurtida);
+      $this->sucursalService->actualizarInventario($ldi);
+      if ($pedido) {
+        $pedido->anadirARuta($sucursal);
+      }
+    } else {
+      $cantidadSurtida = min($cantFaltante, $stockReal);
+    }
+
+    $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucursal, $ldp->getMedicamentoId());
+
+    if ($cantidadSurtida == $cantFaltante) {
+      $this->sinStock = $this->sinStock->reject(function ($item) use ($ldp) {
+        return $item === $ldp;
+      });
+      return true;
+    }
+
+    return false;
+  }
+
+  public function confirmarPedido(Pedido $pedido): Pedido
+  {
+    $this->sinStock = collect();
     $this->dataBase->iniciarTransaccion();
     $ldp = $pedido->getLineasPedidos();
 
@@ -146,35 +183,84 @@ class GestorDeSurtido
           if ($ldi && $ldi->getStockDisponible() >= $dlp->getCantidadSurtida()) {
             $ldi->disminuirStock($dlp->getCantidadSurtida());
             $this->sucursalService->actualizarInventario($ldi);
-            $pedido->añadirARuta($dlp->getSucursal());
+            $pedido->anadirARuta($dlp->getSucursal());
           } else {
-            $this->SinStock->push($linea);
+            $this->sinStock->push($linea);
             $pedido->eliminarDetalle($dlp);
           }
         }
       }
+
       //CALCULAR FALTANTES DE LAS LINEAS NO SURTIDAS
-      if ($this->SinStock->count() > 0) {
-        $sucCercanas = $this->sucursalService->calculaSucCercanas($pedido->getSucursal()->getCadenaId(), $pedido->getSucursal()->getSucursalId());
-        $this->calculaFaltantesWithUpdate($this->SinStock, $sucCercanas, $pedido);
+      if ($this->sinStock->count() > 0) {
+        $sucSeleccionada = $pedido->getSucursal();
+
+        // Use GeoLocationService to find nearest branches with stock using Hybrid Algorithm
+        // This handles concurrency better - checks actual stock availability at confirmation time
+        $medicamentoIds = $this->sinStock->map(function ($linea) {
+          return $linea->getMedicamentoId();
+        })->toArray();
+
+        $lat = $sucSeleccionada->getLatitud();
+        $lng = $sucSeleccionada->getLongitud();
+
+        // Find branches using Hybrid Algorithm (OSRM + Spatial)
+        $sucCercanasWithRouteInfo = $this->geoLocationService->findNearestBranchesHybrid(
+          $medicamentoIds,
+          $lat,
+          $lng,
+          $sucSeleccionada->getCadenaId(),
+          $sucSeleccionada->getSucursalId()
+        );
+
+        // Extract only Sucursal objects from the enriched data
+        $sucCercanas = $sucCercanasWithRouteInfo->map(function ($item) {
+          return $item['sucursal'];
+        });
+
+        $this->calculaFaltantesWithUpdate($this->sinStock, $sucCercanas, $pedido);
       }
 
       if ($pedido->calcularPorcentajeSurtido() < 0.5) {
-        $pedido->setFaltantes($this->SinStock);
+        $pedido->setFaltantes($this->sinStock);
         throw new \RuntimeException('No se pudo surtir al menos el 50% del pedido.');
       }
 
-
       $pedido->removerLineasSinDetalles();
-      $pedido->setEstatus();
+      $pedido->setEstatus(PedidoModel::ESTATUS_CONFIRMADO);
       $pedido->calcularTotales();
 
-      $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($pedido->getPacienteId());
+      // Calculate optimal route for all branches involved (Source + Collection Points)
+      $ruta = $pedido->getRuta();
+      if ($ruta->isNotEmpty()) {
+        $sucSeleccionada = $pedido->getSucursal();
+        $coordinates = [];
+
+        $coordinates[] = [
+          'lat' => $sucSeleccionada->getLatitud(),
+          'lng' => $sucSeleccionada->getLongitud()
+        ];
+
+        foreach ($ruta as $sucursal) {
+          $coordinates[] = [
+            'lat' => $sucursal->getLatitud(),
+            'lng' => $sucursal->getLongitud()
+          ];
+        }
+
+        $tripDetails = $this->geoLocationService->getRoutingService()->getOptimalTrip($coordinates);
+
+        if ($tripDetails) {
+          $pedido->setRouteGeometry($tripDetails['geometry']);
+        }
+      }
+
+      $montoPenalizacion = app(PacienteService::class)->getMontoPenalizacion($pedido->getPacienteId());
       info("Monto penalización aplicada: $montoPenalizacion");
       $pedido->setMontoPenalizacion((float) $montoPenalizacion);
       $this->guardarPedido($pedido);
       $this->dataBase->commitTransaccion();
-      $pedido->setFaltantes($this->SinStock);
+      $pedido->setFaltantes($this->sinStock);
       return $pedido;
     } catch (\Throwable $e) {
       $this->dataBase->cancelarTransaccion();
@@ -182,34 +268,20 @@ class GestorDeSurtido
     }
   }
 
-  private function calculaFaltantesWithUpdate($SinStock, $sucCercanas, $pedido)
+  private function calculaFaltantesWithUpdate(Collection $sinStock, Collection $sucCercanas, Pedido $pedido): void
   {
     foreach ($sucCercanas as $suc) {
-      foreach ($SinStock as $ldp) {
-        $ldi = $this->sucursalService->getLineaInventario($suc->getCadenaId(), $suc->getSucursalId(), $ldp->getMedicamentoId());
-        $cantFaltante = $ldp->getCantidadFaltante();
-        $cantidadSurtida = 0;
-        if ($ldi && $ldi->hayStockDisponible() && $cantFaltante > 0) {
-          $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
-
-          $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $suc, $ldp->getMedicamentoId());
-          $ldi->disminuirStock($cantidadSurtida);
-          $this->sucursalService->actualizarInventario($ldi);
-          $pedido->añadirARuta($suc);
-          if ($cantidadSurtida == $cantFaltante) {
-            $this->SinStock = $this->SinStock->reject(function ($item) use ($ldp) {
-              return $item === $ldp;
-            });
-          }
-        }
+      foreach ($sinStock as $ldp) {
+        // Try to allocate and apply updates (decrement inventory, add route)
+        $this->allocateFromSucursal($suc, $ldp, [], true, $pedido);
       }
     }
   }
 
 
-  private function guardarPedido(Pedido $pedido)
+  private function guardarPedido(Pedido $pedido): Pedido
   {
-    return DB::transaction(function () use ($pedido) {
+    DB::transaction(function () use ($pedido) {
 
       $pedidoBD = $this->dataBase->guardarPedido($pedido);
 
@@ -240,9 +312,8 @@ class GestorDeSurtido
           'orden' => $orden++,
         ]);
       }
-
-      return $pedidoBD;
     });
-  }
 
+    return $pedido;
+  }
 }

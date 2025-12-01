@@ -1,49 +1,44 @@
 <?php
 
-
 namespace App\Domain;
+
+use App\Domain\Sucursal;
 
 class DetalleLineaPedido
 {
-    private $precio;
-    private $cantidadSurtida;
-    private $sucsel;
+  private float $precio;
+  private int $cantidadSurtida;
+  private Sucursal $sucSeleccionada;
+  private int $medicamentoId;
 
-    private $medicamento_id;
+  public function __construct(float $precio, int $cantidadSurtida, Sucursal $sucSeleccionada, int $medicamentoId)
+  {
+    $this->precio = $precio;
+    $this->cantidadSurtida = $cantidadSurtida;
+    $this->sucSeleccionada = $sucSeleccionada;
+    $this->medicamentoId = $medicamentoId;
+  }
 
-    public function __construct($precio, $cantidadSurtida, $sucsel, $medicamento_id)
-    {
-        $this->precio = $precio;
-        $this->cantidadSurtida = $cantidadSurtida;
-        $this->sucsel = $sucsel;
-        $this->medicamento_id = $medicamento_id;
-    }
+  public function calcularSubtotalDetalle(): float
+  {
+    return $this->precio * $this->cantidadSurtida;
+  }
 
-    public function calcularSubtotalDetalle()
-    {
-        return $this->precio * $this->cantidadSurtida;
-    }
+  public function getCantidadSurtida(): int
+  {
+    return $this->cantidadSurtida;
+  }
+  public function getSucursal(): Sucursal
+  {
+    return $this->sucSeleccionada;
+  }
+  public function getPrecio(): float
+  {
+    return $this->precio;
+  }
 
-    public function getCantidadSurtida()
-    {
-        return $this->cantidadSurtida;
-    }
-    public function getSucursal()
-    {
-        return $this->sucsel;
-    }
-    public function getPrecio()
-    {
-        return $this->precio;
-    }
-    public function getMedicamento_id()
-    {
-        return $this->medicamento_id;
-    }
-
-    // Alias camelCase for callers that expect getMedicamentoId()
-    public function getMedicamentoId()
-    {
-        return $this->medicamento_id;
-    }
+  public function getMedicamentoId(): int
+  {
+    return $this->medicamentoId;
+  }
 }

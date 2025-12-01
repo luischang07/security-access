@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="light" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html class="light" lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 
 <head>
     <meta charset="utf-8">
@@ -52,14 +52,14 @@
     <div class="relative flex h-screen w-full flex-col overflow-hidden">
         <div class="layout-container flex h-full grow flex-col">
 
-            @include('components.topbar', ['user' => auth()->user(), 'type' => 'pharmacy'])
+            <?php echo $__env->make('components.topbar', ['user' => auth()->user(), 'type' => 'pharmacy'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <div class="flex flex-1 overflow-hidden">
-                @include('components.sidebar', [
+                <?php echo $__env->make('components.sidebar', [
                     'user' => auth()->user(),
                     'type' => 'pharmacy',
                     'currentRoute' => 'pharmacy.orders',
-                ])
+                ], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
                 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
                     <div class="max-w-6xl mx-auto p-6 space-y-6">
@@ -70,10 +70,11 @@
                                     Ruta de Recolección
                                 </h1>
                                 <p class="text-sm text-neutral-text dark:text-neutral-text-dark mt-1">
-                                    Folio del Pedido: #{{ $pedido->folio_pedido }}
+                                    Folio del Pedido: #<?php echo e($pedido->folio_pedido); ?>
+
                                 </p>
                             </div>
-                            <a href="{{ route('pharmacy.orders') }}"
+                            <a href="<?php echo e(route('pharmacy.orders')); ?>"
                                 class="px-4 py-2 rounded-lg bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-body-text dark:text-body-text-dark hover:bg-background-light dark:hover:bg-background-dark transition flex items-center gap-2">
                                 <span class="material-symbols-outlined text-base">arrow_back</span>
                                 Volver a Pedidos
@@ -89,44 +90,47 @@
                                 <div>
                                     <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Fecha del Pedido</p>
                                     <p class="font-medium text-body-text dark:text-body-text-dark">
-                                        {{ $pedido->fecha_pedido ? \Carbon\Carbon::parse($pedido->fecha_pedido)->translatedFormat('d M Y H:i') : 'N/A' }}
+                                        <?php echo e($pedido->fecha_pedido ? \Carbon\Carbon::parse($pedido->fecha_pedido)->translatedFormat('d M Y H:i') : 'N/A'); ?>
+
                                     </p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Fecha de Recolección</p>
                                     <p class="font-medium text-body-text dark:text-body-text-dark">
-                                        {{ $pedido->fecha_recoleccion ? \Carbon\Carbon::parse($pedido->fecha_recoleccion)->translatedFormat('d M Y') : 'N/A' }}
+                                        <?php echo e($pedido->fecha_recoleccion ? \Carbon\Carbon::parse($pedido->fecha_recoleccion)->translatedFormat('d M Y') : 'N/A'); ?>
+
                                     </p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-neutral-text dark:text-neutral-text-dark">Estatus</p>
                                     <span
                                         class="inline-flex items-center rounded-full 
-                                        @if (strtolower($pedido->estatus) === 'confirmado') bg-success
-                                        @elseif(strtolower($pedido->estatus) === 'listo') bg-primary
-                                        @elseif(strtolower($pedido->estatus) === 'completado') bg-secondary
-                                        @else bg-neutral-text @endif
+                                        <?php if(strtolower($pedido->estatus) === 'confirmado'): ?> bg-success
+                                        <?php elseif(strtolower($pedido->estatus) === 'listo'): ?> bg-primary
+                                        <?php elseif(strtolower($pedido->estatus) === 'completado'): ?> bg-secondary
+                                        <?php else: ?> bg-neutral-text <?php endif; ?>
                                         px-2.5 py-0.5 text-xs font-medium text-white">
-                                        {{ ucfirst($pedido->estatus) }}
+                                        <?php echo e(ucfirst($pedido->estatus)); ?>
+
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        @php
+                        <?php
                             $rutaOrdenada = $pedido->rutaRecoleccion->sortBy('orden_recoleccion');
                             $totalParadas = $rutaOrdenada->count();
-                        @endphp
+                        ?>
 
                         <!-- Interactive Map -->
-                        @if ($totalParadas > 0)
+                        <?php if($totalParadas > 0): ?>
                             <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                                 <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark mb-4">
                                     Mapa de la Ruta
                                 </h2>
                                 <div id="route-map" class="w-full h-96 rounded-lg overflow-hidden"></div>
                             </div>
-                        @endif
+                        <?php endif; ?>
 
                         <!-- Route Details -->
                         <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
@@ -136,14 +140,15 @@
                                 </h2>
                                 <div class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2">
                                     <span class="material-symbols-outlined text-base">location_on</span>
-                                    {{ $totalParadas }} {{ $totalParadas === 1 ? 'Parada' : 'Paradas' }}
+                                    <?php echo e($totalParadas); ?> <?php echo e($totalParadas === 1 ? 'Parada' : 'Paradas'); ?>
+
                                 </div>
                             </div>
 
-                            @if ($totalParadas > 0)
+                            <?php if($totalParadas > 0): ?>
                                 <div class="space-y-4">
-                                    @foreach ($rutaOrdenada as $index => $ruta)
-                                        @php
+                                    <?php $__currentLoopData = $rutaOrdenada; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $ruta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <?php
                                             $sucursal = $ruta->sucursal;
                                             $medicamentosEnSucursal = collect();
                                             foreach ($pedido->lineasPedidos as $linea) {
@@ -157,68 +162,68 @@
                                                     }
                                                 }
                                             }
-                                        @endphp
+                                        ?>
 
                                         <div class="border border-border-light dark:border-border-dark rounded-lg p-5 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
                                             <div class="flex items-start gap-4">
                                                 <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                                                    <span class="text-white text-lg font-bold">{{ $ruta->orden_recoleccion }}</span>
+                                                    <span class="text-white text-lg font-bold"><?php echo e($ruta->orden_recoleccion); ?></span>
                                                 </div>
 
                                                 <div class="flex-1">
                                                     <div class="flex items-start justify-between mb-2">
                                                         <div>
-                                                            <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark">{{ $sucursal->nombre }}</h3>
-                                                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ $sucursal->cadena->nombre ?? 'N/A' }}</p>
+                                                            <h3 class="text-lg font-bold text-body-text dark:text-body-text-dark"><?php echo e($sucursal->nombre); ?></h3>
+                                                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e($sucursal->cadena->nombre ?? 'N/A'); ?></p>
                                                         </div>
                                                     </div>
 
                                                     <div class="flex items-start gap-2 mb-3">
                                                         <span class="material-symbols-outlined text-neutral-text dark:text-neutral-text-dark text-lg mt-0.5">location_on</span>
                                                         <div class="text-sm text-neutral-text dark:text-neutral-text-dark">
-                                                            <p>{{ $sucursal->calle }} {{ $sucursal->numero_ext }}@if ($sucursal->numero_int) Int. {{ $sucursal->numero_int }}@endif</p>
-                                                            <p>{{ $sucursal->colonia }}, {{ $sucursal->ciudad }}</p>
+                                                            <p><?php echo e($sucursal->calle); ?> <?php echo e($sucursal->numero_ext); ?><?php if($sucursal->numero_int): ?> Int. <?php echo e($sucursal->numero_int); ?><?php endif; ?></p>
+                                                            <p><?php echo e($sucursal->colonia); ?>, <?php echo e($sucursal->ciudad); ?></p>
                                                         </div>
                                                     </div>
 
-                                                    @if ($sucursal->contacto)
+                                                    <?php if($sucursal->contacto): ?>
                                                         <div class="flex items-center gap-2 mb-3">
                                                             <span class="material-symbols-outlined text-neutral-text dark:text-neutral-text-dark text-lg">phone</span>
-                                                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark">{{ $sucursal->contacto }}</p>
+                                                            <p class="text-sm text-neutral-text dark:text-neutral-text-dark"><?php echo e($sucursal->contacto); ?></p>
                                                         </div>
-                                                    @endif
+                                                    <?php endif; ?>
 
-                                                    @if ($medicamentosEnSucursal->isNotEmpty())
+                                                    <?php if($medicamentosEnSucursal->isNotEmpty()): ?>
                                                         <div class="mt-4 pt-4 border-t border-border-light dark:border-border-dark">
                                                             <h4 class="text-sm font-bold text-body-text dark:text-body-text-dark mb-2">Medicamentos a Recoger:</h4>
                                                             <div class="space-y-1">
-                                                                @foreach ($medicamentosEnSucursal as $med)
+                                                                <?php $__currentLoopData = $medicamentosEnSucursal; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $med): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                                     <div class="flex items-center justify-between text-sm">
-                                                                        <span class="text-neutral-text dark:text-neutral-text-dark">{{ $med['nombre'] }}</span>
+                                                                        <span class="text-neutral-text dark:text-neutral-text-dark"><?php echo e($med['nombre']); ?></span>
                                                                         <div class="flex items-center gap-4">
-                                                                            <span class="text-body-text dark:text-body-text-dark font-medium">Cantidad: {{ $med['cantidad'] }}</span>
-                                                                            <span class="text-body-text dark:text-body-text-dark font-medium">${{ number_format($med['precio'], 2) }}</span>
+                                                                            <span class="text-body-text dark:text-body-text-dark font-medium">Cantidad: <?php echo e($med['cantidad']); ?></span>
+                                                                            <span class="text-body-text dark:text-body-text-dark font-medium">$<?php echo e(number_format($med['precio'], 2)); ?></span>
                                                                         </div>
                                                                     </div>
-                                                                @endforeach
+                                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                             </div>
                                                         </div>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        @if (!$loop->last)
+                                        <?php if(!$loop->last): ?>
                                             <div class="flex justify-center"><span class="material-symbols-outlined text-3xl text-neutral-text dark:text-neutral-text-dark">arrow_downward</span></div>
-                                        @endif
-                                    @endforeach
+                                        <?php endif; ?>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <div class="text-center py-8 text-neutral-text dark:text-neutral-text-dark">
                                     <span class="material-symbols-outlined text-5xl mb-2">route</span>
                                     <p>No hay información de ruta disponible para este pedido.</p>
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <!-- Total Summary -->
@@ -226,7 +231,7 @@
                             <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark mb-4">Resumen del Costo</h2>
                             <div class="flex justify-between items-center">
                                 <span class="text-lg text-neutral-text dark:text-neutral-text-dark">Total del Pedido:</span>
-                                <span class="text-2xl font-bold text-primary">${{ number_format($pedido->costo_total ?? 0, 2) }}</span>
+                                <span class="text-2xl font-bold text-primary">$<?php echo e(number_format($pedido->costo_total ?? 0, 2)); ?></span>
                             </div>
                         </div>
                     </div>
@@ -238,8 +243,8 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    @if ($totalParadas > 0)
-        @php
+    <?php if($totalParadas > 0): ?>
+        <?php
             $branchesData = $rutaOrdenada->map(function ($ruta) {
                 return [
                     'lat' => floatval($ruta->sucursal->latitud),
@@ -249,7 +254,7 @@
                     'direccion' => $ruta->sucursal->calle . ' ' . $ruta->sucursal->numero_ext . ', ' . $ruta->sucursal->colonia,
                 ];
             })->values();
-        @endphp
+        ?>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -260,7 +265,7 @@
                     maxZoom: 19
                 }).addTo(map);
 
-                const branches = @json($branchesData);
+                const branches = <?php echo json_encode($branchesData, 15, 512) ?>;
                 const markers = [];
 
                 branches.forEach((branch) => {
@@ -276,7 +281,7 @@
                     markers.push(marker);
                 });
 
-                const routeGeometry = @json($pedido->route_geometry);
+                const routeGeometry = <?php echo json_encode($pedido->route_geometry, 15, 512) ?>;
                 
                 if (routeGeometry) {
                     try {
@@ -322,7 +327,8 @@
                 return coordinates;
             }
         </script>
-    @endif
+    <?php endif; ?>
 </body>
 
 </html>
+<?php /**PATH C:\xampp\htdocs\laravel\securityAccess\security-access\resources\views/pharmacy/order-route.blade.php ENDPATH**/ ?>

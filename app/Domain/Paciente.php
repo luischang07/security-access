@@ -1,21 +1,25 @@
 <?php
 
 namespace App\Domain;
+
 use Illuminate\Support\Collection;
 use App\Models\User as UserModel;
 use App\Models\Paciente as PacienteModel;
 use App\Domain\User\UserEntity;
 use App\Domain\Notificacion;
+
 class Paciente
 {
-  private $user;
-  private $notificaciones;
-  private $monto_penalizacion = 0;
+  private UserEntity $user;
+  private float $montoPenalizacion = 0.0;
 
-  public function __construct(PacienteModel $paciente, UserModel $user, $notificaciones = null)
+  /** @var Collection|Notificacion[] */
+  private Collection $notificaciones;
+
+  public function __construct(PacienteModel $paciente, UserModel $user, ?iterable $notificaciones = null)
   {
     $this->user = new UserEntity($user);
-    $this->monto_penalizacion = $paciente->monto_penalizacion;
+    $this->montoPenalizacion = (float) $paciente->monto_penalizacion;
     $this->notificaciones = collect();
     if ($notificaciones) {
       foreach ($notificaciones as $notificacion) {
@@ -24,31 +28,31 @@ class Paciente
     }
   }
 
-  public function getUser()
+  public function getUser(): UserEntity
   {
     return $this->user;
   }
-  public function getMontoPenalizacion()
+  public function getMontoPenalizacion(): float
   {
-    return $this->monto_penalizacion;
+    return $this->montoPenalizacion;
   }
-  public function setMontoPenalizacion($monto)
+  public function setMontoPenalizacion(float $monto): void
   {
-    $this->monto_penalizacion += $monto;
+    $this->montoPenalizacion += $monto;
   }
-  public function reducirPenalizacion($monto)
+  public function reducirPenalizacion(float $monto): void
   {
-    $this->monto_penalizacion -= $monto;
-    if ($this->monto_penalizacion < 0) {
-      $this->monto_penalizacion = 0;
+    $this->montoPenalizacion -= $monto;
+    if ($this->montoPenalizacion < 0.0) {
+      $this->montoPenalizacion = 0.0;
     }
   }
-  public function agregarNotificacion($notificacion)
+  public function agregarNotificacion(Notificacion $notificacion): void
   {
     $this->notificaciones->push($notificacion);
   }
 
-  public function getNotificaciones()
+  public function getNotificaciones(): Collection
   {
     return $this->notificaciones;
   }

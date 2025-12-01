@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class RegistrationService
 {
@@ -54,13 +55,13 @@ class RegistrationService
       );
 
       $user->setSessionToken($sessionToken);
-      $user->setUltimoLogin(now());
+      $user->setUltimoLogin(Carbon::now());
 
       Auth::loginUsingId($user->getId());
 
       $request->session()->put('user_id', $user->getId());
       $request->session()->put('session_token', $sessionToken);
-      $request->session()->save(); // Force save
+      $request->session()->save();
 
       event(new Registered(Auth::user()));
 
