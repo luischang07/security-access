@@ -214,6 +214,7 @@
         const csrfToken = '{{ csrf_token() }}';
         let currentOrderIndex = 0;
         const serviceFeeFixed = 1.00;
+        let errorMessage = null; // Variable para almacenar mensaje de error
 
         function selectOrder(element, index) {
             // Remover selección anterior
@@ -226,6 +227,7 @@
             element.classList.add('bg-background-light', 'dark:bg-background-dark');
             
             currentOrderIndex = index;
+            errorMessage = null; // Limpiar error anterior
             renderOrderDetails();
         }
 
@@ -233,7 +235,24 @@
             const order = orders[currentOrderIndex];
             const container = document.getElementById('order-details-container');
 
-            let html = `
+            let html = ``;
+
+            // Mostrar alert de error si existe
+            if (errorMessage) {
+                html += `
+                    <div class="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/15 mb-4">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">error</span>
+                            <div>
+                                <p class="font-semibold">Error al cancelar</p>
+                                <p class="text-xs mt-1">${errorMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
                 <!-- Patient Info Card -->
                 <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
                     <div class="flex items-center justify-between mb-4">
@@ -421,13 +440,24 @@
                     }
                 });
 
+                const data = await res.json().catch(() => null);
+
                 if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    throw new Error(err?.message || 'Error al cancelar el pedido');
+                    errorMessage = data?.message || 'Error al cancelar el pedido';
+                    renderOrderDetails(); // Re-render para mostrar el error
+                    btn.disabled = false;
+                    return;
                 }
 
-                location.reload();
+                // Éxito: actualizar orden
+                order.estatus = 'Cancelado';
+                errorMessage = null;
+                renderOrderDetails();
+                updatePriceSummary(0);
+
             } catch (e) {
+                errorMessage = 'Error en la solicitud: ' + e.message;
+                renderOrderDetails();
                 btn.disabled = false;
             }
         }

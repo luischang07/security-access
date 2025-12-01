@@ -6,20 +6,31 @@ use App\Domain\Pedido;
 use App\Domain\Sucursal;
 use App\Domain\Paciente;
 use App\Domain\Notificacion;
+use App\Services\Modelos\PacienteService;
+use Exception;
+use function PHPUnit\Framework\throwException;
 
 class PedidoService
 {
 
     private Sucursal $sucursal;
+    private PacienteService $pacienteService;
     private BaseDatos $dataBase;
 
     public function __construct()
     {
         $this->dataBase = new BaseDatos();
+        $this->pacienteService=new PacienteService();
     }
 
     public function nuevoPedido($paciente_id)
     {
+        $montoPenalizacion = $this->pacienteService->getMontoPenalizacion($paciente_id);
+        $pedidos=$this->dataBase->getPedidos($paciente_id);
+        $pedidosActivos=$this->pacienteService->getPedidosActivos($pedidos);
+        if ($montoPenalizacion > 0 && $pedidosActivos!=0) {
+            throw new Exception("No puedes realizar pedidos mientras tengas una penalización pendiente y un pedido activo");
+        }
         $pedido = Pedido::createPedido($paciente_id);
 
         return $pedido;
@@ -65,6 +76,9 @@ class PedidoService
 
     public function cancelarPedido($pedido)
     {
+        if(strtolower($pedido->getEstatus()) !== 'surtido'){
+            throw new Exception("Solo puedes cancelar pedidos si el pedido ya esta surtido");
+        }
         $pedido->cambiarEstatus('Cancelado');
         $this->dataBase->guardarCambioEstatusPedido($pedido);
         $dlp = $pedido->obtenerDetallesLineas();
