@@ -85,7 +85,6 @@ class GestorDeSurtido
 
   public function calculaFaltantes(Collection $sinStock, Collection $sucCercanas, Pedido $pedido, bool $aplicarPersistencia = false): void
   {
-    $stockComprometido = [];
     foreach ($sucCercanas as $sucursal) {
       /** @var Sucursal $sucursal */
       foreach ($sinStock as $ldp) {
@@ -99,27 +98,14 @@ class GestorDeSurtido
           continue;
         }
 
-        $key = $sucursal->getCadenaId() . '-' . $sucursal->getSucursalId() . '-' . $ldp->getMedicamentoId();
-        $comprometido = $stockComprometido[$key] ?? 0;
-        $stockReal = $ldi->getStockDisponible() - $comprometido;
-        if ($stockReal <= 0) {
-          continue;
-        }
+        $cantidadSurtida = min($cantFaltante, $ldi->getStockDisponible());
 
         if ($aplicarPersistencia) {
-          // when applying updates, use inventory's own logic to decide how much it can supply
-          $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
-          // decrement and persist
           $ldi->disminuirStock($cantidadSurtida);
           $this->sucursalService->actualizarInventario($ldi);
           if ($pedido) {
             $pedido->anadirARuta($sucursal);
           }
-        } else {
-          $cantidadSurtida = min($cantFaltante, $stockReal);
-          // reservar provisionalmente el stock para esta ejecución de planificación
-          // así evitamos asignar la misma unidad a múltiples sucursales en este recorrido
-          $stockComprometido[$key] = ($stockComprometido[$key] ?? 0) + $cantidadSurtida;
         }
 
         $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucursal, $ldp->getMedicamentoId());
