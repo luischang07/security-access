@@ -28,7 +28,7 @@ MAIL_USERNAME=tu_username_sandbox
 MAIL_PASSWORD=tu_password_sandbox
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS="security@tuapp.com"
-MAIL_FROM_NAME="Sistema de Seguridad"
+MAIL_FROM_NAME="Te Acerco Salud"
 
 # API Token (opcional para desarrollo)
 MAILTRAP_API_TOKEN=tu_api_token_aqui
@@ -56,7 +56,7 @@ MAIL_USERNAME=api
 MAIL_PASSWORD=tu_api_token_sending
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS="security@tudominio.com"
-MAIL_FROM_NAME="Sistema de Seguridad"
+MAIL_FROM_NAME="Te Acerco Salud"
 
 # API Configuration
 MAILTRAP_API_TOKEN=tu_api_token_aqui

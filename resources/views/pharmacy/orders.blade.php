@@ -67,10 +67,11 @@
             </div>
             <div class="mt-3 flex items-center justify-between">
               <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                    @if($estatusLower === 'confirmado') bg-secondary text-white
-                                    @elseif($estatusLower === 'cancelado') bg-danger text-white
-                                    @elseif($estatusLower === 'completado') bg-success text-white
-                                    @else bg-neutral-200 text-neutral-text @endif">
+                                        @if($estatusLower === 'confirmado') bg-secondary text-white
+                                        @elseif($estatusLower === 'surtido') bg-primary text-white
+                                        @elseif($estatusLower === 'cancelado') bg-danger text-white
+                                        @elseif($estatusLower === 'completado') bg-success text-white
+                                        @else bg-neutral-200 text-neutral-text @endif">
                 {{ $pedido->getEstatus() }}
               </span>
               <p class="text-xs text-neutral-text dark:text-neutral-text-dark">
@@ -339,88 +340,88 @@
       if (successMessage) {
         const showUndoButton = undoTimeRemaining > 0;
         html += `
-                      <div class="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success dark:border-success/30 dark:bg-success/15 mb-4">
-                          <div class="flex items-center justify-between gap-3">
-                              <div class="flex gap-3 flex-1">
-                                  <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">check_circle</span>
-                                  <div>
-                                      <p class="font-semibold">${translations.success}</p>
-                                      <p class="text-xs mt-1">${successMessage}</p>
-                                  </div>
-                              </div>
-                              ${showUndoButton ? `
-                                  <button id="undoButton" 
-                                      class="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-success font-medium transition flex items-center gap-2 border border-success/30">
-                                      <span class="material-symbols-outlined text-base">undo</span>
-                                      ${translations.undo} (<span id="undoCountdown">${undoTimeRemaining}</span>s)
-                                  </button>
-                              ` : ''}
-                          </div>
-                      </div>
-                  `;
+                        <div class="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success dark:border-success/30 dark:bg-success/15 mb-4">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="flex gap-3 flex-1">
+                                    <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">check_circle</span>
+                                    <div>
+                                        <p class="font-semibold">${translations.success}</p>
+                                        <p class="text-xs mt-1">${successMessage}</p>
+                                    </div>
+                                </div>
+                                ${showUndoButton ? `
+                                    <button id="undoButton" 
+                                        class="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-success font-medium transition flex items-center gap-2 border border-success/30">
+                                        <span class="material-symbols-outlined text-base">undo</span>
+                                        ${translations.undo} (<span id="undoCountdown">${undoTimeRemaining}</span>s)
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
       }
 
       // Mostrar alert de error si existe
       if (errorMessage) {
         html += `
-                      <div class="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/15 mb-4">
-                          <div class="flex gap-3">
-                              <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">error</span>
-                              <div>
-                                  <p class="font-semibold">${translations.error_canceling}</p>
-                                  <p class="text-xs mt-1">${errorMessage}</p>
-                              </div>
-                          </div>
-                      </div>
-                  `;
+                        <div class="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/15 mb-4">
+                            <div class="flex gap-3">
+                                <span class="material-symbols-outlined text-xl mt-0.5 flex-shrink-0">error</span>
+                                <div>
+                                    <p class="font-semibold">${translations.error_canceling}</p>
+                                    <p class="text-xs mt-1">${errorMessage}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
       }
 
       html += `
-                  <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
-                      <div class="flex items-center justify-between mb-4">
-                          <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                              ${translations.order_info}</h2>
-                          ${order.es_host ? `
-                              <a href="/pharmacy/orders/${order.folio}/route" class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition flex items-center gap-2">
-                                  <span class="material-symbols-outlined text-base">map</span>
-                                  ${translations.view_route}
-                              </a>
-                          ` : ''}
-                      </div>
-                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                              <p class="text-sm text-neutral-text dark:text-neutral-text-dark">${translations.order_folio}</p>
-                              <p class="font-medium text-body-text dark:text-body-text-dark">${order.folio}</p>
-                          </div>
-                          <div>
-                              <p class="text-sm text-neutral-text dark:text-neutral-text-dark">${translations.order_date}</p>
-                              <p class="font-medium text-body-text dark:text-body-text-dark">${order.fecha_pedido}</p>
-                          </div>
-                      </div>
-                  </div>
+                    <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
+                                ${translations.order_info}</h2>
+                            ${order.es_host ? `
+                                <a href="/pharmacy/orders/${order.folio}/route" class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-base">map</span>
+                                    ${translations.view_route}
+                                </a>
+                            ` : ''}
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-neutral-text dark:text-neutral-text-dark">${translations.order_folio}</p>
+                                <p class="font-medium text-body-text dark:text-body-text-dark">${order.folio}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-neutral-text dark:text-neutral-text-dark">${translations.order_date}</p>
+                                <p class="font-medium text-body-text dark:text-body-text-dark">${order.fecha_pedido}</p>
+                            </div>
+                        </div>
+                    </div>
 
-                  <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
-                      <div class="flex items-center justify-between mb-4">
-                          <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
-                              ${translations.prescription_details}</h2>
-                      </div>
+                    <div class="rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-body-text dark:text-body-text-dark">
+                                ${translations.prescription_details}</h2>
+                        </div>
 
-                      <div class="overflow-x-auto">
-                          <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
-                              <thead>
-                                  <tr>
-                                      <th class="py-3.5 px-6 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                          ${translations.medication}</th>
-                                      <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                          ${translations.quantity}</th>
-                                      <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                          ${translations.unit_price}</th>
-                                      <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
-                                          ${translations.from_branch}</th>
-                                  </tr>
-                              </thead>
-                              <tbody class="divide-y divide-border-light dark:divide-border-dark">
-              `;
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                                <thead>
+                                    <tr>
+                                        <th class="py-3.5 px-6 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                            ${translations.medication}</th>
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                            ${translations.quantity}</th>
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                            ${translations.unit_price}</th>
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-body-text dark:text-body-text-dark">
+                                            ${translations.from_branch}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-border-light dark:divide-border-dark">
+                `;
 
       let subtotal = 0;
       if (order.lineas && order.lineas.length > 0) {
@@ -436,36 +437,36 @@
                   cantidad) || 0);
                 subtotal += lineTotal;
                 html += `
-                                      <tr>
-                                          <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
-                                              ${linea.medicamento}</td>
-                                          <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                              ${detalle.cantidad}</td>
-                                          <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                              $${parseFloat(detalle.precio).toFixed(2)}</td>
-                                          <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
-                                              ${detalle.sucursal}</td>
-                                      </tr>
-                                  `;
+                                        <tr>
+                                            <td class="whitespace-nowrap py-4 px-6 text-sm font-medium text-body-text dark:text-body-text-dark">
+                                                ${linea.medicamento}</td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                                ${detalle.cantidad}</td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                                $${parseFloat(detalle.precio).toFixed(2)}</td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-neutral-text dark:text-neutral-text-dark">
+                                                ${detalle.sucursal}</td>
+                                        </tr>
+                                    `;
               }
             });
           }
         });
       } else {
         html += `
-                      <tr>
-                          <td colspan="4" class="whitespace-nowrap py-4 px-6 text-sm text-center text-neutral-text dark:text-neutral-text-dark">
-                              ${translations.no_medications}</td>
-                      </tr>
-                  `;
+                        <tr>
+                            <td colspan="4" class="whitespace-nowrap py-4 px-6 text-sm text-center text-neutral-text dark:text-neutral-text-dark">
+                                ${translations.no_medications}</td>
+                        </tr>
+                    `;
       }
 
       html += `
-                              </tbody>
-                          </table>
-                      </div>
-                  </div>
-              `;
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
 
       container.innerHTML = html;
 

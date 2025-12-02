@@ -24,7 +24,7 @@ class MailtrapFunctionalTest extends TestCase
     Config::set('mail.username', 'api');
     Config::set('mail.encryption', 'tls');
     Config::set('mail.from.address', 'twice@jypetwiceinfo.com');
-    Config::set('mail.from.name', 'Sistema de Seguridad');
+    Config::set('mail.from.name', 'Te Acerco Salud');
 
     Config::set('services.mailtrap.token', '84c03ad07298c54dd4a2af494800b9da');
     Config::set('services.mailtrap.live_domain', 'jypetwiceinfo.com');
@@ -40,7 +40,7 @@ class MailtrapFunctionalTest extends TestCase
     $this->assertEquals(587, config('mail.port'));
     $this->assertEquals('tls', config('mail.encryption'));
     $this->assertEquals('twice@jypetwiceinfo.com', config('mail.from.address'));
-    $this->assertEquals('Sistema de Seguridad', config('mail.from.name'));
+    $this->assertEquals('Te Acerco Salud', config('mail.from.name'));
     $this->assertEquals('jypetwiceinfo.com', config('services.mailtrap.live_domain'));
   }
 
@@ -146,7 +146,7 @@ class MailtrapFunctionalTest extends TestCase
     $this->assertEquals('api', $mailtrapConfig['smtp_username']);
     $this->assertEquals('tls', $mailtrapConfig['smtp_encryption']);
     $this->assertEquals('twice@jypetwiceinfo.com', $mailtrapConfig['from_address']);
-    $this->assertEquals('Sistema de Seguridad', $mailtrapConfig['from_name']);
+    $this->assertEquals('Te Acerco Salud', $mailtrapConfig['from_name']);
   }
 
   /** @test */

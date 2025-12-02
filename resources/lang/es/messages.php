@@ -79,14 +79,14 @@ return [
 
   // Footer
   'footer' => [
-    'title' => 'SecuAccess',
+    'title' => 'Te Acerco Salud',
     'description' => 'Seguridad de acceso centrada en el usuario',
     'home' => 'Inicio',
     'features' => 'Características',
     'about' => 'Acerca de',
     'services' => 'Servicios',
     'contact' => 'Contacto',
-    'copyright' => '© :year SecuAccess. Todos los derechos reservados.',
+    'copyright' => '© :year Te Acerco Salud. Todos los derechos reservados.',
   ],
 
   // Session Reset Success
@@ -120,8 +120,8 @@ return [
       'ignore' => 'Si no solicitaste esto, puedes ignorar este correo',
     ],
     'url_instruction' => 'Si tienes problemas con el botón, copia y pega esta URL en tu navegador:',
-    'footer_title' => 'Sistema de Seguridad',
-    'footer_auto' => 'Este correo fue enviado automáticamente desde el sistema de seguridad.',
+    'footer_title' => 'Te Acerco Salud',
+    'footer_auto' => 'Este correo fue enviado automáticamente desde el sistema Te Acerco Salud.',
     'footer_secure' => 'Si no solicitaste esta acción, tu cuenta permanece segura.',
     'copyright' => '© :year :app_name. Todos los derechos reservados.',
     'dev_info' => '📊 <strong>Información de desarrollo:</strong>',

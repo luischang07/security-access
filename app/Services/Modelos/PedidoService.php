@@ -280,21 +280,21 @@ class PedidoService
     }
 
     return $pedido;
+  }
+
+  public function obtenerPedidosSucursal($cadena_id, $sucursal_id)
+  {
+    return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
+  }
+
+  public function buscarPorFolio($folio_pedido, $apellido)
+  {
+    $pedido = $this->dataBase->getPedidoByFoliosyApellido($folio_pedido, $apellido);
+
+    if (!$pedido) {
+      return null;
     }
 
-    public function obtenerPedidosSucursal($cadena_id, $sucursal_id)
-    {
-        return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
-    }
-
-    public function buscarPorFolio($folio_pedido, $apellido)
-    {
-        $pedido = $this->dataBase->getPedidoByFoliosyApellido($folio_pedido, $apellido);
-
-        if (!$pedido) {
-            return null;
-        }
-
-        return $pedido;
-    }
+    return $pedido;
+  }
 }
