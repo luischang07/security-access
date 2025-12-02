@@ -85,7 +85,6 @@ class GestorDeSurtido
 
   public function calculaFaltantes(Collection $sinStock, Collection $sucCercanas, Pedido $pedido, bool $aplicarPersistencia = false): void
   {
-    $stockComprometido = [];
     foreach ($sucCercanas as $sucursal) {
       /** @var Sucursal $sucursal */
       foreach ($sinStock as $ldp) {
