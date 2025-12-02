@@ -76,7 +76,6 @@ class GestorDeSurtido
       );
 
       $this->calculaFaltantes($this->sinStock, $sucCercanas, $pedido);
-
     }
 
     $pedido->setFaltantes($this->sinStock);
@@ -84,8 +83,9 @@ class GestorDeSurtido
     return $pedido;
   }
 
-  public function calculaFaltantes(Collection $sinStock, Collection $sucCercanas, Pedido $pedido, array $stockComprometido = [], bool $applyUpdate = false): void
+  public function calculaFaltantes(Collection $sinStock, Collection $sucCercanas, Pedido $pedido, bool $aplicarPersistencia = false): void
   {
+    $stockComprometido = [];
     foreach ($sucCercanas as $sucursal) {
       /** @var Sucursal $sucursal */
       foreach ($sinStock as $ldp) {
@@ -100,13 +100,13 @@ class GestorDeSurtido
         }
 
         $key = $sucursal->getCadenaId() . '-' . $sucursal->getSucursalId() . '-' . $ldp->getMedicamentoId();
-        $committed = $stockComprometido[$key] ?? 0;
-        $stockReal = $ldi->getStockDisponible() - $committed;
+        $comprometido = $stockComprometido[$key] ?? 0;
+        $stockReal = $ldi->getStockDisponible() - $comprometido;
         if ($stockReal <= 0) {
           continue;
         }
 
-        if ($applyUpdate) {
+        if ($aplicarPersistencia) {
           // when applying updates, use inventory's own logic to decide how much it can supply
           $cantidadSurtida = $ldi->cantidadPuedeSurtir($cantFaltante);
           // decrement and persist
@@ -117,6 +117,9 @@ class GestorDeSurtido
           }
         } else {
           $cantidadSurtida = min($cantFaltante, $stockReal);
+          // reservar provisionalmente el stock para esta ejecución de planificación
+          // así evitamos asignar la misma unidad a múltiples sucursales en este recorrido
+          $stockComprometido[$key] = ($stockComprometido[$key] ?? 0) + $cantidadSurtida;
         }
 
         $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucursal, $ldp->getMedicamentoId());
@@ -176,7 +179,7 @@ class GestorDeSurtido
           $sucSeleccionada->getSucursalId()
         );
 
-        $this->calculaFaltantes($this->sinStock, $sucCercanas, $pedido, [], true);
+        $this->calculaFaltantes($this->sinStock, $sucCercanas, $pedido, true);
       }
 
       if ($pedido->calcularPorcentajeSurtido() < 0.5) {
@@ -192,24 +195,24 @@ class GestorDeSurtido
       $ruta = $pedido->getRuta();
       if ($ruta->isNotEmpty()) {
         $sucSeleccionada = $pedido->getSucursal();
-        $coordinates = [];
+        $coordenadas = [];
 
-        $coordinates[] = [
+        $coordenadas[] = [
           'lat' => $sucSeleccionada->getLatitud(),
           'lng' => $sucSeleccionada->getLongitud()
         ];
 
         foreach ($ruta as $sucursal) {
-          $coordinates[] = [
+          $coordenadas[] = [
             'lat' => $sucursal->getLatitud(),
             'lng' => $sucursal->getLongitud()
           ];
         }
 
-        $tripDetails = $this->geoLocationService->getRoutingService()->getOptimalTrip($coordinates);
+        $detallesRuta = $this->geoLocationService->getRoutingService()->getOptimalTrip($coordenadas);
 
-        if ($tripDetails) {
-          $pedido->setRouteGeometry($tripDetails['geometry']);
+        if ($detallesRuta) {
+          $pedido->setRouteGeometry($detallesRuta['geometry']);
         }
       }
 
@@ -247,7 +250,6 @@ class GestorDeSurtido
           $this->dataBase->guardarDetalleLineaPedido(
             $detallelinea,
             $folioPedido,
-            $idLinea
           );
         }
       }
@@ -273,7 +275,5 @@ class GestorDeSurtido
     foreach ($ruta as $sucursal) {
       $this->sucursalService->notificarNuevoPedido($sucursal, $folioPedido);
     }
-
   }
-
 }
