@@ -227,5 +227,21 @@ class PedidoService
     }
 
     return $pedido;
-  }
+    }
+
+    public function obtenerPedidosSucursal($cadena_id, $sucursal_id)
+    {
+        return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
+    }
+
+    public function buscarPorFolio($folio_pedido, $cadena_id, $sucursal_id)
+    {
+        $pedido = $this->dataBase->getPedidoByFoliosCompletos($folio_pedido, $cadena_id, $sucursal_id);
+
+        if (!$pedido) {
+            return null;
+        }
+
+        return $pedido;
+    }
 }

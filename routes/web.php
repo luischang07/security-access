@@ -7,6 +7,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PharmacyController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PrescriptionController;
+use App\Http\Controllers\OrdenesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GestionPedidoController;
 use App\Http\Controllers\CancelacionController;
@@ -92,4 +93,8 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 
   // Settings route (common for all user types)
   Route::view('/settings', 'settings')->name('settings');
+});
+
+Route::middleware('api')->prefix('api')->group(function () {
+    Route::get('/pedido/buscar', [OrdenesController::class, 'buscarPorFolio']);
 });
