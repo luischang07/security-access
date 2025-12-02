@@ -50,7 +50,6 @@ class PedidoService
   public function asociarSucursalAPedido(Sucursal $sucursal, Pedido $pedido): Pedido
   {
     $pedido->setSucursal($sucursal);
-    info("pedidoooo", [$pedido->getSucursal()->getNombre()]);
     return $pedido;
   }
 
@@ -131,14 +130,14 @@ class PedidoService
     if ($pedido->getFechaSurtido() && Carbon::now()->diffInHours($pedido->getFechaSurtido()) < 24) {
       throw new \RuntimeException('No puedes cancelar el pedido antes de 24 horas de haber sido surtido. El cliente aún tiene tiempo para recogerlo.');
     }
-
-    $pedido->cambiarEstatus(ModelsPedido::ESTATUS_CANCELADO);
-    $this->dataBase->guardarCambioEstatusPedido($pedido);
-
-    $dlp = $pedido->getAllDetalles();
-
     $this->dataBase->iniciarTransaccion();
+
+
     try {
+      $pedido->cambiarEstatus(ModelsPedido::ESTATUS_CANCELADO);
+      $this->dataBase->guardarCambioEstatusPedido($pedido);
+
+      $dlp = $pedido->getAllDetalles();
       foreach ($dlp as $detalle) {
         /** @var DetalleLineaPedido $detalle */
         $inventario = $this->dataBase->getInventario(
@@ -152,22 +151,21 @@ class PedidoService
           $this->dataBase->actualizarInventarioCancelacion($inventario);
         }
       }
+      // Aplicar penalización al paciente (asumiendo que es por no recoger)
+      $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
+      $cantidadPenalizacion = $pedido->getCostoTotal() * 0.5;
+      $paciente->sumarMontoPenalizacion($cantidadPenalizacion);
+      $mensaje = "Su pedido {$pedido->getFolio()} ha sido cancelado por la sucursal. Se ha aplicado una penalización de \${$cantidadPenalizacion}.";
+      $notificacion = Notificacion::crear($mensaje, Carbon::now());
+      $paciente->agregarNotificacion($notificacion);
+      $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getFolio());
+      $this->dataBase->actualizarPaciente($paciente);
 
       $this->dataBase->commitTransaccion();
     } catch (\Throwable $e) {
       $this->dataBase->cancelarTransaccion();
       throw $e;
     }
-
-    // Aplicar penalización al paciente (asumiendo que es por no recoger)
-    $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
-    $cantidadPenalizacion = $pedido->getCostoTotal() * 0.5;
-    $paciente->sumarMontoPenalizacion($cantidadPenalizacion);
-    $mensaje = "Su pedido {$pedido->getFolio()} ha sido cancelado por la sucursal. Se ha aplicado una penalización de \${$cantidadPenalizacion}.";
-    $notificacion = Notificacion::crear($mensaje, Carbon::now());
-    $paciente->agregarNotificacion($notificacion);
-    $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getFolio());
-    $this->dataBase->actualizarPaciente($paciente);
 
     return $pedido;
   }

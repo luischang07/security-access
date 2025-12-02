@@ -10,6 +10,7 @@ use App\Services\Modelos\MedicamentoService;
 use App\Domain\Pedido;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CancelacionController extends Controller
 {
@@ -20,7 +21,18 @@ class CancelacionController extends Controller
     $this->pedidoService = $pedidoService;
   }
 
-  public function cancelarPorFolio($folio)
+  public function mostrarPedidos()
+  {
+
+    $user = Auth::user();
+    $branchIds = $user->getBranchIds();
+
+    $pedidos = $this->pedidoService->getPedidosSucursal($branchIds['cadena_id'], $branchIds['sucursal_id']);
+
+    return view('pharmacy.orders', compact('pedidos'));
+  }
+
+  public function confirmarCancelacion($folio)
   {
     $pedido = $this->pedidoService->getPedidoPorFolio($folio);
     if (!$pedido) {
