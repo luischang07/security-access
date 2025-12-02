@@ -109,7 +109,7 @@ class GestorDeSurtido
           if ($pedido) {
             $pedido->anadirARuta($sucursal);
           }
-        }
+        } 
 
         $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucursal, $ldp->getMedicamentoId());
 

@@ -357,5 +357,14 @@ class BaseDatos
     return $branches->map(function ($branch) {
       return DomainSucursal::crear($branch);
     });
+
+  }
+  public function getPedidoByFoliosyApellido($folio_pedido, $apellido){
+    return Pedido::with(['paciente.user'])
+            ->where('folio_pedido', $folio_pedido)
+            ->whereHas('paciente.user', function ($q) use ($apellido) {
+                $q->where('apellido', 'LIKE', $apellido . '%');
+            })
+            ->first();
   }
 }
