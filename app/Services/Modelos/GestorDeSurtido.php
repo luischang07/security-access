@@ -99,6 +99,9 @@ class GestorDeSurtido
         }
 
         $cantidadSurtida = min($cantFaltante, $ldi->getStockDisponible());
+        if ($cantidadSurtida <= 0) {
+          continue;
+        }
 
         if ($aplicarPersistencia) {
           $ldi->disminuirStock($cantidadSurtida);

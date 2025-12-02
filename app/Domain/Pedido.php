@@ -17,6 +17,7 @@ class Pedido
 
   private ?Carbon $fechaPedido = null;
   private ?Carbon $fechaRecoleccion = null;
+  private ?Carbon $fechaSurtido = null;
   private ?string $estatus = null;
   private Collection $lineasPedido;
   private ?int $pacienteId = null;
@@ -251,6 +252,16 @@ class Pedido
     return $this->fechaRecoleccion;
   }
 
+  public function getFechaSurtido(): ?Carbon
+  {
+    return $this->fechaSurtido;
+  }
+
+  public function setFechaSurtido(?Carbon $fecha): void
+  {
+    $this->fechaSurtido = $fecha;
+  }
+
   public function getEstatus(): ?string
   {
     return $this->estatus;
@@ -314,6 +325,7 @@ class Pedido
     $pedido->cedulaProfesional = $pedidoModel->cedula_profesional;
     $pedido->fechaPedido = $pedidoModel->fecha_pedido;
     $pedido->fechaRecoleccion = $pedidoModel->fecha_recoleccion;
+    $pedido->fechaSurtido = $pedidoModel->fecha_surtido;
     $pedido->estatus = $pedidoModel->estatus;
     $pedido->costoTotal = (float) $pedidoModel->costo_total;
 

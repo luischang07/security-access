@@ -74,7 +74,7 @@ class PedidoService
     $pedido->eliminarMedicamento($medId);
     return $pedido;
   }
-
+  //TODO borrar cancelarPedido que no valida fecha de surtido
   public function cancelarPedido(Pedido $pedido): Pedido
   {
     if (strtolower($pedido->getEstatus()) !== ModelsPedido::ESTATUS_SURTIDO) {
@@ -116,6 +116,58 @@ class PedidoService
     $notificacion = Notificacion::crear($mensaje, Carbon::now());
     $paciente->agregarNotificacion($notificacion);
     $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getFolio());
+    $this->dataBase->actualizarPaciente($paciente);
+
+
+    return $pedido;
+  }
+
+  public function cancelarPedidoSucursal(Pedido $pedido): Pedido
+  {
+    if (strtolower($pedido->getEstatus()) !== ModelsPedido::ESTATUS_SURTIDO) {
+      throw new \RuntimeException('Solo se pueden cancelar pedidos que están surtidos.');
+    }
+
+    if ($pedido->getFechaSurtido() && Carbon::now()->diffInHours($pedido->getFechaSurtido()) < 24) {
+      throw new \RuntimeException('No puedes cancelar el pedido antes de 24 horas de haber sido surtido. El cliente aún tiene tiempo para recogerlo.');
+    }
+
+    $pedido->cambiarEstatus(ModelsPedido::ESTATUS_CANCELADO);
+    $this->dataBase->guardarCambioEstatusPedido($pedido);
+
+    $dlp = $pedido->getAllDetalles();
+
+    $this->dataBase->iniciarTransaccion();
+    try {
+      foreach ($dlp as $detalle) {
+        /** @var DetalleLineaPedido $detalle */
+        $inventario = $this->dataBase->getInventario(
+          $detalle->getSucursal()->getCadenaId(),
+          $detalle->getSucursal()->getSucursalId(),
+          $detalle->getMedicamentoId()
+        );
+
+        if ($inventario) {
+          $inventario->aumentarStock($detalle->getCantidadSurtida());
+          $this->dataBase->actualizarInventarioCancelacion($inventario);
+        }
+      }
+
+      $this->dataBase->commitTransaccion();
+    } catch (\Throwable $e) {
+      $this->dataBase->cancelarTransaccion();
+      throw $e;
+    }
+
+    // Aplicar penalización al paciente (asumiendo que es por no recoger)
+    $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
+    $cantidadPenalizacion = $pedido->getCostoTotal() * 0.5;
+    $paciente->sumarMontoPenalizacion($cantidadPenalizacion);
+    $mensaje = "Su pedido {$pedido->getFolio()} ha sido cancelado por la sucursal. Se ha aplicado una penalización de \${$cantidadPenalizacion}.";
+    $notificacion = Notificacion::crear($mensaje, Carbon::now());
+    $paciente->agregarNotificacion($notificacion);
+    $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getFolio());
+    $this->dataBase->actualizarPaciente($paciente);
 
     return $pedido;
   }
@@ -189,18 +241,18 @@ class PedidoService
 
   public function marcarPedidoComoSurtido(Pedido $pedido)
   {
-    if (strtolower($pedido->getEstatus()) !== 'confirmado') {
+    if (strtolower($pedido->getEstatus()) !== ModelsPedido::ESTATUS_CONFIRMADO) {
       throw new \RuntimeException('Solo se pueden marcar como surtidos los pedidos con estatus Confirmado.');
     }
     $this->dataBase->iniciarTransaccion();
     try {
-      $pedido->cambiarEstatus('Surtido');
+      $pedido->cambiarEstatus(ModelsPedido::ESTATUS_SURTIDO);
+      $pedido->setFechaSurtido(Carbon::now());
       $this->dataBase->guardarCambioEstatusPedido($pedido);
-      $mensaje = "Su pedido {$pedido->getfolio()} está listo para ser recogido. Tienes 48 horas para recogerlo en la sucursal {$pedido->getSucursal()->getNombre()}.";
-      $notificacion = Notificacion::crear($mensaje, now());
-      $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
-      $paciente->agregarNotificacion($notificacion);
-      $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getfolio());
+
+      \App\Jobs\SendOrderReadyNotification::dispatch($pedido->getFolio(), $pedido->getPacienteId())
+        ->delay(now()->addSeconds(30));
+
       $this->dataBase->commitTransaccion();
     } catch (\Exception $e) {
       $this->dataBase->cancelarTransaccion();
@@ -219,6 +271,7 @@ class PedidoService
     $this->dataBase->iniciarTransaccion();
     try {
       $pedido->cambiarEstatus(ModelsPedido::ESTATUS_CONFIRMADO);
+      $pedido->setFechaSurtido(null);
       $this->dataBase->guardarCambioEstatusPedido($pedido);
       $this->dataBase->commitTransaccion();
     } catch (\Exception $e) {

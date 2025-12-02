@@ -30,6 +30,7 @@ class Pedido extends Model
     'cedula_profesional',
     'fecha_pedido',
     'fecha_recoleccion',
+    'fecha_surtido',
     'estatus',
     'costo_total',
     'route_geometry',
@@ -38,6 +39,7 @@ class Pedido extends Model
   protected $casts = [
     'fecha_pedido' => 'datetime',
     'fecha_recoleccion' => 'datetime',
+    'fecha_surtido' => 'datetime',
     'costo_total' => 'decimal:2',
   ];
 

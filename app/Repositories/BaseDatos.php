@@ -183,7 +183,10 @@ class BaseDatos
 
   public function guardarCambioEstatusPedido(DomainPedido $pedido)
   {
-    Pedido::where('folio_pedido', $pedido->getFolio())->update(['estatus' => $pedido->getEstatus()]);
+    Pedido::where('folio_pedido', $pedido->getFolio())->update([
+      'estatus' => $pedido->getEstatus(),
+      'fecha_surtido' => $pedido->getFechaSurtido(),
+    ]);
   }
 
   public function guardarLineaPedido(DomainLineaPedido $ldp, $folio_pedido): LineaPedido

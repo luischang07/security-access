@@ -122,14 +122,14 @@ class AuthenticationService
             'password' => __('Las credenciales proporcionadas no coinciden con nuestros registros. Te quedan :attempts intento(s).', [
               'attempts' => $remainingAttempts
             ]),
-          ])->onlyInput($request->only('correo'));
+          ])->withInput($request->only('correo'));
         }
       }
     }
 
     return redirect()->back()->withErrors([
       'password' => __('Las credenciales proporcionadas no coinciden con nuestros registros.'),
-    ])->onlyInput($request->only('correo'));
+    ])->withInput($request->only('correo'));
   }
 
   public function logout(): RedirectResponse
@@ -187,7 +187,7 @@ class AuthenticationService
   {
     return redirect()->back()->withErrors([
       'correo' => __('Ya existe una sesión activa para esta cuenta. Puedes solicitar que se elimine enviando un correo a tu dirección de correo.'),
-    ])->onlyInput($request->only('correo'))
+    ])->withInput($request->only('correo'))
       ->with('show_session_reset', true);
   }
 }
