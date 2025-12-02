@@ -234,9 +234,9 @@ class PedidoService
         return $this->dataBase->obtenerPedidosPorSucursal($cadena_id, $sucursal_id);
     }
 
-    public function buscarPorFolio($folio_pedido, $cadena_id, $sucursal_id)
+    public function buscarPorFolio($folio_pedido, $apellido)
     {
-        $pedido = $this->dataBase->getPedidoByFoliosCompletos($folio_pedido, $cadena_id, $sucursal_id);
+        $pedido = $this->dataBase->getPedidoByFoliosyApellido($folio_pedido, $apellido);
 
         if (!$pedido) {
             return null;

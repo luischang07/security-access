@@ -17,13 +17,11 @@ class OrdenesController extends Controller
     {
       $request->validate([
           'folio_pedido' => 'required',
-          'cadena_id'    => 'required',
-          'sucursal_id'  => 'required',
+          'apellido'    => 'required',
       ]);
       $pedido = $this->pedidoService->buscarPorFolio(
           $request->input('folio_pedido'),
-          $request->input('cadena_id'),
-          $request->input('sucursal_id')
+          $request->input('apellido'),
       );
       if (!$pedido) {
           return response()->json([
@@ -32,15 +30,19 @@ class OrdenesController extends Controller
           ], 404);
       }
 
-      return response()->json([
-            'encontrado'    => true,
-            'folio_pedido'  => $pedido->folio_pedido,
-            'cadena_id'     => $pedido->cadena_id,
-            'sucursal_id'   => $pedido->sucursal_id,
-            'estatus'       => $pedido->estatus,
-            'fecha_pedido'  => $pedido->fecha_pedido,
-            'costo_total'   => $pedido->costo_total,
-        ]);
+    return response()->json([
+        'encontrado'    => true,
+        'folio_pedido'  => $pedido->folio_pedido,
+        'estatus'       => $pedido->estatus,
+        'fecha_pedido'  => $pedido->fecha_pedido->format('Y-m-d'),
+        'costo_total'   => $pedido->costo_total,
+        // Datos del paciente
+        'paciente'      => [
+            'id'       => $pedido->paciente->id ?? null,
+            'nombre'   => $user->name ?? null,
+            'apellido' => $user->apellido ?? null,
+        ],
+    ]);
 
     }
 }

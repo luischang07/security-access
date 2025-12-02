@@ -356,10 +356,12 @@ class BaseDatos
     });
 
   }
-  public function getPedidoByFoliosCompletos($folio_pedido, $cadena_id, $sucursal_id){
-    return Pedido::where('folio_pedido', $folio_pedido)
-            ->where('cadena_id', $cadena_id)
-            ->where('sucursal_id', $sucursal_id)
+  public function getPedidoByFoliosyApellido($folio_pedido, $apellido){
+    return Pedido::with(['paciente.user'])
+            ->where('folio_pedido', $folio_pedido)
+            ->whereHas('paciente.user', function ($q) use ($apellido) {
+                $q->where('apellido', 'LIKE', $apellido . '%');
+            })
             ->first();
   }
 }
