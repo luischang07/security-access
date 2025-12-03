@@ -221,11 +221,6 @@
                                                                     $lineTotal += $detalle->getPrecio() * $detalle->getCantidadSurtida();
                                                                     $cantidadTotalSurtida += $detalle->getCantidadSurtida();
                                                                 @endphp
-
-                                                                <div class="font-medium text-body-text dark:text-body-text-dark">
-                                                                    {{ $detalle->getSucursal()->getCadenaId() }}
-                                                                    {{ $detalle->getSucursal()->getSucursalId() }}
-                                                                </div>
                                                             @endforeach
 
                                                             @php

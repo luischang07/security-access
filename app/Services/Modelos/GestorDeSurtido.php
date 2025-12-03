@@ -151,8 +151,6 @@ class GestorDeSurtido
       if ($this->sinStock->count() > 0) {
         $sucSeleccionada = $pedido->getSucursal();
 
-        // Use GeoLocationService to find nearest branches with stock using Hybrid Algorithm
-        // This handles concurrency better - checks actual stock availability at confirmation time
         $medicamentoIds = $this->sinStock->map(function ($linea) {
           return $linea->getMedicamentoId();
         })->toArray();
@@ -180,20 +178,16 @@ class GestorDeSurtido
       $pedido->setEstatus(PedidoModel::ESTATUS_CONFIRMADO);
       $pedido->calcularTotales();
 
-      // Calculate optimal route for all branches (Source + Collection Points)
       $ruta = $pedido->getRuta();
       if ($ruta->isNotEmpty()) {
         $sucSeleccionada = $pedido->getSucursal();
 
-        // Ensure origin branch is the first stop
         $ruta = $ruta->reject(function ($suc) use ($sucSeleccionada) {
           return $suc->getCadenaId() === $sucSeleccionada->getCadenaId() &&
             $suc->getSucursalId() === $sucSeleccionada->getSucursalId();
         });
 
-        if ($sucSeleccionada) {
-          $ruta = collect([$sucSeleccionada])->merge($ruta);
-        }
+        $ruta = collect([$sucSeleccionada])->merge($ruta);
 
         $pedido->setRuta($ruta);
 

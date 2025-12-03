@@ -38,7 +38,7 @@ class GestionPedidoController extends Controller
   {
     $paciente_id = Auth::user()->user_id;
     try {
-      $pedido = $this->pedidoService->nuevoPedido($paciente_id);
+      //$pedido = $this->pedidoService->nuevoPedido($paciente_id);
       $pedido = Session::has('pedido_temporal') ? unserialize(Session::get('pedido_temporal')) : null;
       if (!$pedido || $request->boolean('reset')) {
         $pedido = $this->pedidoService->nuevoPedido($paciente_id);
@@ -81,25 +81,6 @@ class GestionPedidoController extends Controller
     return response()->json(['ok' => true]);
   }
 
-  public function buscarMedicamentos(Request $request)
-  {
-    $query = $request->input('q', '');
-
-    if (strlen($query) < 2) {
-      return response()->json([]);
-    }
-
-    $medicamentos = $this->medicamentoService->obtenerMedicamentosPorNombre($query);
-
-    return response()->json($medicamentos);
-  }
-
-  public function getSucursalesPorCadena($cadena_id)
-  {
-    $sucursales = $this->sucursalService->getSucursalesPorCadena($cadena_id);
-    return response()->json($sucursales);
-  }
-
   public function agregarMedicamento(Request $request)
   {
     $medId = (int) $request->input('medId');
@@ -128,34 +109,6 @@ class GestionPedidoController extends Controller
     } catch (\Throwable $e) {
       return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
     }
-  }
-
-  public function eliminarMedicamento(Request $request)
-  {
-    $medId = (int) $request->input('medId');
-
-    if ($medId <= 0) {
-      return response()->json(['ok' => false, 'message' => 'ID de medicamento inválido'], 422);
-    }
-    $pedido = unserialize(Session::get('pedido_temporal'));
-
-    if (!$pedido instanceof Pedido) {
-      return response()->json(['ok' => false, 'message' => 'Sesión expirada'], 401);
-    }
-
-    Session::forget('pedido_temporal');
-    try {
-      $pedido = $this->pedidoService->eliminarMedicamento($medId, $pedido);
-
-      Session::put('pedido_temporal', serialize($pedido));
-    } catch (\Throwable $e) {
-      return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
-    }
-
-    return response()->json([
-      'ok' => true,
-      'medications' => $this->pedidoService->getLineasPedidoActuales($pedido)
-    ]);
   }
 
   public function confirmarCaptura(Request $request)
@@ -217,6 +170,52 @@ class GestionPedidoController extends Controller
     }
   }
 
+  public function buscarMedicamentos(Request $request)
+  {
+    $query = $request->input('q', '');
+
+    if (strlen($query) < 2) {
+      return response()->json([]);
+    }
+
+    $medicamentos = $this->medicamentoService->obtenerMedicamentosPorNombre($query);
+
+    return response()->json($medicamentos);
+  }
+
+  public function getSucursalesPorCadena($cadena_id)
+  {
+    $sucursales = $this->sucursalService->getSucursalesPorCadena($cadena_id);
+    return response()->json($sucursales);
+  }
+
+  public function eliminarMedicamento(Request $request)
+  {
+    $medId = (int) $request->input('medId');
+
+    if ($medId <= 0) {
+      return response()->json(['ok' => false, 'message' => 'ID de medicamento inválido'], 422);
+    }
+    $pedido = unserialize(Session::get('pedido_temporal'));
+
+    if (!$pedido instanceof Pedido) {
+      return response()->json(['ok' => false, 'message' => 'Sesión expirada'], 401);
+    }
+
+    Session::forget('pedido_temporal');
+    try {
+      $pedido = $this->pedidoService->eliminarMedicamento($medId, $pedido);
+
+      Session::put('pedido_temporal', serialize($pedido));
+    } catch (\Throwable $e) {
+      return response()->json(['ok' => false, 'message' => $e->getMessage()], 400);
+    }
+
+    return response()->json([
+      'ok' => true,
+      'medications' => $this->pedidoService->getLineasPedidoActuales($pedido)
+    ]);
+  }
 
   public function getPedidos()
   {

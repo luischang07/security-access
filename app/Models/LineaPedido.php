@@ -40,11 +40,10 @@ class LineaPedido extends Model
 
   public function detalles(): HasMany
   {
-    // Ahora sí funciona tu código original
     return $this->hasMany(
       DetalleLineaPedido::class,
-      ['folio_pedido', 'medicamento_id'], // Llaves foráneas en Detalle
-      ['folio_pedido', 'medicamento_id']  // Llaves locales en este modelo
+      ['folio_pedido', 'medicamento_id'],
+      ['folio_pedido', 'medicamento_id']
     );
   }
 }

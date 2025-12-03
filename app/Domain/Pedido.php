@@ -77,9 +77,7 @@ class Pedido
   }
   public function agregarMedicamento(int $medId, int $cantidad, ?Medicamento $medicamento): void
   {
-    if (!$medId) {
-      return;
-    }
+
     if (!$this->lineasPedido instanceof Collection) {
       $this->lineasPedido = collect();
     }

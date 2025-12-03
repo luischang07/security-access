@@ -287,7 +287,7 @@
 
   <script>
     const translations = {
-      success: "{{ __('common.success') }}",
+      success: "Éxito",
       error_canceling: "Error al cancelar",
       order_info: "{{ __('pharmacy.orders.order_info') }}",
       view_route: "{{ __('pharmacy.orders.view_route') }}",
@@ -384,7 +384,7 @@
                             ${order.es_host ? `
                                 <a href="/pharmacy/orders/${order.folio}/route" class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition flex items-center gap-2">
                                     <span class="material-symbols-outlined text-base">map</span>
-                                    ${translations.view_route}
+                                    Ver ruta
                                 </a>
                             ` : ''}
                         </div>

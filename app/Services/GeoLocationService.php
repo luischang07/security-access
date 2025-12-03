@@ -78,7 +78,6 @@ class GeoLocationService
     $sucursalesConDuracion = $sucCandidatas->map(function (Sucursal $sucursal) use ($originLat, $originLng) {
       $duration = $this->routingService->getTravelDuration($originLat, $originLng, $sucursal->getLatitud(), $sucursal->getLongitud());
 
-      // If OSRM fails or returns null (keep at end)
       if ($duration === null) {
         $duration = 999999.0;
       }

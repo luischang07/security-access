@@ -14,30 +14,6 @@ class OsrmRoutingService implements RoutingServiceInterface
     $this->baseUrl = config('services.osrm.url', 'http://router.project-osrm.org/route/v1/driving');
   }
 
-  public function getRouteDetails(float $originLat, float $originLng, float $destLat, float $destLng): ?array
-  {
-    try {
-      $coordinates = "{$originLng},{$originLat};{$destLng},{$destLat}";
-      $url = "{$this->baseUrl}/{$coordinates}?overview=full";
-
-      $response = Http::get($url);
-
-      if ($response->successful()) {
-        $data = $response->json();
-        if (isset($data['routes'][0])) {
-          return [
-            'duration' => (int) $data['routes'][0]['duration'],
-            'geometry' => $data['routes'][0]['geometry']
-          ];
-        }
-      }
-    } catch (\Exception $e) {
-      Log::error("OSRM Routing Error: " . $e->getMessage());
-    }
-
-    return null;
-  }
-
   public function getTravelDuration(float $originLat, float $originLng, float $destLat, float $destLng): ?float
   {
     try {
