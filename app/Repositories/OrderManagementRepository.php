@@ -72,8 +72,10 @@ class OrderManagementRepository
       ->count();
 
     // Calculate average fulfillment time in hours
+    // Calculate average fulfillment time in hours
+    $diffSql = $this->getDiffInHoursSql('fecha_pedido', 'fecha_recoleccion');
     $avgFulfillmentHours = Pedido::whereNotNull('fecha_recoleccion')
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
+      ->selectRaw("AVG($diffSql) as avg_hours")
       ->value('avg_hours') ?? 0;
 
     return [
@@ -89,6 +91,20 @@ class OrderManagementRepository
    */
   public function getAllChains(): array
   {
-    return CadenaFarmaceutica::pluck('name', 'cadena_id')->toArray();
+    return CadenaFarmaceutica::pluck('nombre', 'cadena_id')->toArray();
+  }
+
+  /**
+   * Get SQL for difference in hours based on database driver
+   */
+  private function getDiffInHoursSql(string $startColumn, string $endColumn): string
+  {
+    $driver = DB::connection()->getDriverName();
+
+    return match ($driver) {
+      'pgsql' => "EXTRACT(EPOCH FROM ($endColumn - $startColumn)) / 3600",
+      'sqlite' => "(julianday($endColumn) - julianday($startColumn)) * 24",
+      default => "TIMESTAMPDIFF(HOUR, $startColumn, $endColumn)", // MySQL
+    };
   }
 }

@@ -31,7 +31,7 @@ class PharmacyManagementRepository
       })
       ->leftJoin('cadena_farmaceuticas', 'sucursales.cadena_id', '=', 'cadena_farmaceuticas.cadena_id')
       ->select(
-        DB::raw('CONCAT(sucursales.cadena_id, "-", sucursales.sucursal_id) as id'),
+        DB::raw("CONCAT(sucursales.cadena_id, '-', sucursales.sucursal_id) as id"),
         'sucursales.cadena_id',
         'sucursales.sucursal_id',
         'sucursales.nombre',
@@ -41,7 +41,7 @@ class PharmacyManagementRepository
         'sucursales.colonia',
         'sucursales.latitud',
         'sucursales.longitud',
-        'cadena_farmaceuticas.name as cadena_name',
+        'cadena_farmaceuticas.nombre as cadena_name',
         DB::raw('COALESCE(order_counts.total_orders, 0) as total_orders')
       )
       ->orderBy('sucursales.cadena_id')
@@ -54,6 +54,7 @@ class PharmacyManagementRepository
         $q->where('sucursales.nombre', 'like', "%{$search}%")
           ->orWhere('sucursales.calle', 'like', "%{$search}%")
           ->orWhere('sucursales.colonia', 'like', "%{$search}%")
+          ->orWhere('sucursales.ciudad', 'like', "%{$search}%")
           ->orWhere('sucursales.sucursal_id', 'like', "%{$search}%");
       });
     }
@@ -64,11 +65,12 @@ class PharmacyManagementRepository
     }
 
     // Status filter
+    // Status filter
     if (!empty($filters['status'])) {
       if ($filters['status'] === 'active') {
-        $query->havingRaw('total_orders > 0');
+        $query->whereRaw('COALESCE(order_counts.total_orders, 0) > 0');
       } elseif ($filters['status'] === 'inactive') {
-        $query->havingRaw('total_orders = 0');
+        $query->whereRaw('COALESCE(order_counts.total_orders, 0) = 0');
       }
     }
 
@@ -89,11 +91,13 @@ class PharmacyManagementRepository
           ->on('sucursales.sucursal_id', '=', 'pedidos.sucursal_id');
       })
       ->distinct()
-      ->count(DB::raw('CONCAT(sucursales.cadena_id, "-", sucursales.sucursal_id)'));
+      ->count(DB::raw("CONCAT(sucursales.cadena_id, '-', sucursales.sucursal_id)"));
 
     // Calculate average days to delivery
+    // Calculate average days to delivery
+    $diffSql = $this->getDiffInDaysSql('fecha_pedido', 'fecha_recoleccion');
     $avgFulfillmentDays = Pedido::whereNotNull('fecha_recoleccion')
-      ->selectRaw('AVG(DATEDIFF(fecha_recoleccion, fecha_pedido)) as avg_days')
+      ->selectRaw("AVG($diffSql) as avg_days")
       ->value('avg_days') ?? 0;
 
     return [
@@ -110,7 +114,7 @@ class PharmacyManagementRepository
   public function getAllChains(): array
   {
     return \App\Models\CadenaFarmaceutica::all()
-      ->pluck('name', 'cadena_id')
+      ->pluck('nombre', 'cadena_id')
       ->toArray();
   }
 
@@ -147,5 +151,19 @@ class PharmacyManagementRepository
       ->whereMonth('fecha_pedido', now()->month)
       ->whereYear('fecha_pedido', now()->year)
       ->count();
+  }
+
+  /**
+   * Get SQL for difference in days based on database driver
+   */
+  private function getDiffInDaysSql(string $startColumn, string $endColumn): string
+  {
+    $driver = DB::connection()->getDriverName();
+
+    return match ($driver) {
+      'pgsql' => "EXTRACT(DAY FROM ($endColumn - $startColumn))",
+      'sqlite' => "julianday($endColumn) - julianday($startColumn)",
+      default => "DATEDIFF($endColumn, $startColumn)", // MySQL
+    };
   }
 }

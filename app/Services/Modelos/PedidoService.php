@@ -73,53 +73,6 @@ class PedidoService
     $pedido->eliminarMedicamento($medId);
     return $pedido;
   }
-  //TODO borrar cancelarPedido que no valida fecha de surtido
-  public function cancelarPedido(Pedido $pedido): Pedido
-  {
-    if (strtolower($pedido->getEstatus()) !== ModelsPedido::ESTATUS_SURTIDO) {
-      throw new Exception("Solo puedes cancelar pedidos si el pedido que esta surtido");
-    }
-    $pedido->cambiarEstatus(ModelsPedido::ESTATUS_CANCELADO);
-    $this->dataBase->guardarCambioEstatusPedido($pedido);
-
-    $dlp = $pedido->getAllDetalles();
-
-    $this->dataBase->iniciarTransaccion();
-    try {
-      foreach ($dlp as $detalle) {
-        /** @var DetalleLineaPedido $detalle */
-        $inventario = $this->dataBase->getInventario(
-          $detalle->getSucursal()->getCadenaId(),
-          $detalle->getSucursal()->getSucursalId(),
-          $detalle->getMedicamentoId()
-        );
-
-        if (!$inventario) {
-          throw new \RuntimeException('Inventario no encontrado para medicamento ' . $detalle->getMedicamentoId());
-        }
-
-        $inventario->aumentarStock($detalle->getCantidadSurtida());
-        $this->dataBase->actualizarInventarioCancelacion($inventario);
-      }
-
-      $this->dataBase->commitTransaccion();
-    } catch (\Throwable $e) {
-      $this->dataBase->cancelarTransaccion();
-      throw $e;
-    }
-
-    $paciente = $this->dataBase->getPaciente($pedido->getPacienteId());
-    $cantidadPenalizacion = $pedido->getCostoTotal() * 0.5;
-    $paciente->sumarMontoPenalizacion($cantidadPenalizacion);
-    $mensaje = "Su pedido {$pedido->getFolio()} ha sido cancelado. Se ha aplicado una penalización de s{$cantidadPenalizacion} a su cuenta.";
-    $notificacion = Notificacion::crear($mensaje, Carbon::now());
-    $paciente->agregarNotificacion($notificacion);
-    $this->dataBase->guardarNotificacion($notificacion, $paciente->getUser()->getId(), $pedido->getFolio());
-    $this->dataBase->actualizarPaciente($paciente);
-
-
-    return $pedido;
-  }
 
   public function cancelarPedidoSucursal(Pedido $pedido): Pedido
   {
@@ -127,7 +80,7 @@ class PedidoService
       throw new \RuntimeException('Solo se pueden cancelar pedidos que están surtidos.');
     }
 
-    if ($pedido->getFechaSurtido() && Carbon::now()->diffInHours($pedido->getFechaSurtido()) < 24) {
+    if ($pedido->getFechaSurtido() && Carbon::now()->diffInHours($pedido->getFechaSurtido(), true) < 24) {
       throw new \RuntimeException('No puedes cancelar el pedido antes de 24 horas de haber sido surtido. El cliente aún tiene tiempo para recogerlo.');
     }
     $this->dataBase->iniciarTransaccion();

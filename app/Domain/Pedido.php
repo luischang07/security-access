@@ -301,6 +301,11 @@ class Pedido
     return $this->ruta;
   }
 
+  public function setRuta(Collection $ruta): void
+  {
+    $this->ruta = $ruta;
+  }
+
   public function setRouteGeometry($geometry): void
   {
     $this->routeGeometry = $geometry;

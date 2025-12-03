@@ -18,10 +18,19 @@ export function setupAdminSpaComponents() {
         });
       },
 
+      abortController: null,
+
       async navigateTo(url, options = {}) {
         const showLoader = options.showLoader !== false;
 
-        if (this.loading || url === this.currentUrl) return;
+        // Cancel previous request if it exists
+        if (this.abortController) {
+          this.abortController.abort();
+          this.abortController = null;
+        }
+
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
 
         this.loading = true;
         const loader = document.getElementById('spa-loader');
@@ -41,7 +50,8 @@ export function setupAdminSpaComponents() {
             headers: {
               'X-Requested-With': 'XMLHttpRequest',
               'Accept': 'application/json'
-            }
+            },
+            signal
           });
 
           if (!response.ok) throw new Error('Network response was not ok');
@@ -98,12 +108,23 @@ export function setupAdminSpaComponents() {
             }
           }
         } catch (error) {
+          if (error.name === 'AbortError') {
+            console.log('Navigation aborted');
+            return;
+          }
           console.error('Navigation error:', error);
-          window.location.href = url;
+          // Only redirect on non-abort errors
+          if (error.name !== 'AbortError') {
+            window.location.href = url;
+          }
         } finally {
-          this.loading = false;
-          if (loader) {
-            loader.style.display = 'none';
+          // Only update state if this is still the active request
+          if (this.abortController && this.abortController.signal === signal) {
+            this.loading = false;
+            this.abortController = null;
+            if (loader) {
+              loader.style.display = 'none';
+            }
           }
         }
       },
@@ -177,6 +198,7 @@ export function setupAdminSpaComponents() {
         this.filters.search = '';
         this.filters.role = '';
         this.filters.status = '';
+        this.filters.chain = '';
         this.filters.per_page = '10';
         // The watcher will trigger applyFilters
       }

@@ -348,7 +348,7 @@ class BaseDatos
         'sucursales.*',
         DB::raw("$distanceSql as distancia")
       )
-      ->having('distancia', '<=', $maxDistanceMeters)
+      ->whereRaw("$distanceSql <= ?", [$originLng, $originLat, $maxDistanceMeters])
       ->orderBy('distancia', 'ASC')
       ->distinct()
       ->setBindings([$originLng, $originLat], 'select')
@@ -359,12 +359,13 @@ class BaseDatos
     });
 
   }
-  public function getPedidoByFoliosyApellido($folio_pedido, $apellido){
+  public function getPedidoByFoliosyApellido($folio_pedido, $apellido)
+  {
     return Pedido::with(['paciente.user'])
-            ->where('folio_pedido', $folio_pedido)
-            ->whereHas('paciente.user', function ($q) use ($apellido) {
-                $q->where('apellido', 'LIKE', $apellido . '%');
-            })
-            ->first();
+      ->where('folio_pedido', $folio_pedido)
+      ->whereHas('paciente.user', function ($q) use ($apellido) {
+        $q->where('apellido', 'LIKE', $apellido . '%');
+      })
+      ->first();
   }
 }

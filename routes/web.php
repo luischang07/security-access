@@ -89,6 +89,7 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
     Route::get('/penalties', [AdminController::class, 'penalties'])->name('penalties');
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/chains', [AdminController::class, 'chains'])->name('chains');
+    Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
   });
 
   // Settings route (common for all user types)
@@ -96,5 +97,5 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
 });
 
 Route::middleware('api')->prefix('api')->group(function () {
-    Route::get('/pedido/buscar', [OrdenesController::class, 'buscarPorFolio']);
+  Route::get('/pedido/buscar', [OrdenesController::class, 'buscarPorFolio']);
 });

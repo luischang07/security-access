@@ -11,6 +11,15 @@ class LoginRequest extends FormRequest
     return true;
   }
 
+  protected function prepareForValidation()
+  {
+    if ($this->correo) {
+      $this->merge([
+        'correo' => strtolower($this->correo),
+      ]);
+    }
+  }
+
   public function rules(): array
   {
     return [

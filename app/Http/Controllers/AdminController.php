@@ -231,4 +231,21 @@ class AdminController extends Controller
 
     return view('admin.reports');
   }
+
+  /**
+   * Show the admin profile
+   */
+  public function profile(Request $request)
+  {
+    $user = Auth::user();
+
+    if ($request->wantsJson()) {
+      return response()->json([
+        'html' => view('admin.partials.profile-content', compact('user'))->render(),
+        'title' => __('admin.profile.title')
+      ]);
+    }
+
+    return view('admin.profile', compact('user'));
+  }
 }

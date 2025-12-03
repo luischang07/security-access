@@ -55,8 +55,18 @@ class LineaPedido
   //Crear detalle linea de pedido
   public function crearDetalleLineaPedido(float $precio, int $cantidadSurtida, Sucursal $sucSeleccionada, int $medId): void
   {
-    $dlp = new DetalleLineaPedido($precio, $cantidadSurtida, $sucSeleccionada, $medId);
-    $this->detalleLineaPedido->push($dlp);
+    $existingDetail = $this->detalleLineaPedido->first(function (DetalleLineaPedido $detalle) use ($sucSeleccionada, $medId) {
+      return $detalle->getSucursal()->getCadenaId() === $sucSeleccionada->getCadenaId() &&
+        $detalle->getSucursal()->getSucursalId() === $sucSeleccionada->getSucursalId() &&
+        $detalle->getMedicamentoId() === $medId;
+    });
+
+    if ($existingDetail) {
+      $existingDetail->aumentarCantidad($cantidadSurtida);
+    } else {
+      $dlp = new DetalleLineaPedido($precio, $cantidadSurtida, $sucSeleccionada, $medId);
+      $this->detalleLineaPedido->push($dlp);
+    }
   }
 
   public function getCantidadFaltante(): int
@@ -87,7 +97,11 @@ class LineaPedido
 
     $this->detalleLineaPedido = $this->detalleLineaPedido
       ->filter(function (DetalleLineaPedido $detalle) use ($dlp) {
-        return $detalle !== $dlp;
+        return !(
+          $detalle->getSucursal()->getCadenaId() === $dlp->getSucursal()->getCadenaId() &&
+          $detalle->getSucursal()->getSucursalId() === $dlp->getSucursal()->getSucursalId() &&
+          $detalle->getMedicamentoId() === $dlp->getMedicamentoId()
+        );
       })
       ->values();
   }

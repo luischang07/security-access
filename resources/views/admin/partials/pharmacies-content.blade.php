@@ -97,7 +97,14 @@
 
 <!-- Pharmacies Table -->
 <div id="spa-results"
-  class="bg-card-light dark:bg-card-dark rounded-xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden">
+  class="bg-card-light dark:bg-card-dark rounded-xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden relative">
+  <!-- Loading Overlay -->
+  <div x-show="loading"
+    class="absolute inset-0 bg-white/50 dark:bg-gray-900/50 flex items-center justify-center z-10 backdrop-blur-sm"
+    style="display: none;"
+    x-transition.opacity>
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
   <div class="overflow-x-auto">
     <table class="w-full">
       <thead class="bg-background-light dark:bg-background-dark">

@@ -109,7 +109,7 @@ class GestorDeSurtido
           if ($pedido) {
             $pedido->anadirARuta($sucursal);
           }
-        } 
+        }
 
         $ldp->crearDetalleLineaPedido($ldi->getPrecioUnitario(), $cantidadSurtida, $sucursal, $ldp->getMedicamentoId());
 
@@ -184,12 +184,20 @@ class GestorDeSurtido
       $ruta = $pedido->getRuta();
       if ($ruta->isNotEmpty()) {
         $sucSeleccionada = $pedido->getSucursal();
-        $coordenadas = [];
 
-        $coordenadas[] = [
-          'lat' => $sucSeleccionada->getLatitud(),
-          'lng' => $sucSeleccionada->getLongitud()
-        ];
+        // Ensure origin branch is the first stop
+        $ruta = $ruta->reject(function ($suc) use ($sucSeleccionada) {
+          return $suc->getCadenaId() === $sucSeleccionada->getCadenaId() &&
+            $suc->getSucursalId() === $sucSeleccionada->getSucursalId();
+        });
+
+        if ($sucSeleccionada) {
+          $ruta = collect([$sucSeleccionada])->merge($ruta);
+        }
+
+        $pedido->setRuta($ruta);
+
+        $coordenadas = [];
 
         foreach ($ruta as $sucursal) {
           $coordenadas[] = [

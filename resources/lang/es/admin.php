@@ -217,4 +217,14 @@ return [
     'fulfillment_time' => 'Tiempo de Entrega',
     'units_sold' => 'unidades vendidas',
   ],
+
+  // Profile
+  'profile' => [
+    'title' => 'Mi Perfil',
+    'subtitle' => 'Administra tu información personal',
+    'full_name' => 'Nombre Completo',
+    'email' => 'Correo Electrónico',
+    'role' => 'Rol',
+    'joined_at' => 'Miembro desde',
+  ],
 ];

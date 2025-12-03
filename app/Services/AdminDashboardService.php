@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\PacienteRepository;
 use App\Repositories\PedidoRepository;
 use App\Repositories\SucursalRepository;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardService
 {
@@ -123,7 +124,8 @@ class AdminDashboardService
     $pedidos = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
       ->where('estatus', 'completado')
       ->whereDate('fecha_recoleccion', '>=', now()->subDays(30))
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
+      ->whereDate('fecha_recoleccion', '>=', now()->subDays(30))
+      ->selectRaw('AVG(' . $this->getDiffInHoursSql('fecha_pedido', 'fecha_recoleccion') . ') as avg_hours')
       ->first();
 
     return $pedidos->avg_hours ? round($pedidos->avg_hours, 1) : 0.0;
@@ -139,14 +141,16 @@ class AdminDashboardService
     $currentWeek = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
       ->where('estatus', 'completado')
       ->whereDate('fecha_recoleccion', '>=', now()->subWeek())
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
+      ->whereDate('fecha_recoleccion', '>=', now()->subWeek())
+      ->selectRaw('AVG(' . $this->getDiffInHoursSql('fecha_pedido', 'fecha_recoleccion') . ') as avg_hours')
       ->first();
 
     $lastWeek = \App\Models\Pedido::whereNotNull('fecha_recoleccion')
       ->where('estatus', 'completado')
       ->whereDate('fecha_recoleccion', '>=', now()->subWeeks(2))
       ->whereDate('fecha_recoleccion', '<', now()->subWeek())
-      ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, fecha_pedido, fecha_recoleccion)) as avg_hours')
+      ->whereDate('fecha_recoleccion', '<', now()->subWeek())
+      ->selectRaw('AVG(' . $this->getDiffInHoursSql('fecha_pedido', 'fecha_recoleccion') . ') as avg_hours')
       ->first();
 
     $current = $currentWeek->avg_hours ?? 0;
@@ -157,5 +161,19 @@ class AdminDashboardService
     }
 
     return round((($current - $last) / $last) * 100, 1);
+  }
+
+  /**
+   * Get SQL for difference in hours based on database driver
+   */
+  private function getDiffInHoursSql(string $startColumn, string $endColumn): string
+  {
+    $driver = DB::connection()->getDriverName();
+
+    return match ($driver) {
+      'pgsql' => "EXTRACT(EPOCH FROM ($endColumn - $startColumn)) / 3600",
+      'sqlite' => "(julianday($endColumn) - julianday($startColumn)) * 24",
+      default => "TIMESTAMPDIFF(HOUR, $startColumn, $endColumn)", // MySQL and others
+    };
   }
 }

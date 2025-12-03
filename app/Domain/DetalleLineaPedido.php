@@ -28,6 +28,11 @@ class DetalleLineaPedido
   {
     return $this->cantidadSurtida;
   }
+
+  public function aumentarCantidad(int $cantidad): void
+  {
+    $this->cantidadSurtida += $cantidad;
+  }
   public function getSucursal(): Sucursal
   {
     return $this->sucSeleccionada;
