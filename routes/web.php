@@ -68,9 +68,9 @@ Route::middleware(['auth', 'single.session'])->group(function (): void {
   // Pharmacy Routes
   Route::prefix('pharmacy')->name('pharmacy.')->group(function () {
     Route::get('/dashboard', [PharmacyController::class, 'dashboard'])->name('dashboard');
-    Route::get('/orders', [PharmacyController::class, 'orders'])->name('orders');
+    Route::get('/orders', [CancelacionController::class, 'mostrarPedidos'])->name('orders');
     Route::get('/orders/{folio}/route', [PharmacyController::class, 'showOrderRoute'])->name('orders.route');
-    Route::post('/orders/cancel/{folio}', [CancelacionController::class, 'cancelarPorFolio'])->name('cancelarOrdenPorFolio');
+    Route::post('/orders/cancel/{folio}', [CancelacionController::class, 'confirmarCancelacion'])->name('cancelarOrdenPorFolio');
     Route::post('/orders/mark-surtido/{folio}', [PharmacyController::class, 'marcarComoSurtido'])->name('orders.markSurtido');
     Route::post('/orders/undo-surtido/{folio}', [PharmacyController::class, 'deshacerSurtido'])->name('orders.undoSurtido');
     Route::get('/inventory', [PharmacyController::class, 'inventory'])->name('inventory');
